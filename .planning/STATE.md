@@ -6,7 +6,10 @@
 - Last activity: 2026-02-23 - Completed quick-002 (Game Scenario Test DSL)
 
 ### Quick Tasks Completed
-- quick-002: Game Scenario Test DSL + 38 end-to-end scenario tests
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 002 | 게임 시나리오 로컬 테스트 환경 구축 및 시나리오 테스트 작성 | 2026-02-23 | 2a9dbfe | [002-game-scenario-local-test-env](./quick/002-game-scenario-local-test-env/) |
 
 ### Blockers/Concerns
 - None currently
