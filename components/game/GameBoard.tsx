@@ -10,7 +10,7 @@ import { useGameAudio } from '@/lib/useGameAudio';
 import PlayerArea from './PlayerArea';
 import MyPlayerArea from './MyPlayerArea';
 import ActionPanel from './ActionPanel';
-import EventLog, { getLogColor } from './EventLog';
+import EventLog, { getLogColor, MiniEventLog } from './EventLog';
 import GameToast from './GameToast';
 import BgmPlayer from './BgmPlayer';
 import QuickChat from './QuickChat';
@@ -494,14 +494,42 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                 </div>
             </div>
 
-            {/* 모바일 로그 패널 (오버레이) */}
+            {/* 모바일 로그 패널 (fixed 바텀 시트) */}
             {showMobileLog && (
-                <div className="lg:hidden relative z-30" ref={mobileLogRef}>
-                    <div className="absolute inset-x-0 top-0 max-h-[50vh] overflow-y-auto bg-bg-dark/95 p-3">
-                        <EventLog log={state.log} structuredLog={state.structuredLog} />
+                <div
+                    className="lg:hidden fixed inset-0 z-40 flex flex-col justify-end"
+                    ref={mobileLogRef}
+                >
+                    {/* 딤 배경 */}
+                    <div
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        onClick={() => setShowMobileLog(false)}
+                    />
+                    {/* 로그 시트 */}
+                    <div className="relative z-10 flex flex-col bg-bg-dark rounded-t-2xl border-t border-border-subtle max-h-[70vh] animate-slide-up">
+                        {/* 핸들 + 헤더 */}
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle/50 flex-shrink-0">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-1 rounded-full bg-border-subtle mx-auto" />
+                            </div>
+                            <span className="font-sora text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                                게임 로그
+                            </span>
+                            <button
+                                className="text-text-muted hover:text-text-primary text-xs"
+                                onClick={() => setShowMobileLog(false)}
+                            >
+                                닫기
+                            </button>
+                        </div>
+                        {/* 스크롤 영역 */}
+                        <div className="flex-1 overflow-y-auto">
+                            <EventLog log={state.log} structuredLog={state.structuredLog} chatLogs={chatLogs} />
+                        </div>
                     </div>
                 </div>
             )}
+
 
             {/* 중앙 영역: EventLog(좌, 320px desktop) + TurnArea(우) */}
             <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
@@ -530,23 +558,25 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                         />
                     )}
 
-                    {/* 대기 메시지: 다른 플레이어 턴 */}
+                    {/* 대기 메시지: 다른 플레이어 턴 — 미니 이벤트 로그 */}
                     {!isMyTurn && !mustRespond && state.phase === 'action' && (
-                        <div className="flex-1 flex items-center justify-center">
-                            <p className="text-text-muted text-sm animate-pulse">
-                                {currentPlayer?.name}의 턴입니다...
-                            </p>
-                        </div>
+                        <MiniEventLog
+                            log={state.log}
+                            structuredLog={state.structuredLog}
+                            chatLogs={chatLogs}
+                            statusMessage={`${currentPlayer?.name}의 턴입니다...`}
+                        />
                     )}
 
-                    {/* 대기 메시지: 다른 플레이어가 카드 선택 중 */}
+                    {/* 대기 메시지: 다른 플레이어가 카드 선택 중 — 미니 이벤트 로그 */}
                     {state.phase === 'lose_influence' &&
                         state.pendingAction?.losingPlayerId !== playerId && (
-                            <div className="flex-1 flex items-center justify-center">
-                                <p className="text-text-muted text-sm animate-pulse">
-                                    {state.players.find((p) => p.id === state.pendingAction?.losingPlayerId)?.name}이(가) 잃을 카드를 선택하고 있습니다...
-                                </p>
-                            </div>
+                            <MiniEventLog
+                                log={state.log}
+                                structuredLog={state.structuredLog}
+                                chatLogs={chatLogs}
+                                statusMessage={`${state.players.find((p) => p.id === state.pendingAction?.losingPlayerId)?.name}이(가) 잃을 카드를 선택하고 있습니다...`}
+                            />
                         )}
 
                     {/* 응답 대기 중 — 타이머 + 플레이어 응답 상태 표시 */}
