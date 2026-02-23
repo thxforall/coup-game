@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-24 - Completed quick-043 (준비완료 버튼 초록색으로 변경)
+- Last activity: 2026-02-24 - Completed quick-042 (방 나가기 모달 + 게임 도중 카드 공개)
 
 ### Quick Tasks Completed
 
@@ -47,12 +47,13 @@
 | 039 | 로비 방 목록 브라우저 + 추방 플레이어 재입장 허용 (GET /api/game/list + kickedPlayerIds 제거) | 2026-02-24 | 2c562db | [039-room-join-delete-cleanup-after-game](./quick/039-room-join-delete-cleanup-after-game/) |
 | 040 | 전역 배경 이미지 적용 + 설정 토글 연동 (GlobalBackground, layout.tsx 통합) | 2026-02-24 | 0e72fa4 | [040-bg-image-subtle-background-toggle](./quick/040-bg-image-subtle-background-toggle/) |
 | 041 | BGM 볼륨 슬라이더 위치를 헤더 아래로 변경 (bottom-full → top-full) | 2026-02-24 | 1695b2f | [041-bgm-volume-control-position-fix-below-header](./quick/041-bgm-volume-control-position-fix-below-header/) |
+| 042 | 방 나가기 모달 + 게임 도중 카드 공개 (leave API + inline/modal confirm UI) | 2026-02-24 | 81048b1 | [042-leave-room-modal-reveal-cards-on-midgame](./quick/042-leave-room-modal-reveal-cards-on-midgame/) |
 | 043 | 준비완료 버튼 초록색으로 변경 | 2026-02-24 | a53be15 | [043-ready-button-green-color](./quick/043-ready-button-green-color/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-24T01:34:00Z
-- Stopped at: Completed quick-040 (전역 배경 이미지 적용 + 설정 토글 연동)
+- Last session: 2026-02-24T16:45:00Z
+- Stopped at: Completed quick-042 (방 나가기 모달 + 게임 도중 카드 공개)
 - Resume file: None
