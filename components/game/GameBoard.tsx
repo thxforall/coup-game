@@ -205,6 +205,8 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
     const timeoutDeadlineRef = useRef<number | undefined>(undefined);
 
     useEffect(() => {
+        if (state.phase === 'game_over') return;
+
         const isAwaitingPhase =
             state.phase === 'awaiting_response' || state.phase === 'awaiting_block_response';
         const deadline = state.pendingAction?.responseDeadline;

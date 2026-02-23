@@ -34,6 +34,11 @@ export async function POST(req: NextRequest) {
   // 방어적 타임아웃 체크: 매 요청마다 deadline 초과된 pending 응답을 자동 pass 처리
   state = resolveTimeouts(state);
 
+  // 게임 종료 후 추가 액션 차단
+  if (state.phase === 'game_over') {
+    return NextResponse.json({ error: '게임이 종료되었습니다' }, { status: 400 });
+  }
+
   try {
     switch (action.type) {
       case 'income': case 'foreignAid': case 'coup':
