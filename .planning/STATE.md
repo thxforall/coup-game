@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-24 - Completed quick-042 (방 나가기 모달 + 게임 도중 카드 공개)
+- Last activity: 2026-02-24 - Completed quick-044 (게임보드 배경이미지 잔여 코드 제거)
 
 ### Quick Tasks Completed
 
@@ -49,6 +49,7 @@
 | 041 | BGM 볼륨 슬라이더 위치를 헤더 아래로 변경 (bottom-full → top-full) | 2026-02-24 | 1695b2f | [041-bgm-volume-control-position-fix-below-header](./quick/041-bgm-volume-control-position-fix-below-header/) |
 | 042 | 방 나가기 모달 + 게임 도중 카드 공개 (leave API + inline/modal confirm UI) | 2026-02-24 | 81048b1 | [042-leave-room-modal-reveal-cards-on-midgame](./quick/042-leave-room-modal-reveal-cards-on-midgame/) |
 | 043 | 준비완료 버튼 초록색으로 변경 | 2026-02-24 | a53be15 | [043-ready-button-green-color](./quick/043-ready-button-green-color/) |
+| 044 | 게임보드 배경이미지 잔여 코드(bg-overlay) 제거 | 2026-02-24 | 19d38d8 | [044-remove-background-image-feature](./quick/044-remove-background-image-feature/) |
 
 ### Blockers/Concerns
 - None currently
