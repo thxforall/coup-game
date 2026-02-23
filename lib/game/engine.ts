@@ -176,8 +176,8 @@ export function processAction(
     case 'foreignAid': {
       // 공작이 블록 가능 — 다른 플레이어 응답 대기
       const others = getAlivePlayers(s).filter((p) => p.id !== actorId);
-      const responses: Record<string, ResponseType | null> = {};
-      others.forEach((p) => { responses[p.id] = null; });
+      const responses: Record<string, ResponseType | 'pending'> = {};
+      others.forEach((p) => { responses[p.id] = 'pending'; });
       s = addLog(s, `${actor.name}이(가) 외국 원조를 요청했습니다`);
       return {
         ...s,
@@ -203,8 +203,8 @@ export function processAction(
 
       const target = targetId ? getPlayer(s, targetId) : undefined;
       const others = getAlivePlayers(s).filter((p) => p.id !== actorId);
-      const responses: Record<string, ResponseType | null> = {};
-      others.forEach((p) => { responses[p.id] = null; });
+      const responses: Record<string, ResponseType | 'pending'> = {};
+      others.forEach((p) => { responses[p.id] = 'pending'; });
 
       const logMsg = target
         ? `${actor.name}이(가) ${ACTION_NAMES[type]}을(를) ${target.name}에게 사용합니다`
@@ -251,12 +251,16 @@ export function processResponse(
     if (!allowedBlockers || !allowedBlockers.includes(blockCharacter)) {
       throw new Error(`${CHARACTER_NAMES[blockCharacter]}은(는) 이 행동을 막을 수 없습니다`);
     }
+    // steal/assassinate는 대상만 블록 가능
+    if ((pending.type === 'steal' || pending.type === 'assassinate') && responderId !== pending.targetId) {
+      throw new Error('이 행동은 대상만 막을 수 있습니다');
+    }
     s = addLog(s, `${responder.name}이(가) ${CHARACTER_NAMES[blockCharacter]}으로 막습니다!`);
 
     // 블록 선언 후 다른 플레이어들이 그 블록에 도전 가능
     const others = getAlivePlayers(s).filter((p) => p.id !== responderId);
-    const blockResponses: Record<string, ResponseType | null> = {};
-    others.forEach((p) => { blockResponses[p.id] = null; });
+    const blockResponses: Record<string, ResponseType | 'pending'> = {};
+    others.forEach((p) => { blockResponses[p.id] = 'pending'; });
 
     return {
       ...s,
@@ -275,7 +279,7 @@ export function processResponse(
   s = { ...s, pendingAction: { ...pending, responses: updatedResponses } };
 
   // 모든 플레이어가 응답했는지 확인
-  const allResponded = Object.values(updatedResponses).every((r) => r !== null);
+  const allResponded = Object.values(updatedResponses).every((r) => r !== 'pending');
   if (allResponded) {
     return resolveAction(s);
   }
@@ -348,7 +352,7 @@ export function processBlockResponse(
   const updatedResponses = { ...pending.responses, [responderId]: 'pass' as ResponseType };
   s = { ...s, pendingAction: { ...pending, responses: updatedResponses } };
 
-  const allResponded = Object.values(updatedResponses).every((r) => r !== null);
+  const allResponded = Object.values(updatedResponses).every((r) => r !== 'pending');
   if (allResponded) {
     // 모두 패스 → 블록 성공, 액션 무효
     s = addLog(s, '블록이 확정되었습니다. 행동이 취소되었습니다');
@@ -478,6 +482,10 @@ function executeAction(state: GameState): GameState {
     case 'assassinate': {
       if (!targetId) throw new Error('assassinate: targetId required');
       const target = getPlayer(s, targetId);
+      // 블록 도전 실패로 이미 탈락한 경우 → 암살 스킵
+      if (!target.isAlive) {
+        return nextTurn(s);
+      }
       s = addLog(s, `${actor.name}이(가) ${target.name}을 암살합니다`);
       // 대상이 카드 선택 (lose_influence)
       return {
@@ -488,16 +496,19 @@ function executeAction(state: GameState): GameState {
     }
 
     case 'exchange': {
-      // 덱에서 2장 뽑기
+      // 덱에서 가용한 만큼만 뽑기 (최대 2장)
       const newDeck = [...s.deck];
-      const card1 = newDeck.pop()!;
-      const card2 = newDeck.pop()!;
+      const drawCount = Math.min(2, newDeck.length);
+      const drawnCards: Character[] = [];
+      for (let i = 0; i < drawCount; i++) {
+        drawnCards.push(newDeck.pop()!);
+      }
       s = addLog(s, `${actor.name}이(가) 교환할 카드를 선택합니다`);
       return {
         ...s,
         deck: newDeck,
         phase: 'exchange_select',
-        pendingAction: { ...pending, exchangeCards: [card1, card2] },
+        pendingAction: { ...pending, exchangeCards: drawnCards },
       };
     }
 

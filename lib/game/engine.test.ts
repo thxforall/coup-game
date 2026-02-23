@@ -58,7 +58,7 @@ function allPass(state: GameState): GameState {
   const pending = state.pendingAction!;
   let s = state;
   for (const playerId of Object.keys(pending.responses)) {
-    if (pending.responses[playerId] === null) {
+    if (pending.responses[playerId] === 'pending') {
       if (s.phase === 'awaiting_response') {
         s = processResponse(s, playerId, 'pass');
       } else if (s.phase === 'awaiting_block_response') {
@@ -93,8 +93,8 @@ describe('기본 액션', () => {
     expect(result.pendingAction!.type).toBe('foreignAid');
     expect(result.pendingAction!.actorId).toBe('p1');
     // 다른 플레이어들에게 응답 대기
-    expect(result.pendingAction!.responses['p2']).toBeNull();
-    expect(result.pendingAction!.responses['p3']).toBeNull();
+    expect(result.pendingAction!.responses['p2']).toBe('pending');
+    expect(result.pendingAction!.responses['p3']).toBe('pending');
     // 본인은 응답 대상이 아님
     expect(result.pendingAction!.responses['p1']).toBeUndefined();
   });
@@ -388,6 +388,36 @@ describe('블록 (Block)', () => {
     expect(s.pendingAction!.blockerCharacter).toBe('Ambassador');
   });
 
+  test('assassinate: 대상만 블록 가능 (제3자 블록 불가)', () => {
+    const state = createTestState({
+      players: createTestState().players.map(p =>
+        p.id === 'p1' ? { ...p, coins: 5 } : p
+      ),
+    });
+    let s = processAction(state, 'p1', { type: 'assassinate', targetId: 'p2' });
+    // p3(제3자)가 Contessa로 블록 시도 → 에러
+    expect(() =>
+      processResponse(s, 'p3', 'block', 'Contessa')
+    ).toThrow('이 행동은 대상만 막을 수 있습니다');
+  });
+
+  test('steal: 대상만 블록 가능 (제3자 블록 불가)', () => {
+    const state = createTestState();
+    let s = processAction(state, 'p1', { type: 'steal', targetId: 'p2' });
+    // p3(제3자)가 Captain으로 블록 시도 → 에러
+    expect(() =>
+      processResponse(s, 'p3', 'block', 'Captain')
+    ).toThrow('이 행동은 대상만 막을 수 있습니다');
+  });
+
+  test('foreignAid: 아무나 Duke로 블록 가능', () => {
+    const state = createTestState();
+    let s = processAction(state, 'p1', { type: 'foreignAid' });
+    // p3(제3자)도 Duke로 블록 가능
+    s = processResponse(s, 'p3', 'block', 'Duke');
+    expect(s.phase).toBe('awaiting_block_response');
+  });
+
   test('잘못된 캐릭터로 블록 시도 시 에러', () => {
     const state = createTestState();
     let s = processAction(state, 'p1', { type: 'tax' });
@@ -579,6 +609,71 @@ describe('카드 잃기 & 교환', () => {
 // ============================================================
 
 describe('엣지 케이스', () => {
+  test('assassination double-loss guard: 블록 도전 실패로 탈락한 target에 암살 미실행', () => {
+    // p2가 카드 1장만 남은 상태에서 Contessa 블러프 블록 → 블록 도전 성공 → p2 탈락 → 암살 스킵
+    const state = createTestState({
+      players: [
+        {
+          id: 'p1', name: 'Alice', coins: 5,
+          cards: [{ character: 'Assassin' as Character, revealed: false }, { character: 'Duke' as Character, revealed: false }],
+          isAlive: true, isReady: true,
+        },
+        {
+          id: 'p2', name: 'Bob', coins: 2,
+          cards: [{ character: 'Captain' as Character, revealed: true }, { character: 'Ambassador' as Character, revealed: false }],
+          isAlive: true, isReady: true,
+        },
+        {
+          id: 'p3', name: 'Charlie', coins: 2,
+          cards: [{ character: 'Duke' as Character, revealed: false }, { character: 'Captain' as Character, revealed: false }],
+          isAlive: true, isReady: true,
+        },
+      ],
+    });
+
+    let s = processAction(state, 'p1', { type: 'assassinate', targetId: 'p2' });
+    // p2가 Contessa로 블록 (블러프! - Contessa 없음)
+    s = processResponse(s, 'p2', 'block', 'Contessa');
+    // p1이 블록에 도전 → 성공 → p2 마지막 카드 잃음 → 탈락
+    s = processBlockResponse(s, 'p1', 'challenge');
+
+    // p2는 이미 탈락
+    const bob = getPlayer(s, 'p2');
+    expect(bob.isAlive).toBe(false);
+    // 암살은 실행되지 않아야 함 (lose_influence가 아닌 다음 턴으로)
+    expect(s.phase).toBe('action');
+    // p2 탈락이므로 p3로 건너뜀
+    expect(s.currentTurnId).toBe('p3');
+  });
+
+  test('exchange: 덱이 비었을 때 에러 없이 처리', () => {
+    const state = createTestState({
+      currentTurnId: 'p3',
+      deck: [], // 덱 비어있음
+    });
+    let s = processAction(state, 'p3', { type: 'exchange' });
+    s = allPass(s);
+
+    expect(s.phase).toBe('exchange_select');
+    expect(s.pendingAction!.exchangeCards).toHaveLength(0);
+
+    // 뽑은 카드가 없으므로 기존 카드만으로 선택
+    s = processExchangeSelect(s, 'p3', [0, 1]);
+    expect(s.phase).toBe('action');
+  });
+
+  test('exchange: 덱이 1장일 때 1장만 뽑기', () => {
+    const state = createTestState({
+      currentTurnId: 'p3',
+      deck: ['Duke'], // 덱 1장
+    });
+    let s = processAction(state, 'p3', { type: 'exchange' });
+    s = allPass(s);
+
+    expect(s.phase).toBe('exchange_select');
+    expect(s.pendingAction!.exchangeCards).toHaveLength(1);
+  });
+
   test('10코인 이상 → 쿠 외 다른 액션 불가', () => {
     const state = createTestState({
       players: createTestState().players.map(p =>
@@ -705,16 +800,11 @@ describe('복합 시나리오', () => {
 
   test('income 연속 → 코인 누적', () => {
     let s = createTestState();
-    // 6라운드 income
-    for (let round = 0; round < 6; round++) {
-      const alive = getAlivePlayers(s);
-      for (const player of alive) {
-        if (s.currentTurnId === player.id) {
-          s = processAction(s, player.id, { type: 'income' });
-        }
-      }
+    // 6턴 income (3명이 2바퀴)
+    for (let turn = 0; turn < 6; turn++) {
+      s = processAction(s, s.currentTurnId, { type: 'income' });
     }
-    // 각 플레이어 = 2 + 2(each 2 rounds of income) = 4코인 (6 rounds / 3 players = 2 each)
+    // 각 플레이어 = 2(초기) + 2(2회 income) = 4코인
     expect(getPlayer(s, 'p1').coins).toBe(4);
     expect(getPlayer(s, 'p2').coins).toBe(4);
     expect(getPlayer(s, 'p3').coins).toBe(4);
