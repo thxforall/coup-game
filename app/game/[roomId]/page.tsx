@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { subscribeToRoom, getRoom, setupPresence, subscribeToPresence, PresenceMap } from '@/lib/firebase.client';
 import { FilteredGameState } from '@/lib/game/types';
@@ -16,9 +16,12 @@ export default function GamePage() {
     const [playerId, setPlayerId] = useState('');
     const [loading, setLoading] = useState(true);
     const [presence, setPresence] = useState<PresenceMap>({});
+    const playerIdRef = useRef('');
 
     useEffect(() => {
-        setPlayerId(getPlayerId());
+        const pid = getPlayerId();
+        setPlayerId(pid);
+        playerIdRef.current = pid;
         setActiveRoom(roomId);
     }, [roomId]);
 
@@ -58,6 +61,16 @@ export default function GamePage() {
 
         // Firebase onValue 실시간 구독 (views/{playerId})
         const unsubscribe = subscribeToRoom(roomId, playerId, (newState) => {
+            // 대기실에서 내가 플레이어 목록에 없으면 추방된 것
+            if (newState.phase === 'waiting') {
+                const currentPid = playerIdRef.current;
+                const stillInRoom = newState.players.some((p) => p.id === currentPid);
+                if (!stillInRoom && currentPid) {
+                    alert('방에서 추방되었습니다');
+                    router.push('/');
+                    return;
+                }
+            }
             setState(newState);
             setLoading(false);
         });
@@ -84,6 +97,25 @@ export default function GamePage() {
         });
     };
 
+    const handleKick = useCallback(
+        async (targetId: string) => {
+            await fetch('/api/game/kick', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ roomId, playerId, targetId }),
+            });
+        },
+        [roomId, playerId]
+    );
+
+    const handleReady = useCallback(async () => {
+        await fetch('/api/game/ready', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ roomId, playerId }),
+        });
+    }, [roomId, playerId]);
+
     const handleRestart = useCallback(async () => {
         await fetch('/api/game/restart', {
             method: 'POST',
@@ -104,7 +136,17 @@ export default function GamePage() {
     }
 
     if (state.phase === 'waiting') {
-        return <WaitingRoom state={state} playerId={playerId} roomId={roomId} onStart={handleStart} presence={presence} />;
+        return (
+            <WaitingRoom
+                state={state}
+                playerId={playerId}
+                roomId={roomId}
+                onStart={handleStart}
+                onKick={handleKick}
+                onReady={handleReady}
+                presence={presence}
+            />
+        );
     }
 
     return <GameBoard state={state} playerId={playerId} roomId={roomId} onAction={sendAction} onRestart={handleRestart} presence={presence} />;

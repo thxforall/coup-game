@@ -3,24 +3,43 @@
 import { FilteredGameState } from '@/lib/game/types';
 import { PresenceMap } from '@/lib/firebase.client';
 import { useState } from 'react';
-import { Skull, Copy, Check, Crown, Play } from 'lucide-react';
+import { Skull, Copy, Check, Crown, Play, CheckCircle2, Circle, X } from 'lucide-react';
 
 interface Props {
     state: FilteredGameState;
     playerId: string;
     roomId: string;
     onStart: () => void;
+    onKick: (targetId: string) => void;
+    onReady: () => void;
     presence?: PresenceMap;
 }
 
-export default function WaitingRoom({ state, playerId, roomId, onStart, presence }: Props) {
+export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, onReady, presence }: Props) {
     const [copied, setCopied] = useState(false);
     const isHost = state.players[0]?.id === playerId;
+
+    const currentPlayer = state.players.find((p) => p.id === playerId);
+    const isReady = currentPlayer?.isReady ?? false;
+
+    const allNonHostReady = state.players.length >= 2 && state.players.slice(1).every((p) => p.isReady);
 
     const copyCode = () => {
         navigator.clipboard.writeText(roomId);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleKick = (targetId: string, targetName: string) => {
+        if (window.confirm(`${targetName}을(를) 추방하시겠습니까?`)) {
+            onKick(targetId);
+        }
+    };
+
+    const startButtonLabel = () => {
+        if (state.players.length < 2) return '최소 2명 필요';
+        if (!allNonHostReady) return '모두 준비 대기 중';
+        return '게임 시작';
     };
 
     return (
@@ -86,6 +105,15 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, presence
 
                                 <span className="font-semibold text-text-primary flex-1 truncate">{p.name}</span>
 
+                                {/* Ready status icon (방장 제외) */}
+                                {i !== 0 && (
+                                    p.isReady ? (
+                                        <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
+                                    ) : (
+                                        <Circle size={16} className="text-gray-500 shrink-0" />
+                                    )
+                                )}
+
                                 {/* Host badge */}
                                 {i === 0 && (
                                     <Crown size={15} className="text-gold shrink-0" />
@@ -104,25 +132,53 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, presence
                                         나
                                     </span>
                                 )}
+
+                                {/* Kick button (방장 시점, 자신 제외) */}
+                                {isHost && p.id !== playerId && (
+                                    <button
+                                        className="w-7 h-7 flex items-center justify-center rounded text-text-muted hover:text-red-500 hover:bg-red-500/10 transition-colors shrink-0"
+                                        onClick={() => handleKick(p.id, p.name)}
+                                        title={`${p.name} 추방`}
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                )}
                             </li>
                         ))}
                     </ul>
                 </div>
 
-                {/* Start / waiting */}
+                {/* Start / waiting / ready */}
                 {isHost ? (
                     <button
                         className="btn-gold w-full py-3 flex items-center justify-center gap-2 text-base"
                         onClick={onStart}
-                        disabled={state.players.length < 2}
+                        disabled={state.players.length < 2 || !allNonHostReady}
                     >
                         <Play size={18} />
-                        {state.players.length < 2 ? '최소 2명 필요' : '게임 시작'}
+                        {startButtonLabel()}
                     </button>
                 ) : (
-                    <p className="text-text-muted font-mono text-sm text-center animate-pulse">
-                        방장이 게임을 시작할 때까지 기다려주세요...
-                    </p>
+                    <button
+                        className={`w-full py-3 flex items-center justify-center gap-2 text-base transition-colors ${
+                            isReady
+                                ? 'btn-gold'
+                                : 'btn-ghost border border-border-subtle'
+                        }`}
+                        onClick={onReady}
+                    >
+                        {isReady ? (
+                            <>
+                                <CheckCircle2 size={18} />
+                                준비 취소
+                            </>
+                        ) : (
+                            <>
+                                <Circle size={18} />
+                                준비 완료
+                            </>
+                        )}
+                    </button>
                 )}
             </div>
         </div>
