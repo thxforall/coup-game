@@ -55,6 +55,7 @@ export function filterStateForPlayer(
       blockerId: pa.blockerId,
       blockerCharacter: pa.blockerCharacter,
       losingPlayerId: pa.losingPlayerId,
+      responseDeadline: pa.responseDeadline,
     };
     // exchangeCards: 본인 exchange일 때만 포함
     if (pa.exchangeCards && pa.actorId === playerId) {

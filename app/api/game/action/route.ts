@@ -6,6 +6,7 @@ import {
   processBlockResponse,
   processLoseInfluence,
   processExchangeSelect,
+  resolveTimeouts,
 } from '@/lib/game/engine';
 import { ActionType, Character, ResponseType } from '@/lib/game/types';
 import { filterStateForPlayer } from '@/lib/game/filter';
@@ -29,6 +30,9 @@ export async function POST(req: NextRequest) {
   if (!room) return NextResponse.json({ error: '방을 찾을 수 없습니다' }, { status: 404 });
 
   let state = room.state;
+
+  // 방어적 타임아웃 체크: 매 요청마다 deadline 초과된 pending 응답을 자동 pass 처리
+  state = resolveTimeouts(state);
 
   try {
     switch (action.type) {

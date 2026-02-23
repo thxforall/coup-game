@@ -1,6 +1,7 @@
 import {
   Character,
   ActionType,
+  GameMode,
   GameState,
   Player,
   Card,
@@ -515,6 +516,48 @@ function executeAction(state: GameState): GameState {
 
     default:
       throw new Error(`Cannot execute action: ${type}`);
+  }
+}
+
+// ============================================================
+// 타임아웃 해소: deadline 초과 시 pending 응답을 일괄 pass 처리
+// ============================================================
+
+export function resolveTimeouts(state: GameState): GameState {
+  // 조건: awaiting_response 또는 awaiting_block_response phase이고 deadline 초과
+  if (
+    (state.phase !== 'awaiting_response' && state.phase !== 'awaiting_block_response') ||
+    !state.pendingAction?.responseDeadline ||
+    Date.now() <= state.pendingAction.responseDeadline
+  ) {
+    return state;
+  }
+
+  const pending = state.pendingAction;
+  // 모든 pending 응답을 pass로 변경
+  const updatedResponses = { ...pending.responses };
+  let changed = false;
+  for (const [pid, resp] of Object.entries(updatedResponses)) {
+    if (resp === 'pending') {
+      updatedResponses[pid] = 'pass';
+      changed = true;
+    }
+  }
+
+  if (!changed) return state;
+
+  let s: GameState = {
+    ...state,
+    pendingAction: { ...pending, responses: updatedResponses },
+  };
+
+  if (state.phase === 'awaiting_response') {
+    // 모든 응답이 pass → resolveAction (액션 실행)
+    return resolveAction(s);
+  } else {
+    // awaiting_block_response: 모두 pass → 블록 확정, 행동 취소
+    s = addLog(s, '블록이 확정되었습니다. 행동이 취소되었습니다');
+    return nextTurn(s);
   }
 }
 
