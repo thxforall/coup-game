@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-23 - Completed quick-024 (게임 UX: 턴 로그 구분선 + 퀵챗 최적화 + 행동 확인 모달)
+- Last activity: 2026-02-23 - Completed quick-026 (랜덤 첫 턴 플레이어)
 
 ### Quick Tasks Completed
 
@@ -32,11 +32,12 @@
 | 023 | game_over 후 방 유지 + 방장 재시작 시 전원 대기실 자동 전환 + 비방장 재시작 대기 UX | 2026-02-23 | e00746d | [023-game-over-stay-in-room-ready-restart](./quick/023-game-over-stay-in-room-ready-restart/) |
 | 024 | 게임 UX: 턴 시작 로그 구분선 + 퀵챗 낙관적 UI/3회 제한 + 쿠데타/암살 확인 모달 | 2026-02-23 | f36e83b | [024-game-ux-log-chat-confirm-optimization](./quick/024-game-ux-log-chat-confirm-optimization/) |
 | 025 | Firebase RTDB 방 자동 정리: GameState 타임스탬프 + Vercel Cron cleanup API | 2026-02-23 | c3d12b5 | [025-auto-cleanup-stale-game-rooms](./quick/025-auto-cleanup-stale-game-rooms/) |
+| 026 | 랜덤 첫 턴 플레이어 (initGame Math.random) | 2026-02-23 | d6bbc6e | [026-random-first-turn-player](./quick/026-random-first-turn-player/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-23T14:50:02Z
-- Stopped at: Completed quick-025 (Firebase RTDB 방 자동 정리 + Vercel Cron)
+- Last session: 2026-02-23T14:51:00Z
+- Stopped at: Completed quick-026 (랜덤 첫 턴 플레이어)
 - Resume file: None
