@@ -160,17 +160,15 @@ function EventLog({ log, structuredLog, chatLogs = [], hideHeader = false, playe
 
     const mergedStructured: StructuredMerged[] | null = useStructured
         ? (() => {
-            const gameEntries: StructuredMerged[] = structuredLog.map((entry, i) => ({
+            const gameEntries: StructuredMerged[] = structuredLog.map((entry) => ({
                 kind: 'game',
                 entry,
-                sortKey: i,
+                sortKey: entry.timestamp,
             }));
-            const minChat = chatLogs.length > 0 ? Math.min(...chatLogs.map((c) => c.timestamp)) : 0;
-            const maxGame = gameEntries.length;
             const chatEntries: StructuredMerged[] = chatLogs.map((item) => ({
                 kind: 'chat',
                 item,
-                sortKey: maxGame + (item.timestamp - minChat) / 1e13,
+                sortKey: item.timestamp,
             }));
             return [...gameEntries, ...chatEntries].sort((a, b) => a.sortKey - b.sortKey);
         })()
