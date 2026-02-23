@@ -24,13 +24,13 @@ export function filterStateForPlayer(
         id: p.id,
         name: p.name,
         coins: p.coins,
-        cards: p.cards,
+        cards: p.cards ?? [],
         isAlive: p.isAlive,
         isReady: p.isReady,
       };
     }
     // 상대: 비공개 카드 마스킹
-    const maskedCards: MaskedCard[] = p.cards.map((c) => ({
+    const maskedCards: MaskedCard[] = (p.cards ?? []).map((c) => ({
       revealed: c.revealed,
       character: c.revealed ? c.character : null,
     }));

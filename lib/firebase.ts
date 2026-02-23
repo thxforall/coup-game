@@ -20,7 +20,14 @@ export async function getRoom(roomId: string): Promise<{ id: string; state: Game
   if (!res.ok) return null;
   const data = await res.json();
   if (!data) return null;
-  return { id: roomId, state: data.state as GameState };
+  const state = data.state as GameState;
+  // Firebase drops empty arrays on storage - restore defaults
+  state.players = (state.players ?? []).map(p => ({
+    ...p,
+    cards: p.cards ?? [],
+  }));
+  state.log = state.log ?? [];
+  return { id: roomId, state };
 }
 
 export async function createRoom(roomId: string, state: GameState): Promise<void> {
