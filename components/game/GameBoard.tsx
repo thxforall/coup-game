@@ -137,10 +137,9 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             return () => document.removeEventListener('mousedown', handleOutsideClick);
         }
     }, [showMobileLog, handleOutsideClick]);
-    const me = useMemo(
-        () => state.players.find((p) => p.id === playerId),
-        [state.players, playerId]
-    );
+    const meRaw = state.players.find((p) => p.id === playerId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const me = useMemo(() => meRaw, [JSON.stringify(meRaw)]);
     const others = useMemo(
         () => state.players.filter((p) => p.id !== playerId),
         [state.players, playerId]
@@ -231,6 +230,15 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             me,
         [state.phase, state.pendingAction?.actorId, playerId, me]
     );
+
+    const handleExchangeSelect = useCallback(
+        (keptIndices: number[]) => onAction({ type: 'exchange_select', keptIndices }),
+        [onAction]
+    );
+
+    const exchangeCardsRaw = state.pendingAction?.exchangeCards;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const exchangeCardsMemo = useMemo(() => exchangeCardsRaw, [JSON.stringify(exchangeCardsRaw)]);
 
     const mustRespond = useMemo(
         () =>
@@ -652,11 +660,11 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             )}
 
             {/* 모달: 대사 교환 */}
-            {mustExchange && me && state.pendingAction?.exchangeCards && (
+            {mustExchange && me && exchangeCardsMemo && (
                 <ExchangeModal
                     player={me}
-                    exchangeCards={state.pendingAction.exchangeCards}
-                    onSelect={(keptIndices) => onAction({ type: 'exchange_select', keptIndices })}
+                    exchangeCards={exchangeCardsMemo}
+                    onSelect={handleExchangeSelect}
                 />
             )}
 
