@@ -55,13 +55,19 @@ export function initGame(players: { id: string; name: string }[], gameMode?: str
     isReady: false,
   }));
 
+  const firstPlayerIndex = Math.floor(Math.random() * gamePlayers.length);
+  const firstPlayer = gamePlayers[firstPlayerIndex];
+
   return {
     players: gamePlayers,
-    currentTurnId: gamePlayers[0].id,
+    currentTurnId: firstPlayer.id,
     phase: 'action',
     deck,
     pendingAction: null,
-    log: [mode === 'guess' ? '게임이 시작되었습니다! (추측 모드)' : '게임이 시작되었습니다!'],
+    log: [
+      mode === 'guess' ? '게임이 시작되었습니다! (추측 모드)' : '게임이 시작되었습니다!',
+      `--- ${firstPlayer.name}의 턴 ---`,
+    ],
     gameMode: mode,
   };
 }

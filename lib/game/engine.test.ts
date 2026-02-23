@@ -936,10 +936,11 @@ describe('엣지 케이스', () => {
     expect(state.players[0].cards).toHaveLength(2);
     expect(state.players[0].cards.every(c => !c.revealed)).toBe(true);
     expect(state.players[0].isAlive).toBe(true);
-    expect(state.currentTurnId).toBe('a');
+    expect(['a', 'b']).toContain(state.currentTurnId);
     expect(state.phase).toBe('action');
     expect(state.deck).toHaveLength(11); // 15 - 4장 (2명 × 2장)
-    expect(state.log).toHaveLength(1);
+    expect(state.log).toHaveLength(2);
+    expect(state.log[1]).toMatch(/--- .+의 턴 ---/);
   });
 
   test('initGame 4인: 덱 잔량 7장', () => {
