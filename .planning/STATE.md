@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-24 - Completed quick-033 (플레이어 색상 채팅 로그 프로필)
+- Last activity: 2026-02-24 - Completed quick-034 (QuickChat 자유 텍스트 입력 10자 제한)
 
 ### Quick Tasks Completed
 
@@ -39,11 +39,12 @@
 | 030 | 대상 선택 인라인 UI → TargetSelectModal 모달 교체 (갈취/암살/쿠데타) | 2026-02-24 | 832fbbb | [030-target-selection-action-modal-replacemen](./quick/030-target-selection-action-modal-replacemen/) |
 | 032 | 모바일 PlayerArea 겹침 수정 - 컴팩트 72px 칩 + 탭 시 상세 팝오버 | 2026-02-24 | ddfb0c8 | [032-mobile-player-area-overlap-click-detail](./quick/032-mobile-player-area-overlap-click-detail/) |
 | 033 | 플레이어별 고유 색상 채팅 로그 + 모바일 컴팩트 로그 적용 | 2026-02-24 | 6f95260 | [033-player-color-chat-log-profile](./quick/033-player-color-chat-log-profile/) |
+| 034 | QuickChat 자유 텍스트 입력 (10자 제한) — messageId=-1 센티넬, 프리셋과 쿨다운/횟수 공유 | 2026-02-24 | 2f4b3a4 | [034-quickchat-free-text-input-10char](./quick/034-quickchat-free-text-input-10char/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-24T15:42:00Z
-- Stopped at: Completed quick-033 (플레이어 색상 채팅 로그 프로필)
+- Last session: 2026-02-23T15:45:18Z
+- Stopped at: Completed quick-034 (QuickChat 자유 텍스트 입력 10자 제한)
 - Resume file: None
