@@ -19,6 +19,7 @@ import { FilteredPlayer, Character, CHARACTER_NAMES } from '@/lib/game/types';
 interface Props {
     player: FilteredPlayer;
     isCurrentTurn: boolean;
+    online?: boolean;
 }
 
 const PLAYER_AVATAR_COLORS = [
@@ -54,9 +55,10 @@ interface PlayerBadgeProps {
     name: string;
     playerIndex: number;
     isCurrentTurn: boolean;
+    online?: boolean;
 }
 
-function PlayerBadge({ name, playerIndex, isCurrentTurn }: PlayerBadgeProps) {
+function PlayerBadge({ name, playerIndex, isCurrentTurn, online }: PlayerBadgeProps) {
     const avatarColor = PLAYER_AVATAR_COLORS[playerIndex % PLAYER_AVATAR_COLORS.length];
     const initial = name.charAt(0).toUpperCase();
 
@@ -68,6 +70,9 @@ function PlayerBadge({ name, playerIndex, isCurrentTurn }: PlayerBadgeProps) {
             >
                 {initial}
             </div>
+            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                online ? 'bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.6)]' : 'bg-gray-500'
+            }`} />
             <span className="text-sm font-semibold text-text-primary truncate">
                 {isCurrentTurn && (
                     <span className="text-gold mr-1">&#9658;</span>
@@ -157,7 +162,7 @@ function RevealedCard({ character }: RevealedCardProps) {
 // Main component
 // ----------------------------------------------------------------
 
-function PlayerArea({ player, isCurrentTurn }: Props) {
+function PlayerArea({ player, isCurrentTurn, online }: Props) {
     // Derive player index from id for stable avatar color (fallback: 0)
     // PlayerArea doesn't receive index directly, so we hash from id
     const playerIndex = player.id
@@ -180,6 +185,7 @@ function PlayerArea({ player, isCurrentTurn }: Props) {
                     name={player.name}
                     playerIndex={playerIndex}
                     isCurrentTurn={isCurrentTurn}
+                    online={online}
                 />
                 {player.isAlive ? (
                     <CoinBadge coins={player.coins} />

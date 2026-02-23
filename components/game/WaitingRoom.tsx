@@ -1,6 +1,7 @@
 'use client';
 
 import { FilteredGameState } from '@/lib/game/types';
+import { PresenceMap } from '@/lib/firebase.client';
 import { useState } from 'react';
 import { Skull, Copy, Check, Crown, Play } from 'lucide-react';
 
@@ -9,9 +10,10 @@ interface Props {
     playerId: string;
     roomId: string;
     onStart: () => void;
+    presence?: PresenceMap;
 }
 
-export default function WaitingRoom({ state, playerId, roomId, onStart }: Props) {
+export default function WaitingRoom({ state, playerId, roomId, onStart, presence }: Props) {
     const [copied, setCopied] = useState(false);
     const isHost = state.players[0]?.id === playerId;
 
@@ -52,6 +54,15 @@ export default function WaitingRoom({ state, playerId, roomId, onStart }: Props)
                     </button>
                 </div>
 
+                {/* Game mode badge */}
+                {state.gameMode && state.gameMode !== 'standard' && (
+                    <div className="flex justify-center mb-4">
+                        <span className="text-xs font-mono px-3 py-1 rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-400">
+                            Guess 모드 — 쿠 시 카드 추측
+                        </span>
+                    </div>
+                )}
+
                 {/* Divider */}
                 <div className="border-t border-border-subtle mb-6" />
 
@@ -67,6 +78,11 @@ export default function WaitingRoom({ state, playerId, roomId, onStart }: Props)
                                 <div className="w-9 h-9 rounded-full bg-bg-surface flex items-center justify-center text-sm font-bold text-text-primary shrink-0">
                                     {p.name.charAt(0).toUpperCase()}
                                 </div>
+
+                                {/* Presence dot */}
+                                <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                                    presence?.[p.id]?.online ? 'bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.6)]' : 'bg-gray-500'
+                                }`} />
 
                                 <span className="font-semibold text-text-primary flex-1 truncate">{p.name}</span>
 

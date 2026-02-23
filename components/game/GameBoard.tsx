@@ -4,6 +4,7 @@ import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { Skull, Settings, Trophy, ScrollText, RotateCcw } from 'lucide-react';
 import { FilteredGameState, Card, Player, ACTION_NAMES } from '@/lib/game/types';
+import { PresenceMap } from '@/lib/firebase.client';
 import { clearActiveRoom } from '@/lib/storage';
 import { useGameAudio } from '@/lib/useGameAudio';
 import PlayerArea from './PlayerArea';
@@ -109,9 +110,10 @@ interface Props {
     roomId: string;
     onAction: (action: object) => Promise<void>;
     onRestart?: () => Promise<void>;
+    presence?: PresenceMap;
 }
 
-export default function GameBoard({ state, playerId, roomId, onAction, onRestart }: Props) {
+export default function GameBoard({ state, playerId, roomId, onAction, onRestart, presence = {} }: Props) {
     const [showMobileLog, setShowMobileLog] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
     const mobileLogRef = useRef<HTMLDivElement>(null);
@@ -403,6 +405,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                         key={player.id}
                         player={player}
                         isCurrentTurn={state.currentTurnId === player.id}
+                        online={!!presence[player.id]?.online}
                     />
                 ))}
             </div>
@@ -437,7 +440,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             {showMobileLog && (
                 <div className="lg:hidden relative z-30" ref={mobileLogRef}>
                     <div className="absolute inset-x-0 top-0 max-h-[50vh] overflow-y-auto bg-bg-dark/95 border-b border-border-subtle p-3">
-                        <EventLog log={state.log} />
+                        <EventLog log={state.log} structuredLog={state.structuredLog} />
                     </div>
                 </div>
             )}
@@ -446,7 +449,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
                 {/* 게임 로그 — 데스크톱에서만 표시 */}
                 <div className="hidden lg:block w-80 flex-shrink-0 border-r border-border-subtle p-3 overflow-hidden">
-                    <EventLog log={state.log} />
+                    <EventLog log={state.log} structuredLog={state.structuredLog} />
                 </div>
 
                 {/* 턴 영역 */}
