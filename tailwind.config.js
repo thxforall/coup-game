@@ -7,14 +7,28 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Noto Sans KR', 'sans-serif'],
+        sora: ['var(--font-sora)', 'sans-serif'],
+        mono: ['var(--font-space-mono)', 'monospace'],
       },
       colors: {
-        duke: '#7c3aed',
-        contessa: '#dc2626',
-        captain: '#2563eb',
-        assassin: '#1f2937',
-        ambassador: '#065f46',
+        'bg-dark': 'var(--bg-dark)',
+        'bg-card': 'var(--bg-card)',
+        'bg-surface': 'var(--bg-surface)',
+        'border-subtle': 'var(--border-subtle)',
+        'text-primary': 'var(--text-primary)',
+        'text-secondary': 'var(--text-secondary)',
+        'text-muted': 'var(--text-muted)',
+        gold: {
+          DEFAULT: 'var(--gold)',
+          dark: 'var(--gold-dark)',
+          light: 'var(--gold-light)',
+        },
+        'coin-color': 'var(--coin-color)',
+        duke: 'var(--duke-color)',
+        assassin: 'var(--assassin-color)',
+        captain: 'var(--captain-color)',
+        ambassador: 'var(--ambassador-color)',
+        contessa: 'var(--contessa-color)',
       },
       animation: {
         'card-flip': 'card-flip 0.6s ease-in-out',
@@ -32,8 +46,8 @@ module.exports = {
           '100%': { transform: 'translateY(0)', opacity: '1' },
         },
         'pulse-coin': {
-          '0%, 100%': { boxShadow: '0 0 0 0 rgba(234, 179, 8, 0.4)' },
-          '50%': { boxShadow: '0 0 0 8px rgba(234, 179, 8, 0)' },
+          '0%, 100%': { boxShadow: '0 0 0 0 rgba(241, 196, 15, 0.4)' },
+          '50%': { boxShadow: '0 0 0 8px rgba(241, 196, 15, 0)' },
         },
       },
     },

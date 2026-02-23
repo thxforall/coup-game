@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Skull, Play, Crown, Crosshair, Anchor, Repeat, Shield } from 'lucide-react';
 
 function getOrCreatePlayerId(): string {
     if (typeof window === 'undefined') return '';
@@ -12,6 +13,14 @@ function getOrCreatePlayerId(): string {
     }
     return id;
 }
+
+const CHARACTERS = [
+    { name: 'Duke', icon: Crown, color: 'var(--duke-color)' },
+    { name: 'Assassin', icon: Crosshair, color: 'var(--assassin-color)' },
+    { name: 'Captain', icon: Anchor, color: 'var(--captain-color)' },
+    { name: 'Ambassador', icon: Repeat, color: 'var(--ambassador-color)' },
+    { name: 'Contessa', icon: Shield, color: 'var(--contessa-color)' },
+] as const;
 
 export default function LobbyPage() {
     const router = useRouter();
@@ -32,7 +41,7 @@ export default function LobbyPage() {
     };
 
     const handleCreate = async () => {
-        if (!playerName.trim()) return setError('닉네임을 입력해주세요');
+        if (!playerName.trim()) return setError('Enter a nickname');
         setLoading(true);
         setError('');
         const playerId = getOrCreatePlayerId();
@@ -48,8 +57,8 @@ export default function LobbyPage() {
     };
 
     const handleJoin = async () => {
-        if (!playerName.trim()) return setError('닉네임을 입력해주세요');
-        if (!joinCode.trim()) return setError('방 코드를 입력해주세요');
+        if (!playerName.trim()) return setError('Enter a nickname');
+        if (!joinCode.trim()) return setError('Enter a room code');
         setLoading(true);
         setError('');
         const playerId = getOrCreatePlayerId();
@@ -65,49 +74,55 @@ export default function LobbyPage() {
     };
 
     return (
-        <main className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gradient-to-br from-slate-950 via-slate-900 to-violet-950">
-            {/* 타이틀 */}
-            <div className="text-center mb-10">
-                <div className="text-6xl mb-3">🃏</div>
-                <h1 className="text-5xl font-black tracking-tight bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
-                    COUP
-                </h1>
-                <p className="text-slate-400 mt-2 text-sm">거짓말과 심리전의 게임</p>
+        <main className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-bg-dark">
+            {/* Logo */}
+            <div className="flex flex-col items-center mb-10">
+                <Skull size={48} className="text-gold mb-4" />
+                <h1 className="font-sora text-5xl font-bold text-gold tracking-tight">COUP</h1>
+                <p className="font-mono text-text-muted text-sm mt-2">Bluff. Deceive. Survive.</p>
             </div>
 
-            {/* 카드 */}
-            <div className="glass-panel w-full max-w-sm p-6 animate-slide-up">
-                {/* 닉네임 */}
+            {/* Lobby card */}
+            <div className="glass-panel w-full max-w-[520px] p-8 animate-slide-up">
+                {/* Nickname */}
                 <div className="mb-5">
-                    <label className="block text-xs text-slate-400 mb-1 font-medium uppercase tracking-wider">닉네임</label>
+                    <label className="block text-xs text-text-muted mb-1 font-mono uppercase tracking-widest">
+                        Nickname
+                    </label>
                     <input
                         className="input-field"
-                        placeholder="게임에서 사용할 닉네임"
+                        placeholder="Your name in the game"
                         value={playerName}
                         onChange={(e) => saveName(e.target.value)}
                         maxLength={12}
                     />
                 </div>
 
-                {/* 탭 */}
-                <div className="flex gap-2 mb-5 p-1 bg-white/5 rounded-xl">
+                {/* Tabs */}
+                <div className="flex gap-1 mb-5 p-1 bg-bg-surface rounded-lg">
                     {(['create', 'join'] as const).map((t) => (
                         <button
                             key={t}
                             onClick={() => setTab(t)}
-                            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${tab === t ? 'bg-violet-600 text-white shadow' : 'text-slate-400 hover:text-white'
-                                }`}
+                            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
+                                tab === t
+                                    ? 'bg-gold text-bg-dark shadow'
+                                    : 'text-text-muted hover:text-text-primary'
+                            }`}
                         >
-                            {t === 'create' ? '방 만들기' : '방 참가'}
+                            {t === 'create' ? 'Create Room' : 'Join Room'}
                         </button>
                     ))}
                 </div>
 
+                {/* Join code input */}
                 {tab === 'join' && (
-                    <div className="mb-4">
-                        <label className="block text-xs text-slate-400 mb-1 font-medium uppercase tracking-wider">방 코드</label>
+                    <div className="mb-5">
+                        <label className="block text-xs text-text-muted mb-1 font-mono uppercase tracking-widest">
+                            Room Code
+                        </label>
                         <input
-                            className="input-field text-center text-xl font-bold tracking-[0.4em] uppercase"
+                            className="input-field text-center text-xl font-mono font-bold tracking-[0.4em] uppercase"
                             placeholder="ABCD"
                             value={joinCode}
                             onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
@@ -116,24 +131,41 @@ export default function LobbyPage() {
                     </div>
                 )}
 
+                {/* Error */}
                 {error && (
-                    <div className="mb-4 px-4 py-2 bg-red-500/20 border border-red-500/30 rounded-lg text-red-300 text-sm text-center">
+                    <div className="mb-4 px-4 py-2 bg-red-500/20 border border-red-500/30 rounded-lg text-red-300 text-sm text-center font-mono">
                         {error}
                     </div>
                 )}
 
+                {/* Action button */}
                 <button
-                    className="w-full py-3 rounded-xl font-bold text-base btn-primary"
+                    className="btn-gold w-full py-3 flex items-center justify-center gap-2 text-base"
                     onClick={tab === 'create' ? handleCreate : handleJoin}
                     disabled={loading}
                 >
-                    {loading ? '처리 중...' : tab === 'create' ? '방 만들기 🎮' : '입장하기 →'}
+                    <Play size={18} />
+                    {loading ? 'Loading...' : tab === 'create' ? 'Create Room' : 'Join Room'}
                 </button>
             </div>
 
-            <p className="mt-6 text-slate-600 text-xs text-center">
-                2~6명 · 각자 기기로 접속 · 방 코드 공유
-            </p>
+            {/* The Court */}
+            <div className="mt-10 text-center">
+                <p className="font-mono text-xs text-text-muted uppercase tracking-widest mb-4">The Court</p>
+                <div className="flex items-center gap-4">
+                    {CHARACTERS.map(({ name, icon: Icon, color }) => (
+                        <div key={name} className="flex flex-col items-center gap-2">
+                            <div
+                                className="w-10 h-10 rounded-full flex items-center justify-center"
+                                style={{ backgroundColor: `${color}22`, border: `1px solid ${color}55` }}
+                            >
+                                <Icon size={18} style={{ color }} />
+                            </div>
+                            <span className="font-mono text-[10px] text-text-muted">{name}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
         </main>
     );
 }

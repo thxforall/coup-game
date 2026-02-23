@@ -1,17 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --bg-dark: #0D0D0D;
+  --bg-card: #1A1A1A;
+  --bg-surface: #252525;
+  --border-subtle: #333333;
+  --text-primary: #F0F0F0;
+  --text-secondary: #999999;
+  --text-muted: #666666;
+  --gold: #C8A960;
+  --gold-dark: #8B7340;
+  --gold-light: #E8D5A0;
+  --coin-color: #F1C40F;
+  --red: #C0392B;
+  --red-light: #E74C3C;
+  --duke-color: #8E44AD;
+  --assassin-color: #2C3E50;
+  --captain-color: #2980B9;
+  --ambassador-color: #27AE60;
+  --contessa-color: #C0392B;
+}
 
 @layer base {
   * {
     box-sizing: border-box;
   }
   body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background-color: #0f172a;
-    color: #f1f5f9;
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
     min-height: 100vh;
   }
 }
@@ -22,47 +40,60 @@
     @apply px-4 py-2 rounded-lg font-semibold transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95;
   }
   .btn-primary {
-    @apply btn bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-900/40;
+    @apply btn text-white shadow-lg;
+    background-color: var(--gold);
+  }
+  .btn-primary:hover {
+    background-color: var(--gold-light);
   }
   .btn-danger {
-    @apply btn bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-900/40;
+    @apply btn text-white shadow-lg;
+    background-color: var(--red-light);
+    border: 1px solid var(--red);
+  }
+  .btn-danger:hover {
+    background-color: var(--red);
   }
   .btn-ghost {
-    @apply btn bg-white/10 hover:bg-white/20 text-slate-200 border border-white/10;
+    @apply btn border;
+    background-color: var(--bg-surface);
+    border-color: var(--border-subtle);
+    color: var(--text-secondary);
+  }
+  .btn-ghost:hover {
+    background-color: var(--border-subtle);
+    color: var(--text-primary);
   }
   .btn-gold {
-    @apply btn bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold shadow-lg shadow-amber-900/40;
+    @apply btn font-bold shadow-lg;
+    background-color: var(--gold);
+    color: #0D0D0D;
   }
-
-  /* 카드 */
-  .card-back {
-    @apply w-16 h-24 rounded-xl border-2 border-slate-600 bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center shadow-lg;
-  }
-  .card-revealed {
-    @apply w-16 h-24 rounded-xl border-2 opacity-50 grayscale flex flex-col items-center justify-center shadow-lg gap-1;
-  }
-
-  /* 코인 */
-  .coin {
-    @apply inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-400 text-slate-900 font-bold text-sm shadow-md border-2 border-amber-300;
+  .btn-gold:hover {
+    background-color: var(--gold-light);
   }
 
   /* 패널 */
   .glass-panel {
-    @apply bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    @apply rounded-2xl;
   }
 
   /* 입력 */
   .input-field {
-    @apply w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-400/20 transition-all;
+    @apply w-full px-4 py-3 rounded-xl transition-all focus:outline-none focus:ring-2;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
   }
-
-  /* 캐릭터 카드 색상 */
-  .char-duke { @apply from-violet-600 to-violet-800 border-violet-500; }
-  .char-contessa { @apply from-red-600 to-red-800 border-red-500; }
-  .char-captain { @apply from-blue-600 to-blue-800 border-blue-500; }
-  .char-assassin { @apply from-slate-600 to-slate-900 border-slate-500; }
-  .char-ambassador { @apply from-emerald-600 to-emerald-800 border-emerald-500; }
+  .input-field::placeholder {
+    color: var(--text-muted);
+  }
+  .input-field:focus {
+    border-color: var(--gold);
+    --tw-ring-color: rgba(200, 169, 96, 0.2);
+  }
 }
 
 /* ============================================================ */
@@ -124,10 +155,10 @@
 
 @keyframes logGlow {
   0%, 100% {
-    background-color: rgba(255, 255, 255, 0.06);
+    background-color: rgba(200, 169, 96, 0.06);
   }
   50% {
-    background-color: rgba(255, 255, 255, 0.12);
+    background-color: rgba(200, 169, 96, 0.12);
   }
 }
 
@@ -141,14 +172,14 @@
 
 @keyframes turnPulse {
   0%, 100% {
-    text-shadow: 0 0 4px rgba(251, 191, 36, 0.3);
+    text-shadow: 0 0 4px rgba(200, 169, 96, 0.3);
   }
   50% {
-    text-shadow: 0 0 12px rgba(251, 191, 36, 0.6), 0 0 24px rgba(251, 191, 36, 0.2);
+    text-shadow: 0 0 12px rgba(200, 169, 96, 0.6), 0 0 24px rgba(200, 169, 96, 0.2);
   }
 }
 
-/* 슬라이드 업 (모달, 패널 등 기존 애니메이션 보강) */
+/* 슬라이드 업 (모달, 패널 등) */
 .animate-slide-up {
   animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
