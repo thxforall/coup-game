@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-23 - Completed quick-010 (5인 풀 게임 시나리오 테스트)
+- Last activity: 2026-02-23 - Completed quick-011 (플레이어 온라인/오프라인 presence 표시)
 
 ### Quick Tasks Completed
 
@@ -19,11 +19,12 @@
 | 008 | 도전/블록도전 시 카드를 잃는 플레이어가 직접 카드 선택 | 2026-02-23 | 212298b | [008-choose-own-card-to-lose](./quick/008-choose-own-card-to-lose/) |
 | 009 | 설정 기어 아이콘 + SettingsModal (게임 재시작/나가기) | 2026-02-23 | 9ff9f56 | [009-gear-settings-game-reset](./quick/009-gear-settings-game-reset/) |
 | 010 | 5인 풀 게임 시나리오 테스트 (소득→블록→교환→강탈→암살→쿠→우승) | 2026-02-23 | ed2f817 | [010-full-game-scenario-playwright-test](./quick/010-full-game-scenario-playwright-test/) |
+| 011 | 플레이어 온라인/오프라인 presence 표시 (WaitingRoom + GameBoard 초록/회색 점) | 2026-02-23 | 5a2af40 | [011-player-online-offline-presence](./quick/011-player-online-offline-presence/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-23T22:25:00Z
-- Stopped at: Completed quick-010
+- Last session: 2026-02-23T13:27:56Z
+- Stopped at: Completed quick-011
 - Resume file: None
