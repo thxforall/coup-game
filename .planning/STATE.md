@@ -29,11 +29,12 @@
 | 019 | 암살 블러프 도전 2명 피해 경고 배너 + 이벤트 로그 (ResponseModal warning banner + engine double-death log) | 2026-02-23 | c68fdb0 | [019-assassin-bluff-double-death-warning-mess](./quick/019-assassin-bluff-double-death-warning-mess/) |
 | 020 | 게임 로그 모달 선 테두리 제거 | 2026-02-23 | 6113ac5 | [020-game-log-modal-border-line-fix](./quick/020-game-log-modal-border-line-fix/) |
 | 021 | 로비/게임 헤더 게임 규칙 모달 (GameRulesModal + WaitingRoom 버튼 + GameBoard 헤더 아이콘) | 2026-02-23 | 9513a4a | [021-lobby-game-rules-view-header-rules-tab](./quick/021-lobby-game-rules-view-header-rules-tab/) |
+| 023 | game_over 후 방 유지 + 방장 재시작 시 전원 대기실 자동 전환 + 비방장 재시작 대기 UX | 2026-02-23 | e00746d | [023-game-over-stay-in-room-ready-restart](./quick/023-game-over-stay-in-room-ready-restart/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-23T14:35:00Z
-- Stopped at: Completed quick-021 (로비/게임 헤더 게임 규칙 모달)
+- Last session: 2026-02-23T14:41:30Z
+- Stopped at: Completed quick-023 (game over 방 유지 + 재시작 UX)
 - Resume file: None
