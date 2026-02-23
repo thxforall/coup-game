@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-24 - Completed quick-029 (갈취 0코인 대상 차단)
+- Last activity: 2026-02-24 - Completed quick-032 (모바일 PlayerArea 겹침 - 컴팩트 칩 + 탭 상세보기)
 
 ### Quick Tasks Completed
 
@@ -37,11 +37,12 @@
 | 028 | '블러프' -> '거짓말' 한국어 용어 통일 (7개 소스/테스트 파일) | 2026-02-24 | 3028af7 | [028-bluff-to-lie-korean-terminology](./quick/028-bluff-to-lie-korean-terminology/) |
 | 029 | 갈취(steal) 0코인 대상 UI 차단 + 서버 검증 거부 | 2026-02-24 | 977703d | [029-steal-block-zero-coins-target](./quick/029-steal-block-zero-coins-target/) |
 | 030 | 대상 선택 인라인 UI → TargetSelectModal 모달 교체 (갈취/암살/쿠데타) | 2026-02-24 | 832fbbb | [030-target-selection-action-modal-replacemen](./quick/030-target-selection-action-modal-replacemen/) |
+| 032 | 모바일 PlayerArea 겹침 수정 - 컴팩트 72px 칩 + 탭 시 상세 팝오버 | 2026-02-24 | ddfb0c8 | [032-mobile-player-area-overlap-click-detail](./quick/032-mobile-player-area-overlap-click-detail/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-24T15:16:27Z
-- Stopped at: Completed quick-030 (대상 선택 모달 교체)
+- Last session: 2026-02-24T00:00:00Z
+- Stopped at: Completed quick-032 (모바일 PlayerArea 컴팩트 칩 + 탭 상세보기)
 - Resume file: None
