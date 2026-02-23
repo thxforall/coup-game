@@ -98,18 +98,11 @@ function CoinBadge({ coins }: CoinBadgeProps) {
     );
 }
 
-interface FaceDownCardProps {
-    width?: number;
-    height?: number;
-}
-
-function FaceDownCard({ width = 80, height = 112 }: FaceDownCardProps) {
+function FaceDownCard() {
     return (
         <div
-            className="rounded-lg flex flex-col items-center justify-center gap-1 shadow-md flex-shrink-0"
+            className="w-14 h-20 sm:w-[80px] sm:h-[112px] rounded-lg flex flex-col items-center justify-center gap-1 shadow-md flex-shrink-0"
             style={{
-                width,
-                height,
                 background: 'linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%)',
                 border: '1px solid #3A3A3A',
             }}
@@ -127,25 +120,22 @@ function FaceDownCard({ width = 80, height = 112 }: FaceDownCardProps) {
 
 interface RevealedCardProps {
     character: Character;
-    width?: number;
-    height?: number;
 }
 
-function RevealedCard({ character, width = 80, height = 112 }: RevealedCardProps) {
+function RevealedCard({ character }: RevealedCardProps) {
     const CharIcon = CHAR_ICONS[character];
     const accentColor = CHAR_COLORS[character];
 
     return (
         <div
-            className="rounded-lg overflow-hidden relative flex-shrink-0 shadow-md"
-            style={{ width, height }}
+            className="w-14 h-20 sm:w-[80px] sm:h-[112px] rounded-lg overflow-hidden relative flex-shrink-0 shadow-md"
         >
             <Image
                 src={`/cards/${character.toLowerCase()}.jpg`}
                 alt={CHARACTER_NAMES[character]}
                 fill
                 className="object-cover opacity-40 grayscale"
-                sizes={`${width}px`}
+                sizes="(max-width: 640px) 56px, 80px"
             />
             {/* Eliminated overlay */}
             <div className="absolute inset-0 flex flex-col items-center justify-end pb-2 bg-black/30">
@@ -177,8 +167,8 @@ function PlayerArea({ player, isCurrentTurn }: Props) {
     return (
         <div
             className={`
-                bg-bg-card border border-border-subtle rounded-xl p-3
-                transition-all duration-200 min-w-[140px]
+                bg-bg-card border border-border-subtle rounded-xl p-2 sm:p-3
+                transition-all duration-200 min-w-[110px] sm:min-w-[140px]
                 ${!player.isAlive ? 'opacity-50' : ''}
                 ${isCurrentTurn ? 'ring-2 ring-gold shadow-lg' : ''}
             `}

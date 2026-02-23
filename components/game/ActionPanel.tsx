@@ -166,7 +166,7 @@ function ActionPanel({ state, playerId, onAction }: Props) {
 
             {/* 액션 버튼 — Row 1: 소득 / 외국 원조 / 쿠 */}
             {row1.length > 0 && (
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {row1.map((a) => {
                         const canAfford = a.cost ? me.coins >= a.cost : true;
                         const hasTarget = a.needsTarget ? !!targetId : true;
@@ -179,7 +179,7 @@ function ActionPanel({ state, playerId, onAction }: Props) {
                                 key={a.type}
                                 onClick={() => handleAction(a.type, !!a.needsTarget)}
                                 disabled={disabled}
-                                className={`flex flex-col items-start p-3 rounded-xl border transition-all text-left disabled:opacity-40 ${
+                                className={`flex flex-col items-start p-2 sm:p-3 rounded-xl border transition-all text-left disabled:opacity-40 ${
                                     disabled ? 'cursor-not-allowed' : 'active:scale-95'
                                 } ${VARIANT_STYLES[a.variant]}`}
                                 style={isCoup ? { backgroundColor: 'var(--gold)' } : undefined}
@@ -219,7 +219,7 @@ function ActionPanel({ state, playerId, onAction }: Props) {
 
             {/* 액션 버튼 — Row 2: 세금 / 암살 / 강탈 / 교환 */}
             {row2.length > 0 && (
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {row2.map((a) => {
                         const canAfford = a.cost ? me.coins >= a.cost : true;
                         const hasTarget = a.needsTarget ? !!targetId : true;
@@ -231,7 +231,7 @@ function ActionPanel({ state, playerId, onAction }: Props) {
                                 key={a.type}
                                 onClick={() => handleAction(a.type, !!a.needsTarget)}
                                 disabled={disabled}
-                                className={`flex flex-col items-start p-3 rounded-xl border transition-all text-left disabled:opacity-40 ${
+                                className={`flex flex-col items-start p-2 sm:p-3 rounded-xl border transition-all text-left disabled:opacity-40 ${
                                     disabled ? 'cursor-not-allowed' : 'active:scale-95'
                                 } ${VARIANT_STYLES[a.variant]}`}
                             >

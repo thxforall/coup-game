@@ -91,14 +91,12 @@ function CharacterCard({ character, revealed, onClick }: CharacterCardProps) {
             onClick={onClick}
             disabled={revealed}
             className={[
-                'relative overflow-hidden rounded-lg transition-transform',
+                'relative overflow-hidden rounded-lg transition-transform w-[90px] h-[128px] sm:w-[120px] sm:h-[170px]',
                 revealed
                     ? 'opacity-40 grayscale cursor-default'
                     : 'cursor-pointer hover:scale-105 active:scale-95',
             ].join(' ')}
             style={{
-                width: '120px',
-                height: '170px',
                 border: `2px solid ${borderColor}`,
                 boxShadow: revealed ? 'none' : `0 4px 16px ${borderColor}4D`,
             }}
@@ -108,7 +106,7 @@ function CharacterCard({ character, revealed, onClick }: CharacterCardProps) {
                 alt={CHARACTER_NAMES[character]}
                 fill
                 className="object-cover"
-                sizes="120px"
+                sizes="(max-width: 640px) 90px, 120px"
             />
 
             {/* Character name overlay at bottom */}
@@ -159,15 +157,15 @@ function MyPlayerArea({ player }: Props) {
     return (
         <>
             <div
-                className="p-4 rounded-2xl"
+                className="p-3 sm:p-4 rounded-2xl"
                 style={{
                     backgroundColor: 'var(--bg-card)',
                     border: '1px solid var(--border-subtle)',
                 }}
             >
                 {/* Header row: PlayerBadge + label + CoinBadge */}
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between mb-3 sm:mb-4 flex-wrap gap-1">
+                    <div className="flex items-center gap-2 sm:gap-3">
                         <PlayerBadge name={player.name} />
                         <span
                             className="font-mono text-xs uppercase tracking-widest"

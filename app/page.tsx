@@ -152,7 +152,7 @@ export default function LobbyPage() {
             {/* The Court */}
             <div className="mt-10 text-center">
                 <p className="font-mono text-xs text-text-muted uppercase tracking-widest mb-4">캐릭터 소개</p>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 sm:gap-4 flex-wrap justify-center">
                     {CHARACTERS.map(({ name, icon: Icon, color }) => (
                         <div key={name} className="flex flex-col items-center gap-2">
                             <div
