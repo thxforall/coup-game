@@ -339,6 +339,23 @@ function ResponseModal({ state, playerId, myCards, onAction }: Props) {
 
                     {/* 버튼 섹션 */}
                     <div className="flex flex-col gap-2 px-4 sm:px-6 pb-6">
+                        {/* 암살 도전 위험 경고 배너 */}
+                        {!isBlockPhase && pending.type === 'assassinate' && (
+                            <div
+                                className="flex items-center gap-2 rounded-lg px-3 py-2.5"
+                                style={{
+                                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                                    border: '1px solid rgba(231, 76, 60, 0.3)',
+                                }}
+                            >
+                                <TriangleAlert size={14} className="shrink-0 text-red-400" />
+                                <span className="text-[11px] text-red-400">
+                                    도전 실패 시 도전자 + 암살 대상 모두 카드를 잃습니다!{' '}
+                                    <span className="font-bold">(2명 피해)</span>
+                                </span>
+                            </div>
+                        )}
+
                         {/* 도전 버튼 */}
                         <button
                             className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-sora font-semibold text-xs sm:text-sm transition-opacity disabled:opacity-50"
@@ -353,7 +370,9 @@ function ResponseModal({ state, playerId, myCards, onAction }: Props) {
                             <Zap size={16} />
                             {isBlockPhase
                                 ? '블록에 도전! (블러프라고 생각해요)'
-                                : '도전! (거짓말이라고 생각해요)'
+                                : pending.type === 'assassinate'
+                                    ? '도전! (암살자가 아니라고 생각해요)'
+                                    : '도전! (거짓말이라고 생각해요)'
                             }
                         </button>
 
