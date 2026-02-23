@@ -91,7 +91,7 @@ function CharacterCard({ character, revealed, onClick }: CharacterCardProps) {
             onClick={onClick}
             disabled={revealed}
             className={[
-                'relative overflow-hidden rounded-lg transition-transform w-[90px] h-[128px] sm:w-[120px] sm:h-[170px]',
+                'relative overflow-hidden rounded-lg transition-transform w-[80px] h-[114px] sm:w-[120px] sm:h-[170px]',
                 revealed
                     ? 'opacity-40 grayscale cursor-default'
                     : 'cursor-pointer hover:scale-105 active:scale-95',
@@ -106,7 +106,7 @@ function CharacterCard({ character, revealed, onClick }: CharacterCardProps) {
                 alt={CHARACTER_NAMES[character]}
                 fill
                 className="object-cover"
-                sizes="(max-width: 640px) 90px, 120px"
+                sizes="(max-width: 640px) 80px, 120px"
             />
 
             {/* Character name overlay at bottom */}

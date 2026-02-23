@@ -101,7 +101,7 @@ function CoinBadge({ coins }: CoinBadgeProps) {
 function FaceDownCard() {
     return (
         <div
-            className="w-14 h-20 sm:w-[80px] sm:h-[112px] rounded-lg flex flex-col items-center justify-center gap-1 shadow-md flex-shrink-0"
+            className="w-11 h-16 sm:w-[80px] sm:h-[112px] rounded-lg flex flex-col items-center justify-center gap-1 shadow-md flex-shrink-0"
             style={{
                 background: 'linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%)',
                 border: '1px solid #3A3A3A',
@@ -128,7 +128,7 @@ function RevealedCard({ character }: RevealedCardProps) {
 
     return (
         <div
-            className="w-14 h-20 sm:w-[80px] sm:h-[112px] rounded-lg overflow-hidden relative flex-shrink-0 shadow-md"
+            className="w-11 h-16 sm:w-[80px] sm:h-[112px] rounded-lg overflow-hidden relative flex-shrink-0 shadow-md"
         >
             <Image
                 src={`/cards/${character.toLowerCase()}.jpg`}
@@ -168,7 +168,7 @@ function PlayerArea({ player, isCurrentTurn }: Props) {
         <div
             className={`
                 bg-bg-card border border-border-subtle rounded-xl p-2 sm:p-3
-                transition-all duration-200 min-w-[110px] sm:min-w-[140px]
+                transition-all duration-200 min-w-0 w-[110px] sm:w-auto sm:min-w-[140px] flex-shrink-0
                 ${!player.isAlive ? 'opacity-50' : ''}
                 ${isCurrentTurn ? 'ring-2 ring-gold shadow-lg' : ''}
             `}
@@ -189,7 +189,7 @@ function PlayerArea({ player, isCurrentTurn }: Props) {
             </div>
 
             {/* Cards */}
-            <div className="flex gap-2 justify-center">
+            <div className="flex gap-1 sm:gap-2 justify-center">
                 {player.cards.map((card, i) =>
                     card.revealed && card.character ? (
                         <RevealedCard key={i} character={card.character} />

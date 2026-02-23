@@ -91,13 +91,13 @@ export default function CardInfoModal({ character, onClose }: Props) {
     const borderColor = CHAR_BORDER_COLOR[character];
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" onClick={onClose}>
             <div
-                className={`glass-panel w-full max-w-sm p-0 animate-slide-up overflow-hidden border ${borderColor}`}
+                className={`glass-panel w-full max-w-sm p-0 animate-slide-up overflow-y-auto max-h-[90vh] sm:max-h-[85vh] border rounded-t-2xl sm:rounded-xl ${borderColor}`}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* 헤더: 이미지 + 이름 */}
-                <div className="relative h-48 w-full">
+                <div className="relative h-36 sm:h-48 w-full flex-shrink-0">
                     <Image
                         src={CARD_IMAGES[character]}
                         alt={CHARACTER_NAMES[character]}
