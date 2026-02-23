@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-23 - Completed quick-012 (나무위키 한국어 용어 전면 통일)
+- Last activity: 2026-02-23 - Completed quick-014 (방장 권한 추방 + 인원 레디 확인)
 
 ### Quick Tasks Completed
 
@@ -21,7 +21,7 @@
 | 010 | 5인 풀 게임 시나리오 테스트 (소득→블록→교환→강탈→암살→쿠→우승) | 2026-02-23 | ed2f817 | [010-full-game-scenario-playwright-test](./quick/010-full-game-scenario-playwright-test/) |
 | 011 | 플레이어 온라인/오프라인 presence 표시 (WaitingRoom + GameBoard 초록/회색 점) | 2026-02-23 | 5a2af40 | [011-player-online-offline-presence](./quick/011-player-online-offline-presence/) |
 | 012 | 나무위키 용어 전면 통일: 강탈→갈취, 세금→세금징수, 쿠→쿠데타 | 2026-02-23 | a174c03 | [012-korean-terminology-namu-wiki-update](./quick/012-korean-terminology-namu-wiki-update/) |
-| 014 | 방장 추방(kick) API + 레디(ready) 토글 API + WaitingRoom UI 업데이트 | 2026-02-23 | ce8b92f | [014-방장-권한-추방-인원-레디-확인](./quick/014-방장-권한-추방-인원-레디-확인/) |
+| 014 | 방장 권한 추방 + 인원 레디 확인 | 2026-02-23 | 4cde906 | [014-방장-권한-추방-인원-레디-확인](./quick/014-방장-권한-추방-인원-레디-확인/) |
 
 ### Blockers/Concerns
 - None currently
