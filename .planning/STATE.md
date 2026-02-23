@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-23 - Completed quick-004 (Mobile responsive fix - screen cutoff)
+- Last activity: 2026-02-23 - Completed quick-005 (EventLog default visible + mobile toast notify)
 
 ### Quick Tasks Completed
 
@@ -13,11 +13,12 @@
 | 002 | 게임 시나리오 로컬 테스트 환경 구축 및 시나리오 테스트 작성 | 2026-02-23 | 2a9dbfe | [002-game-scenario-local-test-env](./quick/002-game-scenario-local-test-env/) |
 | 003 | filterStateForPlayer undefined cards 방어 코드 + Firebase 빈 배열 복원 | 2026-02-23 | 73d4d7a | [003-fix-filter-cards-undefined](./quick/003-fix-filter-cards-undefined/) |
 | 004 | 모바일 반응형 수정 - 화면 잘림 해결 (EventLog 토글, 카드/버튼 반응형) | 2026-02-23 | 2cf54f4 | [004-mobile-responsive-fix-screen-cutoff](./quick/004-mobile-responsive-fix-screen-cutoff/) |
+| 005 | EventLog 모바일 기본 표시 + 모든 새 로그 토스트 알림 | 2026-02-23 | dfc6eff | [005-eventlog-default-visible-mobile-notify](./quick/005-eventlog-default-visible-mobile-notify/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-23T12:53:22Z
-- Stopped at: Completed quick-004-PLAN.md
+- Last session: 2026-02-23T13:00:40Z
+- Stopped at: Completed quick-005-PLAN.md
 - Resume file: None
