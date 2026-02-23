@@ -258,7 +258,7 @@ export default function GameBoard({ state, playerId, onAction }: Props) {
                     {isMyTurn && state.phase === 'action' && (
                         <div className="mb-3">
                             <span className="text-xs font-bold uppercase tracking-widest text-gold border border-gold/30 bg-gold/10 px-3 py-1 rounded-full">
-                                YOUR TURN
+                                내 턴
                             </span>
                         </div>
                     )}

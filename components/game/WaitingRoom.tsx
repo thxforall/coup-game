@@ -28,12 +28,12 @@ export default function WaitingRoom({ state, playerId, roomId, onStart }: Props)
                 <div className="flex flex-col items-center mb-8">
                     <Skull size={32} className="text-gold mb-3" />
                     <h1 className="font-sora text-4xl font-bold text-gold tracking-tight">COUP</h1>
-                    <p className="font-mono text-text-muted text-sm mt-1">Bluff. Deceive. Survive.</p>
+                    <p className="font-mono text-text-muted text-sm mt-1">거짓말과 심리전의 게임</p>
                 </div>
 
                 {/* Room code */}
                 <div className="text-center mb-6">
-                    <p className="text-xs text-text-muted uppercase tracking-widest mb-2 font-mono">Room Code</p>
+                    <p className="text-xs text-text-muted uppercase tracking-widest mb-2 font-mono">방 코드</p>
                     <div className="text-5xl font-mono font-bold tracking-widest text-text-primary mb-4">
                         {roomId}
                     </div>
@@ -41,12 +41,12 @@ export default function WaitingRoom({ state, playerId, roomId, onStart }: Props)
                         {copied ? (
                             <>
                                 <Check size={15} />
-                                <span>Copied</span>
+                                <span>복사됨</span>
                             </>
                         ) : (
                             <>
                                 <Copy size={15} />
-                                <span>Copy Code</span>
+                                <span>코드 복사</span>
                             </>
                         )}
                     </button>
@@ -58,7 +58,7 @@ export default function WaitingRoom({ state, playerId, roomId, onStart }: Props)
                 {/* Player list */}
                 <div className="mb-6">
                     <p className="text-xs text-text-muted uppercase tracking-widest font-mono mb-4">
-                        Players ({state.players.length}/6)
+                        참가자 ({state.players.length}/6)
                     </p>
                     <ul className="space-y-3">
                         {state.players.map((p, i) => (
@@ -85,7 +85,7 @@ export default function WaitingRoom({ state, playerId, roomId, onStart }: Props)
                                             backgroundColor: 'rgba(200, 169, 96, 0.08)',
                                         }}
                                     >
-                                        Me
+                                        나
                                     </span>
                                 )}
                             </li>
@@ -101,11 +101,11 @@ export default function WaitingRoom({ state, playerId, roomId, onStart }: Props)
                         disabled={state.players.length < 2}
                     >
                         <Play size={18} />
-                        {state.players.length < 2 ? 'Need at least 2 players' : 'Start Game'}
+                        {state.players.length < 2 ? '최소 2명 필요' : '게임 시작'}
                     </button>
                 ) : (
                     <p className="text-text-muted font-mono text-sm text-center animate-pulse">
-                        Waiting for host to start...
+                        방장이 게임을 시작할 때까지 기다려주세요...
                     </p>
                 )}
             </div>

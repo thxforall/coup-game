@@ -34,7 +34,7 @@ function EventLog({ log }: Props) {
             <div className="flex items-center gap-2 px-4 py-3 border-b border-border-subtle flex-shrink-0">
                 <ScrollText className="w-4 h-4 text-text-secondary flex-shrink-0" />
                 <span className="font-sora text-xs font-semibold text-text-secondary uppercase tracking-wider">
-                    Game Log
+                    게임 로그
                 </span>
             </div>
 

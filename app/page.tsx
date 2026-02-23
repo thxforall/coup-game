@@ -15,11 +15,11 @@ function getOrCreatePlayerId(): string {
 }
 
 const CHARACTERS = [
-    { name: 'Duke', icon: Crown, color: 'var(--duke-color)' },
-    { name: 'Assassin', icon: Crosshair, color: 'var(--assassin-color)' },
-    { name: 'Captain', icon: Anchor, color: 'var(--captain-color)' },
-    { name: 'Ambassador', icon: Repeat, color: 'var(--ambassador-color)' },
-    { name: 'Contessa', icon: Shield, color: 'var(--contessa-color)' },
+    { name: '공작', icon: Crown, color: 'var(--duke-color)' },
+    { name: '암살자', icon: Crosshair, color: 'var(--assassin-color)' },
+    { name: '사령관', icon: Anchor, color: 'var(--captain-color)' },
+    { name: '대사', icon: Repeat, color: 'var(--ambassador-color)' },
+    { name: '백작부인', icon: Shield, color: 'var(--contessa-color)' },
 ] as const;
 
 export default function LobbyPage() {
@@ -41,7 +41,7 @@ export default function LobbyPage() {
     };
 
     const handleCreate = async () => {
-        if (!playerName.trim()) return setError('Enter a nickname');
+        if (!playerName.trim()) return setError('닉네임을 입력해주세요');
         setLoading(true);
         setError('');
         const playerId = getOrCreatePlayerId();
@@ -57,8 +57,8 @@ export default function LobbyPage() {
     };
 
     const handleJoin = async () => {
-        if (!playerName.trim()) return setError('Enter a nickname');
-        if (!joinCode.trim()) return setError('Enter a room code');
+        if (!playerName.trim()) return setError('닉네임을 입력해주세요');
+        if (!joinCode.trim()) return setError('방 코드를 입력해주세요');
         setLoading(true);
         setError('');
         const playerId = getOrCreatePlayerId();
@@ -79,7 +79,7 @@ export default function LobbyPage() {
             <div className="flex flex-col items-center mb-10">
                 <Skull size={48} className="text-gold mb-4" />
                 <h1 className="font-sora text-5xl font-bold text-gold tracking-tight">COUP</h1>
-                <p className="font-mono text-text-muted text-sm mt-2">Bluff. Deceive. Survive.</p>
+                <p className="font-mono text-text-muted text-sm mt-2">거짓말과 심리전의 게임</p>
             </div>
 
             {/* Lobby card */}
@@ -87,11 +87,11 @@ export default function LobbyPage() {
                 {/* Nickname */}
                 <div className="mb-5">
                     <label className="block text-xs text-text-muted mb-1 font-mono uppercase tracking-widest">
-                        Nickname
+                        닉네임
                     </label>
                     <input
                         className="input-field"
-                        placeholder="Your name in the game"
+                        placeholder="게임에서 사용할 닉네임"
                         value={playerName}
                         onChange={(e) => saveName(e.target.value)}
                         maxLength={12}
@@ -110,7 +110,7 @@ export default function LobbyPage() {
                                     : 'text-text-muted hover:text-text-primary'
                             }`}
                         >
-                            {t === 'create' ? 'Create Room' : 'Join Room'}
+                            {t === 'create' ? '방 만들기' : '방 참가'}
                         </button>
                     ))}
                 </div>
@@ -119,7 +119,7 @@ export default function LobbyPage() {
                 {tab === 'join' && (
                     <div className="mb-5">
                         <label className="block text-xs text-text-muted mb-1 font-mono uppercase tracking-widest">
-                            Room Code
+                            방 코드
                         </label>
                         <input
                             className="input-field text-center text-xl font-mono font-bold tracking-[0.4em] uppercase"
@@ -145,13 +145,13 @@ export default function LobbyPage() {
                     disabled={loading}
                 >
                     <Play size={18} />
-                    {loading ? 'Loading...' : tab === 'create' ? 'Create Room' : 'Join Room'}
+                    {loading ? '처리 중...' : tab === 'create' ? '방 만들기' : '입장하기'}
                 </button>
             </div>
 
             {/* The Court */}
             <div className="mt-10 text-center">
-                <p className="font-mono text-xs text-text-muted uppercase tracking-widest mb-4">The Court</p>
+                <p className="font-mono text-xs text-text-muted uppercase tracking-widest mb-4">캐릭터 소개</p>
                 <div className="flex items-center gap-4">
                     {CHARACTERS.map(({ name, icon: Icon, color }) => (
                         <div key={name} className="flex flex-col items-center gap-2">

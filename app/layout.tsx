@@ -17,7 +17,7 @@ const spaceMono = Space_Mono({
 
 export const metadata: Metadata = {
     title: 'Coup Online',
-    description: 'Bluff. Deceive. Survive.',
+    description: '거짓말과 심리전의 보드게임',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

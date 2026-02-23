@@ -133,7 +133,7 @@ function CharacterCard({ character, revealed, onClick }: CharacterCardProps) {
                             backgroundColor: 'rgba(0,0,0,0.65)',
                         }}
                     >
-                        Eliminated
+                        제거됨
                     </span>
                 </div>
             )}
@@ -173,7 +173,7 @@ function MyPlayerArea({ player }: Props) {
                             className="font-mono text-xs uppercase tracking-widest"
                             style={{ color: 'var(--text-muted)' }}
                         >
-                            Your Influence
+                            내 영향력
                         </span>
                     </div>
                     <CoinBadge coins={player.coins} />
