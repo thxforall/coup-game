@@ -2,7 +2,7 @@
 
 import { memo, useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { Skull, Settings, Trophy, ScrollText, RotateCcw, BookOpen, MessageCircle } from 'lucide-react';
+import { Skull, Settings, Trophy, ScrollText, RotateCcw, BookOpen } from 'lucide-react';
 import { FilteredGameState, Card, Player, ACTION_NAMES } from '@/lib/game/types';
 import { PresenceMap, subscribeToChatMessages, CHAT_MESSAGES } from '@/lib/firebase.client';
 import { clearActiveRoom } from '@/lib/storage';
@@ -119,7 +119,6 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
     const [showMobileLog, setShowMobileLog] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
     const [showRules, setShowRules] = useState(false);
-    const [showQuickChat, setShowQuickChat] = useState(false);
     const mobileLogRef = useRef<HTMLDivElement>(null);
 
     // 퀵챗 로그 상태: 최근 50개 보관
@@ -623,29 +622,20 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             {/* 내 플레이어 영역 (하단) */}
             {me && (
                 <div className="flex-shrink-0 border-t border-border-subtle bg-bg-card">
-                    <div className="p-2 sm:p-4 relative">
-                        <MyPlayerArea player={me as Player} />
-                        {/* 퀵챗 열기 버튼 */}
-                        {me.isAlive && (
-                            <button
-                                onClick={() => setShowQuickChat(true)}
-                                className="absolute top-2 right-2 sm:top-4 sm:right-4 p-1.5 rounded-full bg-bg-surface border border-border-subtle text-text-secondary hover:text-gold hover:border-gold/40 transition-colors"
-                                aria-label="빠른 채팅"
-                            >
-                                <MessageCircle size={16} />
-                            </button>
-                        )}
+                    {/* 퀵챗 (인라인 프리셋 + 자유입력 모달) */}
+                    <div className="relative">
+                        <QuickChat
+                            roomId={roomId}
+                            playerId={playerId}
+                            disabled={!me.isAlive}
+                            turnId={state.currentTurnId}
+                            onSend={handleChatSend}
+                            onSendText={handleChatTextSend}
+                        />
                     </div>
-                    <QuickChat
-                        roomId={roomId}
-                        playerId={playerId}
-                        disabled={!me.isAlive}
-                        turnId={state.currentTurnId}
-                        onSend={handleChatSend}
-                        onSendText={handleChatTextSend}
-                        isOpen={showQuickChat}
-                        onClose={() => setShowQuickChat(false)}
-                    />
+                    <div className="p-2 sm:p-4">
+                        <MyPlayerArea player={me as Player} />
+                    </div>
                 </div>
             )}
 
