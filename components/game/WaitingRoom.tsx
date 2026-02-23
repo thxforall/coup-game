@@ -44,18 +44,18 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center px-4 py-10 bg-bg-dark">
-            <div className="glass-panel w-full max-w-lg p-8 animate-slide-up">
+            <div className="glass-panel w-full max-w-lg p-5 sm:p-8 animate-slide-up">
                 {/* Logo */}
                 <div className="flex flex-col items-center mb-8">
                     <Skull size={32} className="text-gold mb-3" />
-                    <h1 className="font-sora text-4xl font-bold text-gold tracking-tight">COUP</h1>
+                    <h1 className="font-sora text-3xl sm:text-4xl font-bold text-gold tracking-tight">COUP</h1>
                     <p className="font-mono text-text-muted text-sm mt-1">거짓말과 심리전의 게임</p>
                 </div>
 
                 {/* Room code */}
                 <div className="text-center mb-6">
                     <p className="text-xs text-text-muted uppercase tracking-widest mb-2 font-mono">방 코드</p>
-                    <div className="text-5xl font-mono font-bold tracking-widest text-text-primary mb-4">
+                    <div className="text-4xl sm:text-5xl font-mono font-bold tracking-widest text-text-primary mb-4">
                         {roomId}
                     </div>
                     <button className="btn-ghost flex items-center gap-2 mx-auto px-5 py-2 text-sm" onClick={copyCode}>
@@ -92,7 +92,7 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
                     </p>
                     <ul className="space-y-3">
                         {state.players.map((p, i) => (
-                            <li key={p.id} className="flex items-center gap-3">
+                            <li key={p.id} className="flex items-center gap-2 sm:gap-3">
                                 {/* Avatar */}
                                 <div className="w-9 h-9 rounded-full bg-bg-surface flex items-center justify-center text-sm font-bold text-text-primary shrink-0">
                                     {p.name.charAt(0).toUpperCase()}

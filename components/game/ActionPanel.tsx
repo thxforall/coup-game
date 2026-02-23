@@ -161,7 +161,7 @@ function ActionPanel({ state, playerId, onAction }: Props) {
                             <button
                                 key={p.id}
                                 onClick={() => setTargetId(p.id === targetId ? '' : p.id)}
-                                className={`px-3 py-1.5 rounded-full text-sm font-semibold border transition-all ${targetId === p.id
+                                className={`px-2.5 py-1 rounded-full text-sm font-semibold border transition-all ${targetId === p.id
                                         ? 'border-gold text-text-primary'
                                         : 'bg-bg-surface border-border-subtle text-text-secondary hover:border-gold/50'
                                     }`}
@@ -252,7 +252,7 @@ function ActionPanel({ state, playerId, onAction }: Props) {
                                     )}
                                 </div>
                                 <span
-                                    className={`text-[10px] leading-tight ${isCoup ? 'text-bg-dark/70' : 'text-text-muted'}`}
+                                    className={`text-[10px] leading-tight line-clamp-2 ${isCoup ? 'text-bg-dark/70' : 'text-text-muted'}`}
                                 >
                                     {a.desc}
                                 </span>

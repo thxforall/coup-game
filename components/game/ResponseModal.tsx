@@ -190,7 +190,7 @@ function ResponseModal({ state, playerId, myCards, onAction }: Props) {
                     style={{ backgroundColor: '#1A1A1A' }}
                 >
                     {/* 상단 섹션: 경고 아이콘 + 타이머 + 제목 + 부제목 */}
-                    <div className="flex flex-col items-center text-center px-6 pt-6 pb-4">
+                    <div className="flex flex-col items-center text-center px-4 sm:px-6 pt-6 pb-4">
                         {/* 경고 아이콘 원형 배경 */}
                         <div
                             className="flex items-center justify-center w-12 h-12 rounded-full mb-3"
@@ -237,8 +237,8 @@ function ResponseModal({ state, playerId, myCards, onAction }: Props) {
                     </div>
 
                     {/* 내 카드 상태 */}
-                    <div className="px-6 pb-3">
-                        <div className="flex items-center justify-center gap-3">
+                    <div className="px-4 sm:px-6 pb-3">
+                        <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
                             {myCards.map((card, i) => (
                                 <div
                                     key={i}
@@ -274,7 +274,7 @@ function ResponseModal({ state, playerId, myCards, onAction }: Props) {
                     </div>
 
                     {/* 액션 설명 섹션 */}
-                    <div className="px-6 pb-4">
+                    <div className="px-4 sm:px-6 pb-4">
                         <div
                             className="rounded-lg overflow-hidden"
                             style={{ backgroundColor: 'var(--bg-surface, #242424)', border: '1px solid var(--border-subtle, #333)' }}
@@ -338,10 +338,10 @@ function ResponseModal({ state, playerId, myCards, onAction }: Props) {
                     </div>
 
                     {/* 버튼 섹션 */}
-                    <div className="flex flex-col gap-2 px-6 pb-6">
+                    <div className="flex flex-col gap-2 px-4 sm:px-6 pb-6">
                         {/* 도전 버튼 */}
                         <button
-                            className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-sora font-semibold text-sm transition-opacity disabled:opacity-50"
+                            className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-sora font-semibold text-xs sm:text-sm transition-opacity disabled:opacity-50"
                             style={{
                                 backgroundColor: 'rgba(231, 76, 60, 0.15)',
                                 border: '1px solid var(--red-light, #E74C3C)',
@@ -363,7 +363,7 @@ function ResponseModal({ state, playerId, myCards, onAction }: Props) {
                                 {blockableChars.map((char) => (
                                     <button
                                         key={char}
-                                        className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-sora font-semibold text-sm text-text-primary transition-opacity disabled:opacity-50"
+                                        className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-sora font-semibold text-xs sm:text-sm text-text-primary transition-opacity disabled:opacity-50"
                                         style={{
                                             backgroundColor: 'var(--bg-surface)',
                                             border: '1px solid var(--border-subtle)',
@@ -384,7 +384,7 @@ function ResponseModal({ state, playerId, myCards, onAction }: Props) {
                                 {blockableChars.map((char) => (
                                     <button
                                         key={char}
-                                        className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-sora font-semibold text-sm transition-opacity disabled:opacity-50"
+                                        className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-sora font-semibold text-xs sm:text-sm transition-opacity disabled:opacity-50"
                                         style={{
                                             backgroundColor: 'var(--bg-surface)',
                                             border: '1px solid rgba(212, 175, 55, 0.4)',
@@ -402,7 +402,7 @@ function ResponseModal({ state, playerId, myCards, onAction }: Props) {
 
                         {/* 패스 / 허용 버튼 */}
                         <button
-                            className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-sora text-sm text-text-secondary transition-opacity disabled:opacity-50"
+                            className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-sora text-xs sm:text-sm text-text-secondary transition-opacity disabled:opacity-50"
                             style={{
                                 backgroundColor: 'var(--bg-surface)',
                                 border: '1px solid var(--border-subtle)',

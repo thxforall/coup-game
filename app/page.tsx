@@ -106,12 +106,12 @@ export default function LobbyPage() {
             {/* Logo */}
             <div className="flex flex-col items-center mb-10">
                 <Skull size={48} className="text-gold mb-4" />
-                <h1 className="font-sora text-5xl font-bold text-gold tracking-tight">COUP</h1>
+                <h1 className="font-sora text-4xl sm:text-5xl font-bold text-gold tracking-tight">COUP</h1>
                 <p className="font-mono text-text-muted text-sm mt-2">거짓말과 심리전의 게임</p>
             </div>
 
             {/* Lobby card */}
-            <div className="glass-panel w-full max-w-[520px] p-8 animate-slide-up">
+            <div className="glass-panel w-full max-w-[520px] p-5 sm:p-8 animate-slide-up">
                 {/* Nickname */}
                 <div className="mb-5">
                     <label className="block text-xs text-text-muted mb-1 font-mono uppercase tracking-widest">

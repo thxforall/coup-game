@@ -54,7 +54,7 @@ function ExchangeModal({ player, exchangeCards, onSelect }: Props) {
                 <p className="text-text-secondary text-sm mb-1">대사 능력 — 카드를 교환합니다</p>
                 <p className="text-amber-400 text-xs mb-5">유지할 카드 {liveCount}장을 선택하세요</p>
 
-                <div className="flex flex-wrap gap-3 justify-center mb-4">
+                <div className="flex flex-wrap gap-2 sm:gap-3 justify-center mb-4">
                     {allOptions.map((char, i) => {
                         const isOwned = i < liveCards.length;
                         const isSelected = selected.includes(i);
@@ -62,15 +62,14 @@ function ExchangeModal({ player, exchangeCards, onSelect }: Props) {
                             <button
                                 key={i}
                                 onClick={() => toggle(i)}
-                                className={`relative rounded-xl border-2 overflow-hidden ${CHAR_BORDER[char]} transition-all shadow ${isSelected ? 'ring-2 ring-gold scale-105' : 'opacity-70 hover:opacity-100'}`}
-                                style={{ width: '80px', height: '110px' }}
+                                className={`relative rounded-xl border-2 overflow-hidden w-[70px] h-[98px] sm:w-[80px] sm:h-[110px] ${CHAR_BORDER[char]} transition-all shadow ${isSelected ? 'ring-2 ring-gold scale-105' : 'opacity-70 hover:opacity-100'}`}
                             >
                                 <Image
                                     src={CARD_IMAGES[char]}
                                     alt={CHARACTER_NAMES[char]}
                                     fill
                                     className="object-cover"
-                                    sizes="80px"
+                                    sizes="(max-width: 640px) 70px, 80px"
                                 />
                                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-1.5">
                                     <span className="text-[10px] font-bold text-white block text-center">
