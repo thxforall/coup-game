@@ -51,11 +51,12 @@
 | 043 | 준비완료 버튼 초록색으로 변경 | 2026-02-24 | a53be15 | [043-ready-button-green-color](./quick/043-ready-button-green-color/) |
 | 044 | 게임보드 배경이미지 잔여 코드(bg-overlay) 제거 | 2026-02-24 | 19d38d8 | [044-remove-background-image-feature](./quick/044-remove-background-image-feature/) |
 | 045 | README.md v0.5.0 업데이트 (기능/구조/릴리스 노트) | 2026-02-24 | 463b929 | [045-update-readme-md](./quick/045-update-readme-md/) |
+| 047 | 게임 로그+채팅 로그 mergedStructured timestamp 기반 정렬 수정 (채팅 하단 집중 버그 수정) | 2026-02-24 | 131875e | [047-game-log-scroll-bottom-chat-priority-fix](./quick/047-game-log-scroll-bottom-chat-priority-fix/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-24T16:56:00Z
-- Stopped at: Completed quick-045 (README.md v0.5.0 업데이트)
+- Last session: 2026-02-24T17:06:00Z
+- Stopped at: Completed quick-047 (게임 로그 채팅 timestamp 정렬 수정)
 - Resume file: None
