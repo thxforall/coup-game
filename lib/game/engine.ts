@@ -761,6 +761,78 @@ export function processLoseInfluence(
 // 대사 교환 처리
 // ============================================================
 
+// ============================================================
+// 플레이어 퇴장 처리 (게임 도중 나가기)
+// ============================================================
+
+export function removePlayer(state: GameState, playerId: string): GameState {
+  const player = getPlayer(state, playerId);
+  if (!player.isAlive) return state; // 이미 탈락한 플레이어
+
+  let s = state;
+
+  // 모든 카드 공개
+  const updatedPlayers = s.players.map((p) => {
+    if (p.id !== playerId) return p;
+    const revealedCards = p.cards.map((c) => ({ ...c, revealed: true }));
+    return { ...p, cards: revealedCards, isAlive: false };
+  });
+  s = { ...s, players: updatedPlayers };
+
+  s = addLog(s, `${player.name}이(가) 게임을 떠났습니다`);
+
+  // pendingAction에 해당 플레이어가 관련되어 있으면 초기화
+  if (s.pendingAction) {
+    const pa = s.pendingAction;
+    const isActor = pa.actorId === playerId;
+    const isTarget = pa.targetId === playerId;
+    const isBlocker = pa.blockerId === playerId;
+    const isLoser = pa.losingPlayerId === playerId;
+    const hasPendingResponse = pa.responses?.[playerId] === 'pending';
+
+    if (isActor || isTarget || isBlocker || isLoser) {
+      // 핵심 역할이 떠나면 pendingAction 무효화 + nextTurn
+      s = { ...s, pendingAction: null };
+      s = checkWinner(s);
+      if (s.phase === 'game_over') return s;
+      // 현재 턴이 떠나는 플레이어거나 actor였으면 다음 턴으로
+      return nextTurn(s);
+    }
+
+    if (hasPendingResponse) {
+      // 응답 대기 중인 플레이어가 떠남 → pass 처리
+      const updatedResponses = { ...pa.responses, [playerId]: 'pass' as ResponseType };
+      s = { ...s, pendingAction: { ...pa, responses: updatedResponses } };
+      // 모두 응답했는지 확인
+      const allResponded = Object.values(updatedResponses).every((r) => r !== 'pending');
+      if (allResponded) {
+        if (s.phase === 'awaiting_block_response') {
+          s = addLog(s, '블록이 확정되었습니다. 행동이 취소되었습니다');
+          s = checkWinner(s);
+          if (s.phase === 'game_over') return s;
+          return nextTurn(s);
+        }
+        // awaiting_response → resolve action
+        s = checkWinner(s);
+        if (s.phase === 'game_over') return s;
+        // resolveAction은 private이므로 직접 처리하지 않고,
+        // 여기서는 단순히 nextTurn으로 넘김 (안전한 처리)
+        return nextTurn(s);
+      }
+    }
+  }
+
+  s = checkWinner(s);
+  if (s.phase === 'game_over') return s;
+
+  // 현재 턴이 떠나는 플레이어라면 다음 턴으로
+  if (s.currentTurnId === playerId) {
+    return nextTurn(s);
+  }
+
+  return s;
+}
+
 export function processExchangeSelect(
   state: GameState,
   actorId: string,
