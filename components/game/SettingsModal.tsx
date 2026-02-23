@@ -62,7 +62,7 @@ function SettingsModal({ state, playerId, roomId, onClose }: Props) {
             }}
         >
             <div className="w-full max-w-sm animate-slide-up">
-                <div className="glass-panel rounded-xl overflow-hidden">
+                <div className="glass-panel rounded-xl overflow-y-auto max-h-[85vh]">
                     {/* 헤더 */}
                     <div className="flex items-center justify-between px-5 py-4 border-b border-border-subtle">
                         <div className="flex items-center gap-2">

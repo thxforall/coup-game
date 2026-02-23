@@ -397,7 +397,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             </header>
 
             {/* 상대방 플레이어 행 (가로) */}
-            <div className="flex-shrink-0 flex flex-row items-start gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 border-b border-border-subtle overflow-x-auto scrollbar-hide">
+            <div className="flex-shrink-0 flex flex-row items-start gap-1.5 sm:gap-3 px-2 sm:px-4 py-1.5 sm:py-3 border-b border-border-subtle overflow-x-auto scrollbar-hide">
                 {others.map((player) => (
                     <PlayerArea
                         key={player.id}
@@ -501,7 +501,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
 
             {/* 내 플레이어 영역 (하단) */}
             {me && (
-                <div className="flex-shrink-0 border-t border-border-subtle p-3 sm:p-4 bg-bg-card">
+                <div className="flex-shrink-0 border-t border-border-subtle p-2 sm:p-4 bg-bg-card">
                     <MyPlayerArea player={me as Player} />
                 </div>
             )}

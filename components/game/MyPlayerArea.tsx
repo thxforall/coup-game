@@ -91,7 +91,7 @@ function CharacterCard({ character, revealed, onClick }: CharacterCardProps) {
             onClick={onClick}
             disabled={revealed}
             className={[
-                'relative overflow-hidden rounded-lg transition-transform w-[80px] h-[114px] sm:w-[120px] sm:h-[170px]',
+                'relative overflow-hidden rounded-lg transition-transform w-[68px] h-[97px] sm:w-[120px] sm:h-[170px]',
                 revealed
                     ? 'opacity-40 grayscale cursor-default'
                     : 'cursor-pointer hover:scale-105 active:scale-95',
@@ -157,14 +157,14 @@ function MyPlayerArea({ player }: Props) {
     return (
         <>
             <div
-                className="p-3 sm:p-4 rounded-2xl"
+                className="p-2.5 sm:p-4 rounded-2xl"
                 style={{
                     backgroundColor: 'var(--bg-card)',
                     border: '1px solid var(--border-subtle)',
                 }}
             >
                 {/* Header row: PlayerBadge + label + CoinBadge */}
-                <div className="flex items-center justify-between mb-3 sm:mb-4 flex-wrap gap-1">
+                <div className="flex items-center justify-between mb-2 sm:mb-4 flex-wrap gap-1">
                     <div className="flex items-center gap-2 sm:gap-3">
                         <PlayerBadge name={player.name} />
                         <span
@@ -178,7 +178,7 @@ function MyPlayerArea({ player }: Props) {
                 </div>
 
                 {/* Card row */}
-                <div className="flex gap-3 justify-center">
+                <div className="flex gap-2 sm:gap-3 justify-center">
                     {player.cards.map((card, i) => (
                         <CharacterCard
                             key={i}

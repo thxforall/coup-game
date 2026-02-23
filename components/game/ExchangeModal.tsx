@@ -46,7 +46,7 @@ function ExchangeModal({ player, exchangeCards, onSelect }: Props) {
 
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="glass-panel w-full max-w-sm p-6 animate-slide-up text-center">
+            <div className="glass-panel w-full max-w-sm p-6 animate-slide-up text-center overflow-y-auto max-h-[85vh]">
                 <div className="flex items-center justify-center gap-2 mb-1">
                     <Repeat size={20} color="var(--ambassador-color)" />
                     <h2 className="text-xl font-black text-text-primary">카드 교환</h2>

@@ -35,7 +35,7 @@ function CardSelectModal({ player, title, subtitle, onSelect }: Props) {
 
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="glass-panel w-full max-w-xs p-6 animate-slide-up text-center">
+            <div className="glass-panel w-full max-w-xs p-6 animate-slide-up text-center overflow-y-auto max-h-[85vh]">
                 <div className="flex justify-center mb-2">
                     <Skull size={36} color="var(--gold)" />
                 </div>

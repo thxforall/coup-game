@@ -1,6 +1,6 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import Image from 'next/image';
 import {
     Crown,
@@ -11,6 +11,7 @@ import {
     Coins,
 } from 'lucide-react';
 import { FilteredPlayer, Character, CHARACTER_NAMES } from '@/lib/game/types';
+import CardInfoModal from './CardInfoModal';
 
 // ----------------------------------------------------------------
 // Types & constants
@@ -65,15 +66,14 @@ function PlayerBadge({ name, playerIndex, isCurrentTurn, online }: PlayerBadgePr
     return (
         <div className="flex items-center gap-2 min-w-0">
             <div
-                className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm"
+                className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm"
                 style={{ backgroundColor: avatarColor }}
             >
                 {initial}
             </div>
-            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                online ? 'bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.6)]' : 'bg-gray-500'
-            }`} />
-            <span className="text-sm font-semibold text-text-primary truncate">
+            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${online ? 'bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.6)]' : 'bg-gray-500'
+                }`} />
+            <span className="text-xs font-semibold text-text-primary truncate">
                 {isCurrentTurn && (
                     <span className="text-gold mr-1">&#9658;</span>
                 )}
@@ -106,7 +106,7 @@ function CoinBadge({ coins }: CoinBadgeProps) {
 function FaceDownCard() {
     return (
         <div
-            className="w-11 h-16 sm:w-[80px] sm:h-[112px] rounded-lg flex flex-col items-center justify-center gap-1 shadow-md flex-shrink-0"
+            className="w-10 h-14 sm:w-[80px] sm:h-[112px] rounded-lg flex flex-col items-center justify-center gap-1 shadow-md flex-shrink-0"
             style={{
                 background: 'linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%)',
                 border: '1px solid #3A3A3A',
@@ -125,15 +125,17 @@ function FaceDownCard() {
 
 interface RevealedCardProps {
     character: Character;
+    onClick?: () => void;
 }
 
-function RevealedCard({ character }: RevealedCardProps) {
+function RevealedCard({ character, onClick }: RevealedCardProps) {
     const CharIcon = CHAR_ICONS[character];
     const accentColor = CHAR_COLORS[character];
 
     return (
-        <div
-            className="w-11 h-16 sm:w-[80px] sm:h-[112px] rounded-lg overflow-hidden relative flex-shrink-0 shadow-md"
+        <button
+            onClick={onClick}
+            className="w-10 h-14 sm:w-[80px] sm:h-[112px] rounded-lg overflow-hidden relative flex-shrink-0 shadow-md cursor-pointer active:scale-95 transition-transform"
         >
             <Image
                 src={`/cards/${character.toLowerCase()}.jpg`}
@@ -154,7 +156,7 @@ function RevealedCard({ character }: RevealedCardProps) {
                     탈락
                 </span>
             </div>
-        </div>
+        </button>
     );
 }
 
@@ -163,48 +165,62 @@ function RevealedCard({ character }: RevealedCardProps) {
 // ----------------------------------------------------------------
 
 function PlayerArea({ player, isCurrentTurn, online }: Props) {
-    // Derive player index from id for stable avatar color (fallback: 0)
-    // PlayerArea doesn't receive index directly, so we hash from id
+    const [selectedCard, setSelectedCard] = useState<Character | null>(null);
+
     const playerIndex = player.id
         ? player.id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
         : 0;
 
     return (
-        <div
-            className={`
-                bg-bg-card border border-border-subtle rounded-xl p-2 sm:p-3
-                transition-all duration-200 min-w-0 w-[110px] sm:w-auto sm:min-w-[140px] flex-shrink-0
+        <>
+            <div
+                className={`
+                bg-bg-card border border-border-subtle rounded-xl p-1.5 sm:p-3
+                transition-all duration-200 min-w-0 w-[96px] sm:w-auto sm:min-w-[140px] flex-shrink-0
                 ${!player.isAlive ? 'opacity-50' : ''}
                 ${isCurrentTurn ? 'ring-2 ring-gold shadow-lg' : ''}
             `}
-            style={isCurrentTurn ? { boxShadow: '0 0 16px rgba(241, 196, 15, 0.2)' } : undefined}
-        >
-            {/* Header: badge + coin */}
-            <div className="flex items-center justify-between mb-3 gap-2">
-                <PlayerBadge
-                    name={player.name}
-                    playerIndex={playerIndex}
-                    isCurrentTurn={isCurrentTurn}
-                    online={online}
-                />
-                {player.isAlive ? (
-                    <CoinBadge coins={player.coins} />
-                ) : (
-                    <span className="text-[11px] text-text-muted font-medium">탈락</span>
-                )}
+                style={isCurrentTurn ? { boxShadow: '0 0 16px rgba(241, 196, 15, 0.2)' } : undefined}
+            >
+                {/* Header: badge + coin */}
+                <div className="flex items-center justify-between mb-2 gap-1">
+                    <PlayerBadge
+                        name={player.name}
+                        playerIndex={playerIndex}
+                        isCurrentTurn={isCurrentTurn}
+                        online={online}
+                    />
+                    {player.isAlive ? (
+                        <CoinBadge coins={player.coins} />
+                    ) : (
+                        <span className="text-[11px] text-text-muted font-medium">탈락</span>
+                    )}
+                </div>
+
+                {/* Cards */}
+                <div className="flex gap-1 sm:gap-2 justify-center">
+                    {player.cards.map((card, i) =>
+                        card.revealed && card.character ? (
+                            <RevealedCard
+                                key={i}
+                                character={card.character}
+                                onClick={() => setSelectedCard(card.character!)}
+                            />
+                        ) : (
+                            <FaceDownCard key={i} />
+                        )
+                    )}
+                </div>
             </div>
 
-            {/* Cards */}
-            <div className="flex gap-1 sm:gap-2 justify-center">
-                {player.cards.map((card, i) =>
-                    card.revealed && card.character ? (
-                        <RevealedCard key={i} character={card.character} />
-                    ) : (
-                        <FaceDownCard key={i} />
-                    )
-                )}
-            </div>
-        </div>
+            {/* Card info modal */}
+            {selectedCard && (
+                <CardInfoModal
+                    character={selectedCard}
+                    onClose={() => setSelectedCard(null)}
+                />
+            )}
+        </>
     );
 }
 

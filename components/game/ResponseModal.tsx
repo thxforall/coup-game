@@ -186,7 +186,7 @@ function ResponseModal({ state, playerId, myCards, onAction }: Props) {
 
                 {/* 모달 패널 */}
                 <div
-                    className="rounded-xl border border-border-subtle overflow-hidden"
+                    className="rounded-xl border border-border-subtle overflow-y-auto max-h-[80vh]"
                     style={{ backgroundColor: '#1A1A1A' }}
                 >
                     {/* 상단 섹션: 경고 아이콘 + 타이머 + 제목 + 부제목 */}

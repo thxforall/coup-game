@@ -23,72 +23,72 @@ const ACTION_BUTTONS: {
     variant: ButtonVariant;
     row: 1 | 2;
 }[] = [
-    {
-        type: 'income',
-        label: '소득',
-        icon: Coins,
-        desc: '코인 +1 (막기 불가)',
-        variant: 'general',
-        row: 1,
-    },
-    {
-        type: 'foreignAid',
-        label: '외국 원조',
-        icon: Handshake,
-        desc: '코인 +2 (공작이 막을 수 있음)',
-        variant: 'general',
-        row: 1,
-    },
-    {
-        type: 'coup',
-        label: '쿠데타',
-        icon: Zap,
-        desc: '코인 7개, 상대 카드 무조건 제거',
-        cost: 7,
-        needsTarget: true,
-        variant: 'coup',
-        row: 1,
-    },
-    {
-        type: 'tax',
-        label: '세금징수',
-        icon: Crown,
-        desc: '코인 +3 (공작, 도전 가능)',
-        claimedChar: 'Duke',
-        variant: 'duke',
-        row: 2,
-    },
-    {
-        type: 'assassinate',
-        label: '암살',
-        icon: Crosshair,
-        desc: '코인 3개, 상대 카드 제거 (암살자)',
-        cost: 3,
-        needsTarget: true,
-        claimedChar: 'Assassin',
-        variant: 'assassin',
-        row: 2,
-    },
-    {
-        type: 'steal',
-        label: '갈취',
-        icon: Anchor,
-        desc: '상대 코인 2개 갈취 (사령관)',
-        needsTarget: true,
-        claimedChar: 'Captain',
-        variant: 'captain',
-        row: 2,
-    },
-    {
-        type: 'exchange',
-        label: '교환',
-        icon: Repeat,
-        desc: '카드 교환 (대사, 도전 가능)',
-        claimedChar: 'Ambassador',
-        variant: 'ambassador',
-        row: 2,
-    },
-];
+        {
+            type: 'income',
+            label: '소득',
+            icon: Coins,
+            desc: '코인 +1 (막기 불가)',
+            variant: 'general',
+            row: 1,
+        },
+        {
+            type: 'foreignAid',
+            label: '외국 원조',
+            icon: Handshake,
+            desc: '코인 +2 (공작이 막을 수 있음)',
+            variant: 'general',
+            row: 1,
+        },
+        {
+            type: 'coup',
+            label: '쿠데타',
+            icon: Zap,
+            desc: '코인 7개, 상대 카드 무조건 제거',
+            cost: 7,
+            needsTarget: true,
+            variant: 'coup',
+            row: 1,
+        },
+        {
+            type: 'tax',
+            label: '세금징수',
+            icon: Crown,
+            desc: '코인 +3 (공작, 도전 가능)',
+            claimedChar: 'Duke',
+            variant: 'duke',
+            row: 2,
+        },
+        {
+            type: 'assassinate',
+            label: '암살',
+            icon: Crosshair,
+            desc: '코인 3개, 상대 카드 제거 (암살자)',
+            cost: 3,
+            needsTarget: true,
+            claimedChar: 'Assassin',
+            variant: 'assassin',
+            row: 2,
+        },
+        {
+            type: 'steal',
+            label: '갈취',
+            icon: Anchor,
+            desc: '상대 코인 2개 갈취 (사령관)',
+            needsTarget: true,
+            claimedChar: 'Captain',
+            variant: 'captain',
+            row: 2,
+        },
+        {
+            type: 'exchange',
+            label: '교환',
+            icon: Repeat,
+            desc: '카드 교환 (대사, 도전 가능)',
+            claimedChar: 'Ambassador',
+            variant: 'ambassador',
+            row: 2,
+        },
+    ];
 
 const VARIANT_STYLES: Record<ButtonVariant, string> = {
     general: 'bg-bg-surface border-border-subtle hover:bg-border-subtle',
@@ -161,11 +161,10 @@ function ActionPanel({ state, playerId, onAction }: Props) {
                             <button
                                 key={p.id}
                                 onClick={() => setTargetId(p.id === targetId ? '' : p.id)}
-                                className={`px-3 py-1.5 rounded-full text-sm font-semibold border transition-all ${
-                                    targetId === p.id
+                                className={`px-3 py-1.5 rounded-full text-sm font-semibold border transition-all ${targetId === p.id
                                         ? 'border-gold text-text-primary'
                                         : 'bg-bg-surface border-border-subtle text-text-secondary hover:border-gold/50'
-                                }`}
+                                    }`}
                                 style={
                                     targetId === p.id
                                         ? { backgroundColor: 'rgba(200, 169, 96, 0.15)' }
@@ -196,11 +195,10 @@ function ActionPanel({ state, playerId, onAction }: Props) {
                                 <button
                                     key={ch}
                                     onClick={() => setGuessChar(selected ? null : ch)}
-                                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                                        selected
+                                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold border transition-all ${selected
                                             ? 'border-gold bg-gold/15 text-text-primary'
                                             : 'bg-bg-surface border-border-subtle text-text-secondary hover:border-gold/50'
-                                    }`}
+                                        }`}
                                 >
                                     <Icon size={13} />
                                     {CHARACTER_NAMES[ch]}
@@ -227,17 +225,16 @@ function ActionPanel({ state, playerId, onAction }: Props) {
                                 key={a.type}
                                 onClick={() => handleAction(a.type, !!a.needsTarget)}
                                 disabled={disabled}
-                                className={`flex flex-col items-start p-2 sm:p-3 rounded-xl border transition-all text-left disabled:opacity-40 ${
-                                    disabled ? 'cursor-not-allowed' : 'active:scale-95'
-                                } ${VARIANT_STYLES[a.variant]}`}
+                                className={`flex flex-col items-start p-1.5 sm:p-3 rounded-xl border transition-all text-left disabled:opacity-40 ${disabled ? 'cursor-not-allowed' : 'active:scale-95'
+                                    } ${VARIANT_STYLES[a.variant]}`}
                                 style={isCoup ? { backgroundColor: 'var(--gold)' } : undefined}
                             >
                                 <div className="flex items-center gap-2 mb-1 w-full">
                                     <Icon
-                                        className={`w-5 h-5 shrink-0 ${VARIANT_ICON_COLORS[a.variant]}`}
+                                        className={`w-4 h-4 sm:w-5 sm:h-5 shrink-0 ${VARIANT_ICON_COLORS[a.variant]}`}
                                     />
                                     <span
-                                        className={`font-bold text-sm ${isCoup ? 'text-bg-dark' : 'text-text-primary'}`}
+                                        className={`font-bold text-xs sm:text-sm ${isCoup ? 'text-bg-dark' : 'text-text-primary'}`}
                                     >
                                         {a.label}
                                     </span>
@@ -279,15 +276,14 @@ function ActionPanel({ state, playerId, onAction }: Props) {
                                 key={a.type}
                                 onClick={() => handleAction(a.type, !!a.needsTarget)}
                                 disabled={disabled}
-                                className={`flex flex-col items-start p-2 sm:p-3 rounded-xl border transition-all text-left disabled:opacity-40 ${
-                                    disabled ? 'cursor-not-allowed' : 'active:scale-95'
-                                } ${VARIANT_STYLES[a.variant]}`}
+                                className={`flex flex-col items-start p-1.5 sm:p-3 rounded-xl border transition-all text-left disabled:opacity-40 ${disabled ? 'cursor-not-allowed' : 'active:scale-95'
+                                    } ${VARIANT_STYLES[a.variant]}`}
                             >
                                 <div className="flex items-center gap-1.5 mb-1 w-full">
                                     <Icon
-                                        className={`w-5 h-5 shrink-0 ${VARIANT_ICON_COLORS[a.variant]}`}
+                                        className={`w-4 h-4 sm:w-5 sm:h-5 shrink-0 ${VARIANT_ICON_COLORS[a.variant]}`}
                                     />
-                                    <span className="font-bold text-sm text-text-primary truncate">
+                                    <span className="font-bold text-xs sm:text-sm text-text-primary truncate">
                                         {a.label}
                                     </span>
                                     {a.cost && (
