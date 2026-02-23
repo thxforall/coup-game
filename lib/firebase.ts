@@ -1,58 +1,48 @@
-import { initializeApp, getApps } from 'firebase/app';
-import { getDatabase, ref, get, set, update, onValue, Database } from 'firebase/database';
+/**
+ * Firebase Realtime Database - 서버 전용 (REST API)
+ * 서버리스 환경에서 안정적인 fetch 기반 통신
+ */
+
 import { GameState } from './game/types';
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
-};
+const DB_URL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL;
 
-// Next.js 핫 리로드 시 중복 초기화 방지
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-
-let db: Database;
-function getDb(): Database {
-  if (!db) db = getDatabase(app);
-  return db;
+if (!DB_URL) {
+  throw new Error('NEXT_PUBLIC_FIREBASE_DATABASE_URL is not set');
 }
 
-// ============================================================
-// 서버/클라이언트 공용 DB 함수
-// ============================================================
+function roomUrl(roomId: string) {
+  return `${DB_URL}/game_rooms/${roomId}.json`;
+}
 
 export async function getRoom(roomId: string): Promise<{ id: string; state: GameState } | null> {
-  const snapshot = await get(ref(getDb(), `game_rooms/${roomId}`));
-  if (!snapshot.exists()) return null;
-  const data = snapshot.val();
+  const res = await fetch(roomUrl(roomId), { cache: 'no-store' });
+  if (!res.ok) return null;
+  const data = await res.json();
+  if (!data) return null;
   return { id: roomId, state: data.state as GameState };
 }
 
 export async function createRoom(roomId: string, state: GameState): Promise<void> {
-  await set(ref(getDb(), `game_rooms/${roomId}`), { state });
+  const res = await fetch(roomUrl(roomId), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ state }),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to create room: ${res.status} ${text}`);
+  }
 }
 
 export async function updateRoom(roomId: string, state: GameState): Promise<void> {
-  await update(ref(getDb(), `game_rooms/${roomId}`), { state });
-}
-
-// ============================================================
-// 클라이언트 전용: Realtime 구독
-// ============================================================
-
-export function subscribeToRoom(
-  roomId: string,
-  callback: (state: GameState) => void
-): () => void {
-  const roomRef = ref(getDb(), `game_rooms/${roomId}`);
-  const unsubscribe = onValue(roomRef, (snapshot) => {
-    if (snapshot.exists()) {
-      callback(snapshot.val().state as GameState);
-    }
+  const res = await fetch(roomUrl(roomId), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ state }),
   });
-  return unsubscribe; // 컴포넌트 언마운트 시 호출
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to update room: ${res.status} ${text}`);
+  }
 }

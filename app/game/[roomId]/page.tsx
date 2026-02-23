@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { subscribeToRoom, getRoom } from '@/lib/firebase';
+import { subscribeToRoom, getRoom } from '@/lib/firebase.client';
 import { GameState } from '@/lib/game/types';
 import WaitingRoom from '@/components/game/WaitingRoom';
 import GameBoard from '@/components/game/GameBoard';

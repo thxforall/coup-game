@@ -36,7 +36,9 @@ export async function POST(req: NextRequest) {
   try {
     await createRoom(roomId, initialState);
     return NextResponse.json({ roomId });
-  } catch {
-    return NextResponse.json({ error: '방 생성 실패' }, { status: 500 });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('[CREATE ROOM ERROR]', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
