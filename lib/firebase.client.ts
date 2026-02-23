@@ -141,6 +141,7 @@ export const CHAT_MESSAGES = ['드루와', '공작 업', 'ㅠㅠ', '넌 뒤졌�
 export interface ChatMessage {
   playerId: string;
   messageId: number;
+  text?: string;      // 자유 텍스트 (messageId === -1일 때)
   timestamp: number;
 }
 
@@ -150,6 +151,14 @@ export function sendChatMessage(roomId: string, playerId: string, messageId: num
   const chatRef = ref(db, `game_rooms/${roomId}/chat/${key}`);
   set(chatRef, { playerId, messageId, timestamp: Date.now() });
   // 오래된 메시지 정리 (백그라운드, 60초 이상 경과)
+  cleanupOldChatMessages(roomId);
+}
+
+export function sendChatTextMessage(roomId: string, playerId: string, text: string): void {
+  const db = getDb();
+  const key = `${playerId}_${Date.now()}`;
+  const chatRef = ref(db, `game_rooms/${roomId}/chat/${key}`);
+  set(chatRef, { playerId, messageId: -1, text, timestamp: Date.now() });
   cleanupOldChatMessages(roomId);
 }
 
