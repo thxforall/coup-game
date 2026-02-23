@@ -36,11 +36,12 @@
 | 027 | 퀵챗 말풍선 제거 + 이벤트 로그 통합 + 확인 모달 아이콘/서술형 레이블 | 2026-02-24 | 0deccf2 | [027-chat-to-log-and-confirm-modal-ux](./quick/027-chat-to-log-and-confirm-modal-ux/) |
 | 028 | '블러프' -> '거짓말' 한국어 용어 통일 (7개 소스/테스트 파일) | 2026-02-24 | 3028af7 | [028-bluff-to-lie-korean-terminology](./quick/028-bluff-to-lie-korean-terminology/) |
 | 029 | 갈취(steal) 0코인 대상 UI 차단 + 서버 검증 거부 | 2026-02-24 | 977703d | [029-steal-block-zero-coins-target](./quick/029-steal-block-zero-coins-target/) |
+| 030 | 대상 선택 인라인 UI → TargetSelectModal 모달 교체 (갈취/암살/쿠데타) | 2026-02-24 | 832fbbb | [030-target-selection-action-modal-replacemen](./quick/030-target-selection-action-modal-replacemen/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-24T15:05:00Z
-- Stopped at: Completed quick-029 (갈취 0코인 대상 차단)
+- Last session: 2026-02-24T15:16:27Z
+- Stopped at: Completed quick-030 (대상 선택 모달 교체)
 - Resume file: None
