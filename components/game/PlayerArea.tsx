@@ -9,10 +9,11 @@ import {
     Repeat,
     Shield,
     Coins,
-    X,
 } from 'lucide-react';
 import { FilteredPlayer, Character, CHARACTER_NAMES } from '@/lib/game/types';
+import { PLAYER_AVATAR_COLORS } from '@/lib/game/player-colors';
 import CardInfoModal from './CardInfoModal';
+import BottomSheet from '@/components/ui/BottomSheet';
 
 // ----------------------------------------------------------------
 // Types & constants
@@ -23,15 +24,6 @@ interface Props {
     isCurrentTurn: boolean;
     online?: boolean;
 }
-
-const PLAYER_AVATAR_COLORS = [
-    '#8E44AD', // violet
-    '#2980B9', // blue
-    '#27AE60', // green
-    '#C0392B', // red
-    '#E67E22', // orange
-    '#16A085', // teal
-];
 
 const CHAR_COLORS: Record<Character, string> = {
     Duke: '#8E44AD',
@@ -178,7 +170,7 @@ function CardStatusDots({ cards }: CardStatusDotsProps) {
                 return (
                     <div
                         key={i}
-                        className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isRevealed ? 'bg-red-500' : 'bg-gray-400'}`}
+                        className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isRevealed ? 'bg-red-500' : 'bg-emerald-500'}`}
                         title={isRevealed ? '탈락' : '살아있음'}
                     />
                 );
@@ -304,79 +296,54 @@ function PlayerArea({ player, isCurrentTurn, online }: Props) {
                 <CardStatusDots cards={player.cards} />
             </button>
 
-            {/* ---- Mobile detail popover (fixed overlay) ---- */}
+            {/* ---- Mobile detail popover (bottom sheet) ---- */}
             {showDetail && (
-                <div
-                    className="sm:hidden fixed inset-0 z-50 flex items-center justify-center p-4"
-                    onClick={() => setShowDetail(false)}
-                >
-                    {/* Dim backdrop */}
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-
-                    {/* Detail card */}
-                    <div
-                        className="relative z-10 bg-bg-card border border-border-subtle rounded-xl p-4 w-full max-w-[240px] animate-slide-up shadow-xl"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {/* Close button */}
-                        <button
-                            type="button"
-                            onClick={() => setShowDetail(false)}
-                            className="absolute top-2 right-2 p-1 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-surface transition-colors"
-                            aria-label="닫기"
+                <BottomSheet onClose={() => setShowDetail(false)} mobileMaxHeight="55vh">
+                    {/* Player header */}
+                    <div className="flex items-center gap-3 px-4 pt-3 pb-3">
+                        <div
+                            className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-sm flex-shrink-0"
+                            style={{ backgroundColor: avatarColor }}
                         >
-                            <X size={14} />
-                        </button>
-
-                        {/* Player header */}
-                        <div className="flex items-center gap-2 mb-3">
-                            <div
-                                className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-sm flex-shrink-0"
-                                style={{ backgroundColor: avatarColor }}
-                            >
-                                {initial}
-                            </div>
-                            <div className="min-w-0">
-                                <div className="flex items-center gap-1.5">
-                                    <span className="text-sm font-bold text-text-primary truncate">
-                                        {isCurrentTurn && <span className="text-gold mr-1">&#9658;</span>}
-                                        {player.name}
-                                    </span>
-                                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${online ? 'bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.6)]' : 'bg-gray-500'}`} />
-                                </div>
-                                {player.isAlive ? (
-                                    <div
-                                        className="flex items-center gap-1 mt-0.5"
-                                        style={{ color: '#F1C40F' }}
-                                    >
-                                        <Coins size={10} strokeWidth={2.5} />
-                                        <span className="text-xs font-bold">{player.coins} 코인</span>
-                                    </div>
-                                ) : (
-                                    <span className="text-xs text-text-muted font-medium mt-0.5 block">탈락</span>
-                                )}
-                            </div>
+                            {initial}
                         </div>
-
-                        {/* Full card display */}
-                        <div className="flex gap-2 justify-center">
-                            {player.cards.map((card, i) =>
-                                card.revealed && card.character ? (
-                                    <RevealedCard
-                                        key={i}
-                                        character={card.character}
-                                        onClick={() => {
-                                            setShowDetail(false);
-                                            setSelectedCard(card.character!);
-                                        }}
-                                    />
-                                ) : (
-                                    <FaceDownCard key={i} />
-                                )
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-sm font-bold text-text-primary truncate">
+                                    {isCurrentTurn && <span className="text-gold mr-1">&#9658;</span>}
+                                    {player.name}
+                                </span>
+                                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${online ? 'bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.6)]' : 'bg-gray-500'}`} />
+                            </div>
+                            {player.isAlive ? (
+                                <div className="flex items-center gap-1 mt-0.5" style={{ color: '#F1C40F' }}>
+                                    <Coins size={10} strokeWidth={2.5} />
+                                    <span className="text-xs font-bold">{player.coins} 코인</span>
+                                </div>
+                            ) : (
+                                <span className="text-xs text-text-muted font-medium mt-0.5 block">탈락</span>
                             )}
                         </div>
                     </div>
-                </div>
+
+                    {/* Full card display */}
+                    <div className="flex gap-4 justify-center px-4 pb-4">
+                        {player.cards.map((card, i) =>
+                            card.revealed && card.character ? (
+                                <RevealedCard
+                                    key={i}
+                                    character={card.character}
+                                    onClick={() => {
+                                        setShowDetail(false);
+                                        setSelectedCard(card.character!);
+                                    }}
+                                />
+                            ) : (
+                                <FaceDownCard key={i} />
+                            )
+                        )}
+                    </div>
+                </BottomSheet>
             )}
 
             {/* Card info modal */}
