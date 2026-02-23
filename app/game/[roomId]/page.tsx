@@ -2,11 +2,11 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { subscribeToRoom, getRoom } from '@/lib/firebase.client';
+import { subscribeToRoom, getRoom, setupPresence, subscribeToPresence, PresenceMap } from '@/lib/firebase.client';
 import { FilteredGameState } from '@/lib/game/types';
 import WaitingRoom from '@/components/game/WaitingRoom';
 import GameBoard from '@/components/game/GameBoard';
-import { getOrCreatePlayerId as getPlayerId } from '@/lib/storage';
+import { getOrCreatePlayerId as getPlayerId, setActiveRoom } from '@/lib/storage';
 
 export default function GamePage() {
     const params = useParams();
@@ -15,10 +15,24 @@ export default function GamePage() {
     const [state, setState] = useState<FilteredGameState | null>(null);
     const [playerId, setPlayerId] = useState('');
     const [loading, setLoading] = useState(true);
+    const [presence, setPresence] = useState<PresenceMap>({});
 
     useEffect(() => {
         setPlayerId(getPlayerId());
-    }, []);
+        setActiveRoom(roomId);
+    }, [roomId]);
+
+    // Presence: 현재 플레이어를 online으로 등록
+    useEffect(() => {
+        if (!roomId || !playerId) return;
+        return setupPresence(roomId, playerId);
+    }, [roomId, playerId]);
+
+    // Presence: 모든 플레이어 접속 상태 구독
+    useEffect(() => {
+        if (!roomId) return;
+        return subscribeToPresence(roomId, (p) => setPresence(p));
+    }, [roomId]);
 
     // 초기 상태 로드 + Realtime 구독
     useEffect(() => {
@@ -70,6 +84,14 @@ export default function GamePage() {
         });
     };
 
+    const handleRestart = useCallback(async () => {
+        await fetch('/api/game/restart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ roomId, playerId }),
+        });
+    }, [roomId, playerId]);
+
     if (loading || !state) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-950">
@@ -82,8 +104,8 @@ export default function GamePage() {
     }
 
     if (state.phase === 'waiting') {
-        return <WaitingRoom state={state} playerId={playerId} roomId={roomId} onStart={handleStart} />;
+        return <WaitingRoom state={state} playerId={playerId} roomId={roomId} onStart={handleStart} presence={presence} />;
     }
 
-    return <GameBoard state={state} playerId={playerId} roomId={roomId} onAction={sendAction} />;
+    return <GameBoard state={state} playerId={playerId} roomId={roomId} onAction={sendAction} onRestart={handleRestart} presence={presence} />;
 }
