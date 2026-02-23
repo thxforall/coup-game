@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRoom, updateRoomWithViews } from '@/lib/firebase';
-import { initGame } from '@/lib/game/engine';
+import { GameState } from '@/lib/game/types';
 import { filterStateForPlayer } from '@/lib/game/filter';
 
 export async function POST(req: NextRequest) {
@@ -32,9 +32,23 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 기존 모든 플레이어(탈락자 포함)로 새 게임 초기화
-  const allPlayers = state.players.map((p) => ({ id: p.id, name: p.name }));
-  const newState = initGame(allPlayers, state.gameMode);
+  // 대기실로 복귀 (모든 플레이어 리셋, 레디 초기화)
+  const newState: GameState = {
+    players: state.players.map((p) => ({
+      id: p.id,
+      name: p.name,
+      coins: 2,
+      cards: [],
+      isAlive: true,
+      isReady: false,
+    })),
+    currentTurnId: state.players[0].id,
+    phase: 'waiting',
+    deck: [],
+    pendingAction: null,
+    log: ['게임이 재시작되었습니다. 준비를 눌러주세요!'],
+    gameMode: state.gameMode,
+  };
 
   const views: Record<string, import('@/lib/game/types').FilteredGameState> = {};
   for (const p of newState.players) {
