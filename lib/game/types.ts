@@ -1,0 +1,108 @@
+// ============================================================
+// 게임 타입 정의
+// ============================================================
+
+export type Character = 'Duke' | 'Contessa' | 'Captain' | 'Assassin' | 'Ambassador';
+
+export type ActionType =
+  | 'income'       // 소득: 코인 +1 (막기 불가)
+  | 'foreignAid'   // 외국 원조: 코인 +2 (공작이 막을 수 있음)
+  | 'coup'         // 쿠: 코인 7개, 상대 카드 제거 (막기 불가)
+  | 'tax'          // 세금: 코인 +3 (공작 능력, 도전 가능)
+  | 'assassinate'  // 암살: 코인 3개, 상대 카드 제거 (암살자 능력, 백작부인 막기, 도전 가능)
+  | 'steal'        // 강탈: 상대 코인 2개 탈취 (사령관 능력, 대사/사령관 막기, 도전 가능)
+  | 'exchange';    // 교환: 덱에서 카드 교체 (대사 능력, 도전 가능)
+
+export type ResponseType = 'challenge' | 'block' | 'pass';
+
+export type GamePhase =
+  | 'waiting'                 // 대기실
+  | 'action'                  // 현재 플레이어 액션 선택
+  | 'awaiting_response'       // 다른 플레이어들 도전/블록 대기
+  | 'awaiting_block_response' // 블록에 대한 도전 대기
+  | 'lose_influence'          // 카드 잃을 플레이어가 선택해야 함
+  | 'exchange_select'         // 대사 능력: 교환할 카드 선택
+  | 'game_over';              // 게임 종료
+
+export interface Card {
+  character: Character;
+  revealed: boolean; // true = 탈락 카드 (공개됨)
+}
+
+export interface Player {
+  id: string;
+  name: string;
+  coins: number;
+  cards: Card[];
+  isAlive: boolean;
+  isReady: boolean; // 대기실에서 준비 완료 여부
+}
+
+export interface PendingAction {
+  type: ActionType;
+  actorId: string;
+  targetId?: string;                                        // 대상이 있는 액션 (쿠, 암살, 강탈)
+  responses: Record<string, ResponseType | null>;          // 플레이어별 응답
+  blockerId?: string;                                      // 블로커 플레이어 ID
+  blockerCharacter?: Character;                            // 블로커가 주장하는 캐릭터
+  losingPlayerId?: string;                                 // 카드를 잃어야 하는 플레이어 ID
+  exchangeCards?: Character[];                             // 대사가 뽑은 카드 2장
+}
+
+export interface GameState {
+  players: Player[];
+  currentTurnId: string;
+  phase: GamePhase;
+  deck: Character[];
+  pendingAction: PendingAction | null;
+  log: string[];
+  winnerId?: string;
+}
+
+// 액션 요청 타입 (API 전달용)
+export type GameAction =
+  | { type: 'income' }
+  | { type: 'foreignAid' }
+  | { type: 'coup'; targetId: string }
+  | { type: 'tax' }
+  | { type: 'assassinate'; targetId: string }
+  | { type: 'steal'; targetId: string }
+  | { type: 'exchange' }
+  | { type: 'respond'; response: ResponseType; character?: Character } // block 시 character 필요
+  | { type: 'lose_influence'; cardIndex: number }
+  | { type: 'exchange_select'; keptIndices: number[] };
+
+// 캐릭터 한국어 이름
+export const CHARACTER_NAMES: Record<Character, string> = {
+  Duke: '공작',
+  Contessa: '백작부인',
+  Captain: '사령관',
+  Assassin: '암살자',
+  Ambassador: '대사',
+};
+
+// 액션 한국어 이름
+export const ACTION_NAMES: Record<ActionType, string> = {
+  income: '소득',
+  foreignAid: '외국 원조',
+  coup: '쿠',
+  tax: '세금',
+  assassinate: '암살',
+  steal: '강탈',
+  exchange: '교환',
+};
+
+// 블록 가능 캐릭터 (action -> 막을 수 있는 캐릭터들)
+export const BLOCK_CHARACTERS: Partial<Record<ActionType, Character[]>> = {
+  foreignAid: ['Duke'],
+  assassinate: ['Contessa'],
+  steal: ['Captain', 'Ambassador'],
+};
+
+// 캐릭터별 액션 능력
+export const CHARACTER_ACTIONS: Partial<Record<Character, ActionType>> = {
+  Duke: 'tax',
+  Captain: 'steal',
+  Assassin: 'assassinate',
+  Ambassador: 'exchange',
+};
