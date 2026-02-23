@@ -16,9 +16,6 @@ export async function POST(req: NextRequest) {
     const state = room.state;
     if (state.phase !== 'waiting') return NextResponse.json({ error: '게임이 이미 시작되었습니다' }, { status: 400 });
     if (state.players.length >= 6) return NextResponse.json({ error: '방이 가득 찼습니다' }, { status: 400 });
-    if (state.kickedPlayerIds?.includes(playerId)) {
-      return NextResponse.json({ error: '추방된 방에는 다시 참가할 수 없습니다' }, { status: 403 });
-    }
     if (state.players.find((p) => p.id === playerId)) return NextResponse.json({ roomId }, { status: 200 });
 
     const newPlayer: Player = {
