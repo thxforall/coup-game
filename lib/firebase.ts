@@ -71,6 +71,32 @@ export async function listRoomIds(): Promise<string[]> {
   return Object.keys(data);
 }
 
+// Cleanup thresholds (ms)
+const GAME_OVER_TTL = 30 * 60 * 1000;       // 30분: game_over 방치
+const WAITING_TTL = 2 * 60 * 60 * 1000;      // 2시간: waiting 방치
+const ABSOLUTE_TTL = 24 * 60 * 60 * 1000;    // 24시간: 최대 수명
+
+/** 방이 stale인지 판단 (삭제 대상이면 true) */
+export function isRoomStale(state: GameState): boolean {
+  const now = Date.now();
+  const { phase, createdAt, updatedAt } = state;
+
+  // 타임스탬프 없는 레거시 방
+  if (!createdAt && !updatedAt) return true;
+
+  const lastActivity = updatedAt ?? createdAt ?? 0;
+  const created = createdAt ?? lastActivity;
+
+  // 24시간 초과
+  if (now - created > ABSOLUTE_TTL) return true;
+  // game_over 30분 방치
+  if (phase === 'game_over' && now - lastActivity > GAME_OVER_TTL) return true;
+  // waiting 2시간 방치
+  if (phase === 'waiting' && now - lastActivity > WAITING_TTL) return true;
+
+  return false;
+}
+
 /**
  * state + 플레이어별 filtered views를 동시에 쓰기 (multi-path PATCH)
  */

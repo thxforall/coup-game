@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRoom } from '@/lib/firebase';
+import { getRoom, deleteRoom, isRoomStale } from '@/lib/firebase';
 
 export async function GET(req: NextRequest) {
   const roomId = req.nextUrl.searchParams.get('roomId');
@@ -11,6 +11,12 @@ export async function GET(req: NextRequest) {
 
   const room = await getRoom(roomId);
   if (!room) {
+    return NextResponse.json({ active: false, phase: null });
+  }
+
+  // Lazy cleanup: stale 방이면 삭제 후 비활성 반환
+  if (isRoomStale(room.state)) {
+    await deleteRoom(roomId).catch(() => {});
     return NextResponse.json({ active: false, phase: null });
   }
 
