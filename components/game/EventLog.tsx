@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useEffect, useRef } from 'react';
+import { memo, useEffect, useRef, useMemo } from 'react';
 import { ScrollText, Swords, ShieldAlert, ShieldCheck, Zap, Crosshair, Repeat, Skull, Trophy, MessageCircle } from 'lucide-react';
 import { LogEntry, LogEntryType } from '@/lib/game/types';
 
@@ -14,6 +14,64 @@ interface Props {
     log: string[];
     structuredLog?: LogEntry[];
     chatLogs?: ChatLogItem[];
+}
+
+interface MiniEventLogProps {
+    log: string[];
+    structuredLog?: LogEntry[];
+    chatLogs?: ChatLogItem[];
+    statusMessage: string;
+}
+
+// Merged log entry types
+type StructuredMerged =
+    | { kind: 'game'; entry: LogEntry; sortKey: number }
+    | { kind: 'chat'; item: ChatLogItem; sortKey: number };
+
+type PlainMerged =
+    | { kind: 'game'; text: string; index: number; sortKey: number }
+    | { kind: 'chat'; item: ChatLogItem; sortKey: number };
+
+/** Shared hook to merge game log + chat log entries */
+function useMergedLog(log: string[], structuredLog?: LogEntry[], chatLogs: ChatLogItem[] = []) {
+    const useStructured = structuredLog && structuredLog.length > 0;
+
+    const mergedStructured: StructuredMerged[] | null = useMemo(() => {
+        if (!useStructured) return null;
+        const gameEntries: StructuredMerged[] = structuredLog.map((entry, i) => ({
+            kind: 'game',
+            entry,
+            sortKey: i,
+        }));
+        const minChat = chatLogs.length > 0 ? Math.min(...chatLogs.map((c) => c.timestamp)) : 0;
+        const maxGame = gameEntries.length;
+        const chatEntries: StructuredMerged[] = chatLogs.map((item) => ({
+            kind: 'chat',
+            item,
+            sortKey: maxGame + (item.timestamp - minChat) / 1e13,
+        }));
+        return [...gameEntries, ...chatEntries].sort((a, b) => a.sortKey - b.sortKey);
+    }, [useStructured, structuredLog, chatLogs]);
+
+    const mergedPlain: PlainMerged[] | null = useMemo(() => {
+        if (useStructured) return null;
+        const gameEntries: PlainMerged[] = log.map((text, i) => ({
+            kind: 'game',
+            text,
+            index: i,
+            sortKey: i,
+        }));
+        const minChat = chatLogs.length > 0 ? Math.min(...chatLogs.map((c) => c.timestamp)) : 0;
+        const maxGame = gameEntries.length;
+        const chatEntries: PlainMerged[] = chatLogs.map((item) => ({
+            kind: 'chat',
+            item,
+            sortKey: maxGame + (item.timestamp - minChat) / 1e13,
+        }));
+        return [...gameEntries, ...chatEntries].sort((a, b) => a.sortKey - b.sortKey);
+    }, [useStructured, log, chatLogs]);
+
+    return { useStructured, mergedStructured, mergedPlain };
 }
 
 /**
@@ -97,54 +155,7 @@ function EventLog({ log, structuredLog, chatLogs = [] }: Props) {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [log, structuredLog, chatLogs]);
 
-    const useStructured = structuredLog && structuredLog.length > 0;
-
-    // Build merged entries for structured log mode
-    type StructuredMerged =
-        | { kind: 'game'; entry: LogEntry; sortKey: number }
-        | { kind: 'chat'; item: ChatLogItem; sortKey: number };
-
-    const mergedStructured: StructuredMerged[] | null = useStructured
-        ? (() => {
-              const gameEntries: StructuredMerged[] = structuredLog.map((entry, i) => ({
-                  kind: 'game',
-                  entry,
-                  sortKey: i,
-              }));
-              const minChat = chatLogs.length > 0 ? Math.min(...chatLogs.map((c) => c.timestamp)) : 0;
-              const maxGame = gameEntries.length;
-              const chatEntries: StructuredMerged[] = chatLogs.map((item) => ({
-                  kind: 'chat',
-                  item,
-                  sortKey: maxGame + (item.timestamp - minChat) / 1e13,
-              }));
-              return [...gameEntries, ...chatEntries].sort((a, b) => a.sortKey - b.sortKey);
-          })()
-        : null;
-
-    // Build merged entries for plain log mode
-    type PlainMerged =
-        | { kind: 'game'; text: string; index: number; sortKey: number }
-        | { kind: 'chat'; item: ChatLogItem; sortKey: number };
-
-    const mergedPlain: PlainMerged[] | null = !useStructured
-        ? (() => {
-              const gameEntries: PlainMerged[] = log.map((text, i) => ({
-                  kind: 'game',
-                  text,
-                  index: i,
-                  sortKey: i,
-              }));
-              const minChat = chatLogs.length > 0 ? Math.min(...chatLogs.map((c) => c.timestamp)) : 0;
-              const maxGame = gameEntries.length;
-              const chatEntries: PlainMerged[] = chatLogs.map((item) => ({
-                  kind: 'chat',
-                  item,
-                  sortKey: maxGame + (item.timestamp - minChat) / 1e13,
-              }));
-              return [...gameEntries, ...chatEntries].sort((a, b) => a.sortKey - b.sortKey);
-          })()
-        : null;
+    const { mergedStructured, mergedPlain } = useMergedLog(log, structuredLog, chatLogs);
 
     return (
         <div className="h-full bg-bg-card rounded-xl overflow-y-auto">
@@ -203,5 +214,78 @@ function EventLog({ log, structuredLog, chatLogs = [] }: Props) {
         </div>
     );
 }
+
+/** Shared log rendering used by both EventLog and MiniEventLog */
+function LogEntries({
+    mergedStructured,
+    mergedPlain,
+}: {
+    mergedStructured: StructuredMerged[] | null;
+    mergedPlain: PlainMerged[] | null;
+}) {
+    return (
+        <>
+            {mergedStructured
+                ? mergedStructured.map((item, i) => {
+                      const isLatest = i === mergedStructured.length - 1;
+                      if (item.kind === 'chat') {
+                          return <ChatLogEntry key={`chat-${i}`} item={item.item} isLatest={isLatest} />;
+                      }
+                      return (
+                          <StructuredLogEntry key={`game-${i}`} entry={item.entry} isLatest={isLatest} />
+                      );
+                  })
+                : mergedPlain!.map((item, i) => {
+                      const isLatest = i === mergedPlain!.length - 1;
+                      if (item.kind === 'chat') {
+                          return <ChatLogEntry key={`chat-${i}`} item={item.item} isLatest={isLatest} />;
+                      }
+                      const color = isLatest ? 'text-gold' : getLogColor(item.text);
+                      return (
+                          <div
+                              key={`game-${item.index}`}
+                              className={`flex items-start gap-2 rounded-md px-2 py-1 transition-colors duration-200 ${
+                                  isLatest ? 'bg-gold/10' : 'hover:bg-bg-surface'
+                              }`}
+                          >
+                              <span className={`font-mono text-[10px] leading-relaxed flex-shrink-0 mt-px ${color}`}>
+                                  &bull;
+                              </span>
+                              <span className={`font-mono text-[10px] leading-relaxed ${color}`}>
+                                  {item.text}
+                              </span>
+                          </div>
+                      );
+                  })}
+        </>
+    );
+}
+
+function MiniEventLogInner({ log, structuredLog, chatLogs = [], statusMessage }: MiniEventLogProps) {
+    const bottomRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [log, structuredLog, chatLogs]);
+
+    const { mergedStructured, mergedPlain } = useMergedLog(log, structuredLog, chatLogs);
+
+    return (
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            {/* Status header */}
+            <div className="px-3 py-2">
+                <p className="text-text-muted text-xs animate-pulse">{statusMessage}</p>
+            </div>
+
+            {/* Log entries */}
+            <div className="flex-1 overflow-y-auto px-3 py-1 space-y-0.5">
+                <LogEntries mergedStructured={mergedStructured} mergedPlain={mergedPlain} />
+                <div ref={bottomRef} />
+            </div>
+        </div>
+    );
+}
+
+export const MiniEventLog = memo(MiniEventLogInner);
 
 export default memo(EventLog);
