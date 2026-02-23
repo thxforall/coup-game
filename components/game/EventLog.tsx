@@ -72,9 +72,9 @@ function EventLog({ log, structuredLog }: Props) {
     const useStructured = structuredLog && structuredLog.length > 0;
 
     return (
-        <div className="h-full bg-bg-card border border-border-subtle rounded-xl overflow-y-auto">
+        <div className="h-full bg-bg-card rounded-xl overflow-y-auto">
             {/* Header — sticky */}
-            <div className="sticky top-0 z-10 flex items-center gap-2 px-4 py-3 border-b border-border-subtle bg-bg-card">
+            <div className="sticky top-0 z-10 flex items-center gap-2 px-4 py-3 border-b border-border-subtle/50 bg-bg-card">
                 <ScrollText className="w-4 h-4 text-text-secondary flex-shrink-0" />
                 <span className="font-sora text-xs font-semibold text-text-secondary uppercase tracking-wider">
                     게임 로그

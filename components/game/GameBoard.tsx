@@ -506,7 +506,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             {/* 모바일 로그 패널 (오버레이) */}
             {showMobileLog && (
                 <div className="lg:hidden relative z-30" ref={mobileLogRef}>
-                    <div className="absolute inset-x-0 top-0 max-h-[50vh] overflow-y-auto bg-bg-dark/95 border-b border-border-subtle p-3">
+                    <div className="absolute inset-x-0 top-0 max-h-[50vh] overflow-y-auto bg-bg-dark/95 p-3">
                         <EventLog log={state.log} structuredLog={state.structuredLog} />
                     </div>
                 </div>
