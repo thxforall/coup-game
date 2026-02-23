@@ -1,10 +1,9 @@
 'use client';
 
 import { memo, useState, useEffect } from 'react';
-import { Settings, RotateCcw, LogOut, X, Image as ImageIcon } from 'lucide-react';
+import { Settings, RotateCcw, LogOut, X } from 'lucide-react';
 import { FilteredGameState } from '@/lib/game/types';
 import { clearActiveRoom } from '@/lib/storage';
-import { getUISettings, updateUISetting } from '@/lib/settings';
 import BottomSheet from '@/components/ui/BottomSheet';
 
 interface Props {
@@ -23,7 +22,6 @@ function SettingsModal({ state, playerId, roomId, onClose }: Props) {
     const [deleteError, setDeleteError] = useState('');
     const [restartLoading, setRestartLoading] = useState(false);
     const [restartError, setRestartError] = useState('');
-    const [uiSettings, setUiSettings] = useState(getUISettings());
 
     const isHost = state.players[0]?.id === playerId;
     const isGameOver = state.phase === 'game_over';
@@ -117,42 +115,6 @@ function SettingsModal({ state, playerId, roomId, onClose }: Props) {
                     <div className="flex items-center gap-3 bg-bg-surface rounded-lg px-4 py-3 border border-border-subtle">
                         <span className="text-sm font-bold text-gold">{gameModeName}</span>
                         <span className="text-xs text-text-secondary">{gameModeDesc}</span>
-                    </div>
-                </div>
-
-                {/* UI 설정 */}
-                <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-text-muted mb-2">
-                        UI 설정
-                    </p>
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between bg-bg-surface rounded-lg px-4 py-3 border border-border-subtle">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-md bg-bg-card border border-border-subtle text-text-secondary">
-                                    <ImageIcon className="w-4 h-4" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-text-primary">배경 이미지</span>
-                                    <span className="text-[11px] text-text-muted">게임 배경에 은은한 메인 이미지 표시</span>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    const next = !uiSettings.showBgImage;
-                                    setUiSettings(updateUISetting('showBgImage', next));
-                                }}
-                                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${uiSettings.showBgImage ? 'bg-gold' : 'bg-bg-card'
-                                    }`}
-                                role="switch"
-                                aria-checked={uiSettings.showBgImage}
-                            >
-                                <span
-                                    aria-hidden="true"
-                                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${uiSettings.showBgImage ? 'translate-x-5' : 'translate-x-0'
-                                        }`}
-                                />
-                            </button>
-                        </div>
                     </div>
                 </div>
 

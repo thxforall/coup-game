@@ -102,33 +102,6 @@
     border-color: var(--gold);
     --tw-ring-color: rgba(200, 169, 96, 0.2);
   }
-
-  /* Glassmorphism for Background Image */
-  .has-bg-image .bg-bg-card,
-  .has-bg-image .glass-panel {
-    background-color: rgba(var(--bg-card-rgb), 0.7) !important;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-  }
-
-  .has-bg-image .bg-bg-surface {
-    background-color: rgba(var(--bg-surface-rgb), 0.6) !important;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-  }
-
-  .has-bg-image header {
-    background-color: rgba(var(--bg-card-rgb), 0.75) !important;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-
-  /* 게임보드 주요 섹션에 반투명 배경 */
-  .has-bg-image .bg-overlay {
-    background-color: rgba(var(--bg-dark-rgb), 0.55);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-  }
 }
 
 /* ============================================================ */

@@ -16,7 +16,16 @@ export async function POST(req: NextRequest) {
     const state = room.state;
     if (state.phase !== 'waiting') return NextResponse.json({ error: '게임이 이미 시작되었습니다' }, { status: 400 });
     if (state.players.length >= 6) return NextResponse.json({ error: '방이 가득 찼습니다' }, { status: 400 });
-    if (state.players.find((p) => p.id === playerId)) return NextResponse.json({ roomId }, { status: 200 });
+
+    // 재입장 확인 (ID가 같으면 이름 상관없이 통과)
+    if (state.players.some((p) => p.id === playerId)) {
+      return NextResponse.json({ roomId }, { status: 200 });
+    }
+
+    // 중복 닉네임 확인
+    if (state.players.some((p) => p.name === playerName)) {
+      return NextResponse.json({ error: '이미 사용 중인 닉네임입니다' }, { status: 400 });
+    }
 
     const newPlayer: Player = {
       id: playerId, name: playerName, coins: 2,

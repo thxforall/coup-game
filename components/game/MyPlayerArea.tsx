@@ -160,9 +160,8 @@ function MyPlayerArea({ player }: Props) {
     return (
         <>
             <div
-                className="p-2 sm:p-4 rounded-2xl"
+                className="p-2 sm:p-4 rounded-2xl bg-bg-card"
                 style={{
-                    backgroundColor: 'var(--bg-card)',
                     border: `1.5px solid ${playerColor}40`,
                     boxShadow: `0 0 12px ${playerColor}1A`,
                 }}
