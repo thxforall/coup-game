@@ -84,8 +84,15 @@ function getLiveCardCount(player: Player): number {
   return player.cards.filter((c) => !c.revealed).length;
 }
 
-function addLog(state: GameState, msg: string): GameState {
-  return { ...state, log: [...state.log, msg] };
+function addLog(state: GameState, msg: string, entry?: Omit<LogEntry, 'message' | 'timestamp'>): GameState {
+  const newState = { ...state, log: [...state.log, msg] };
+  if (entry) {
+    const logEntry: LogEntry = { ...entry, message: msg, timestamp: Date.now() };
+    newState.structuredLog = [...(state.structuredLog ?? []), logEntry];
+  } else {
+    newState.structuredLog = [...(state.structuredLog ?? []), { type: 'action_declared' as LogEntryType, message: msg, timestamp: Date.now() }];
+  }
+  return newState;
 }
 
 // 다음 살아있는 플레이어로 턴 이동
@@ -142,9 +149,9 @@ export function processAction(
   const actor = getPlayer(state, actorId);
   const { type, targetId } = action;
 
-  // 쿠 10코인 강제 체크
+  // 쿠데타 10코인 강제 체크
   if (actor.coins >= 10 && type !== 'coup') {
-    throw new Error('코인이 10개 이상이면 쿠를 해야 합니다');
+    throw new Error('코인이 10개 이상이면 쿠데타를 해야 합니다');
   }
 
   let s = state;
@@ -160,8 +167,8 @@ export function processAction(
     }
 
     case 'coup': {
-      if (!targetId) throw new Error('쿠: 대상이 필요합니다');
-      if (actor.coins < 7) throw new Error('쿠: 코인 7개 필요');
+      if (!targetId) throw new Error('쿠데타: 대상이 필요합니다');
+      if (actor.coins < 7) throw new Error('쿠데타: 코인 7개 필요');
       const target = getPlayer(s, targetId);
 
       // Guess 모드: 캐릭터 추측
@@ -182,7 +189,7 @@ export function processAction(
           );
           s = addLog(
             { ...s, players: revealedPlayers },
-            `${actor.name}이(가) ${target.name}에게 쿠! ${CHARACTER_NAMES[guessed]} 추측 성공!`
+            `${actor.name}이(가) ${target.name}에게 쿠데타! ${CHARACTER_NAMES[guessed]} 추측 성공!`
           );
           const updatedTarget = revealedPlayers.find((p) => p.id === targetId)!;
           if (!updatedTarget.isAlive) {
@@ -195,7 +202,7 @@ export function processAction(
           // 오답: 코인만 소모, 상대 카드 유지
           s = addLog(
             s,
-            `${actor.name}이(가) ${target.name}에게 쿠! ${CHARACTER_NAMES[guessed]} 추측 실패... 코인만 잃었습니다`
+            `${actor.name}이(가) ${target.name}에게 쿠데타! ${CHARACTER_NAMES[guessed]} 추측 실패... 코인만 잃었습니다`
           );
           return nextTurn(s);
         }
@@ -572,7 +579,7 @@ function executeAction(state: GameState): GameState {
       const updatedPlayers = s.players.map((p) =>
         p.id === actorId ? { ...p, coins: p.coins + 3 } : p
       );
-      s = addLog({ ...s, players: updatedPlayers }, `${actor.name}이(가) 세금을 걷었습니다 (+3 코인)`);
+      s = addLog({ ...s, players: updatedPlayers }, `${actor.name}이(가) 세금을 징수했습니다 (+3 코인)`);
       return nextTurn(s);
     }
 
@@ -587,7 +594,7 @@ function executeAction(state: GameState): GameState {
       });
       s = addLog(
         { ...s, players: updatedPlayers },
-        `${actor.name}이(가) ${target.name}으로부터 ${stolen}코인을 강탈했습니다`
+        `${actor.name}이(가) ${target.name}으로부터 ${stolen}코인을 갈취했습니다`
       );
       return nextTurn(s);
     }

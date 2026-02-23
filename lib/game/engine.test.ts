@@ -856,11 +856,11 @@ describe('엣지 케이스', () => {
     });
     expect(() =>
       processAction(state, 'p1', { type: 'income' })
-    ).toThrow('코인이 10개 이상이면 쿠를 해야 합니다');
+    ).toThrow('코인이 10개 이상이면 쿠데타를 해야 합니다');
 
     expect(() =>
       processAction(state, 'p1', { type: 'tax' })
-    ).toThrow('코인이 10개 이상이면 쿠를 해야 합니다');
+    ).toThrow('코인이 10개 이상이면 쿠데타를 해야 합니다');
 
     // 쿠는 가능
     const result = processAction(state, 'p1', { type: 'coup', targetId: 'p2' });

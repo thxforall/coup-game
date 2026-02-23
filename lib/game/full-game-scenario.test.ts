@@ -82,7 +82,7 @@ describe('Full Game Scenario: Phase 1 - 경제 활동', () => {
 // ============================================================
 
 describe('Full Game Scenario: Phase 2 - 직접 공격', () => {
-  test('Turn 4: P4 사령관 강탈(블러프) → P1 대사 방어(블러프) → P4 방어 도전 성공 → P1 카드 잃고 강탈 적중', () => {
+  test('Turn 4: P4 사령관 갈취(블러프) → P1 대사 방어(블러프) → P4 방어 도전 성공 → P1 카드 잃고 갈취 적중', () => {
     // P1이 3코인 보유 상태에서 시작 (Turn 1 income 반영)
     GameScenario.create({
       players: [
@@ -95,7 +95,7 @@ describe('Full Game Scenario: Phase 2 - 직접 공격', () => {
       currentTurnId: 'p4',
       deck: ['Assassin', 'Contessa', 'Ambassador', 'Captain', 'Ambassador'],
     })
-      // P4가 사령관으로 P1 강탈 (블러프 - Captain 없음)
+      // P4가 사령관으로 P1 갈취 (블러프 - Captain 없음)
       .action('p4', { type: 'steal', targetId: 'p1' })
       // P1이 대사로 방어 (블러프 - Ambassador 없음)
       .respond('p1', 'block', 'Ambassador')
@@ -104,7 +104,7 @@ describe('Full Game Scenario: Phase 2 - 직접 공격', () => {
       // P1은 Ambassador 증명 실패 → P1이 카드 선택
       .expectPhase('lose_influence')
       .loseInfluence('p1', 1) // Assassin 버림
-      // 방어 실패 → 강탈 적중
+      // 방어 실패 → 갈취 적중
       .expectCards('p1', 1)
       .expectCoins('p1', 1) // 3 - 2 = 1
       .expectCoins('p4', 4) // 2 + 2 = 4
@@ -113,7 +113,7 @@ describe('Full Game Scenario: Phase 2 - 직접 공격', () => {
   });
 
   test('Turn 5: P5 암살자로 P2 암살 → P2 귀부인 방어(진실) → P5 도전 실패 → P5 카드 잃고 암살 무효화', () => {
-    // P5가 5코인 보유 상태 (세금 징수 등으로 모았다고 가정)
+    // P5가 5코인 보유 상태 (세금징수 등으로 모았다고 가정)
     GameScenario.create({
       players: [
         { id: 'p1', name: 'P1', coins: 1, cards: ['Duke', 'Assassin'] as [Character, Character], revealedIndices: [1] },
@@ -148,7 +148,7 @@ describe('Full Game Scenario: Phase 2 - 직접 공격', () => {
 // ============================================================
 
 describe('Full Game Scenario: Phase 3 - 탈락자 발생', () => {
-  test('Turn 6-8: P1 세금 → P2 세금 → P3 쿠로 P5 확정 킬', () => {
+  test('Turn 6-8: P1 세금징수 → P2 세금징수 → P3 쿠데타로 P5 확정 킬', () => {
     // Phase 2 이후 상태
     GameScenario.create({
       players: [
@@ -161,17 +161,17 @@ describe('Full Game Scenario: Phase 3 - 탈락자 발생', () => {
       currentTurnId: 'p1',
       deck: ['Contessa', 'Ambassador', 'Assassin', 'Captain', 'Ambassador'],
     })
-      // Turn 6: P1 공작으로 세금 (진실)
+      // Turn 6: P1 공작으로 세금징수 (진실)
       .action('p1', { type: 'tax' })
       .allPass()
       .expectCoins('p1', 4)
       .expectCurrentTurn('p2')
-      // Turn 7: P2 공작으로 세금 (진실 - Duke 보유)
+      // Turn 7: P2 공작으로 세금징수 (진실 - Duke 보유)
       .action('p2', { type: 'tax' })
       .allPass()
       .expectCoins('p2', 5)
       .expectCurrentTurn('p3')
-      // P3에게 쿠를 위한 7코인이 필요 → 추가 세금
+      // P3에게 쿠데타를 위한 7코인이 필요 → 추가 세금징수
       .action('p3', { type: 'tax' })
       .allPass()
       .expectCoins('p3', 5)
@@ -182,7 +182,7 @@ describe('Full Game Scenario: Phase 3 - 탈락자 발생', () => {
       // P5 소득
       .action('p5', { type: 'income' })
       .expectCurrentTurn('p1')
-      // P1 세금
+      // P1 세금징수
       .action('p1', { type: 'tax' })
       .allPass()
       .expectCoins('p1', 7)
@@ -190,7 +190,7 @@ describe('Full Game Scenario: Phase 3 - 탈락자 발생', () => {
       // P2 소득
       .action('p2', { type: 'income' })
       .expectCurrentTurn('p3')
-      // Turn 8: P3 쿠로 P5 제거 (추가 세금 후 7코인 도달)
+      // Turn 8: P3 쿠데타로 P5 제거 (추가 세금징수 후 7코인 도달)
       .action('p3', { type: 'tax' })
       .allPass()
       .expectCoins('p3', 8)
@@ -209,7 +209,7 @@ describe('Full Game Scenario: Phase 3 - 탈락자 발생', () => {
       // P3가 P5에게 쿠 발동
       .action('p3', { type: 'coup', targetId: 'p5' })
       .expectCoins('p3', 1) // 8 - 7 = 1
-      // 쿠는 방어/도전 불가 → 즉시 lose_influence
+      // 쿠데타는 방어/도전 불가 → 즉시 lose_influence
       .loseInfluence('p5', 1) // 마지막 카드 Assassin 버림
       .expectAlive('p5', false); // P5 탈락
   });
@@ -242,7 +242,7 @@ describe('Full Game Scenario: Phase 4 - 최후의 3인', () => {
       .expectPhase('action');
   });
 
-  test('0코인 대상에 강탈 → 유효하지만 0코인 이동', () => {
+  test('0코인 대상에 갈취 → 유효하지만 0코인 이동', () => {
     GameScenario.create({
       players: [
         { id: 'p2', name: 'P2', coins: 6, cards: ['Captain', 'Duke'] as [Character, Character], revealedIndices: [0] },
@@ -251,10 +251,10 @@ describe('Full Game Scenario: Phase 4 - 최후의 3인', () => {
       currentTurnId: 'p2',
       deck: ['Contessa', 'Ambassador'],
     })
-      // P2가 사령관으로 P3 강탈 (P3 코인 0)
+      // P2가 사령관으로 P3 갈취 (P3 코인 0)
       .action('p2', { type: 'steal', targetId: 'p3' })
       .allPass()
-      .expectCoins('p2', 6) // 0코인 강탈 → 변동 없음
+      .expectCoins('p2', 6) // 0코인 갈취 → 변동 없음
       .expectCoins('p3', 0);
   });
 });
@@ -289,7 +289,7 @@ describe('Full Game Scenario: Phase 5 - 1대1 데스매치', () => {
       .expectWinner('p3'); // P3 최종 우승!
   });
 
-  test('전체 흐름 요약: 소득 → 블록 → 교환 → 강탈 → 암살 → 쿠 → 최종 결투', () => {
+  test('전체 흐름 요약: 소득 → 블록 → 교환 → 갈취 → 암살 → 쿠데타 → 최종 결투', () => {
     // 핵심 로직 체크포인트를 한 번에 검증하는 통합 테스트
     GameScenario.create({
       players: FULL_GAME_PLAYERS(),
@@ -311,7 +311,7 @@ describe('Full Game Scenario: Phase 5 - 1대1 데스매치', () => {
       .exchangeSelect('p3', [1, 2]) // Duke(기존) + Duke(덱) 킵
       .expectCurrentTurn('p4')
       // === Phase 2: 공격 시작 ===
-      // Turn 4: P4 사령관 강탈 P1(블러프) → P1 대사 방어(블러프) → P4 도전
+      // Turn 4: P4 사령관 갈취 P1(블러프) → P1 대사 방어(블러프) → P4 도전
       .action('p4', { type: 'steal', targetId: 'p1' })
       .respond('p1', 'block', 'Ambassador')
       .blockRespond('p4', 'challenge')

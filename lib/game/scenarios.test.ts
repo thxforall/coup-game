@@ -153,6 +153,9 @@ describe('Scenario: Challenges', () => {
     GameScenario.create({ players: BLUFFER_TAX() })
       .action('p1', { type: 'tax' })
       .respond('p2', 'challenge')
+      // p1 has 2 cards -> lose_influence for card choice
+      .expectPhase('lose_influence')
+      .loseInfluence('p1', 0)
       .expectPhase('action')
       .expectCards('p1', 1)
       .expectCoins('p1', 2)
@@ -163,6 +166,9 @@ describe('Scenario: Challenges', () => {
     GameScenario.create({ players: TRUTHFUL_TAX() })
       .action('p1', { type: 'tax' })
       .respond('p2', 'challenge')
+      // p2 has 2 cards -> lose_influence for card choice
+      .expectPhase('lose_influence')
+      .loseInfluence('p2', 0)
       .expectPhase('action')
       .expectCards('p2', 1)
       .expectCoins('p1', 5)
@@ -174,6 +180,9 @@ describe('Scenario: Challenges', () => {
     GameScenario.create({ players: BLUFFER_STEAL() })
       .action('p1', { type: 'steal', targetId: 'p2' })
       .respond('p2', 'challenge')
+      // p1 has 2 cards -> lose_influence for card choice
+      .expectPhase('lose_influence')
+      .loseInfluence('p1', 0)
       .expectPhase('action')
       .expectCards('p1', 1)
       .expectCoins('p1', 2)
@@ -185,6 +194,9 @@ describe('Scenario: Challenges', () => {
     GameScenario.create({ players: TRUTHFUL_STEAL() })
       .action('p1', { type: 'steal', targetId: 'p2' })
       .respond('p2', 'challenge')
+      // p2 has 2 cards -> lose_influence for card choice
+      .expectPhase('lose_influence')
+      .loseInfluence('p2', 0)
       .expectPhase('action')
       .expectCards('p2', 1)
       .expectCoins('p1', 4)
@@ -198,6 +210,9 @@ describe('Scenario: Challenges', () => {
       .action('p1', { type: 'assassinate', targetId: 'p2' })
       .expectCoins('p1', 2) // coins already deducted
       .respond('p2', 'challenge')
+      // p1 has 2 cards -> lose_influence for card choice
+      .expectPhase('lose_influence')
+      .loseInfluence('p1', 0)
       .expectPhase('action')
       .expectCards('p1', 1)
       .expectCoins('p1', 2) // NOT refunded
@@ -209,6 +224,9 @@ describe('Scenario: Challenges', () => {
     GameScenario.create({ players: ASSASSIN_SETUP() })
       .action('p1', { type: 'assassinate', targetId: 'p2' })
       .respond('p2', 'challenge')
+      // p2 has 2 cards -> lose_influence for challenge card choice
+      .expectPhase('lose_influence')
+      .loseInfluence('p2', 0)
       // challenge fails (p1 has Assassin), p2 loses a card from challenge
       .expectCards('p2', 1)
       // then assassinate executes -> lose_influence for p2
@@ -222,6 +240,9 @@ describe('Scenario: Challenges', () => {
     GameScenario.create({ players: BLUFFER_EXCHANGE() })
       .action('p1', { type: 'exchange' })
       .respond('p2', 'challenge')
+      // p1 has 2 cards -> lose_influence for card choice
+      .expectPhase('lose_influence')
+      .loseInfluence('p1', 0)
       .expectPhase('action')
       .expectCards('p1', 1)
       .expectCurrentTurn('p2');
@@ -231,6 +252,9 @@ describe('Scenario: Challenges', () => {
     GameScenario.create({ players: TRUTHFUL_EXCHANGE() })
       .action('p1', { type: 'exchange' })
       .respond('p2', 'challenge')
+      // p2 has 2 cards -> lose_influence for card choice
+      .expectPhase('lose_influence')
+      .loseInfluence('p2', 0)
       // challenge fails, p2 loses card, exchange proceeds
       .expectCards('p2', 1)
       .expectPhase('exchange_select')
@@ -309,6 +333,9 @@ describe('Scenario: Block Challenges', () => {
       .action('p1', { type: 'foreignAid' })
       .respond('p3', 'block', 'Duke')
       .blockRespond('p1', 'challenge')
+      // p1 has 2 cards -> lose_influence for card choice
+      .expectPhase('lose_influence')
+      .loseInfluence('p1', 0)
       // p3 really has Duke -> challenger (p1) loses card, block holds
       .expectCards('p1', 1)
       .expectCoins('p1', 2) // no foreignAid
@@ -327,6 +354,9 @@ describe('Scenario: Block Challenges', () => {
       .action('p1', { type: 'foreignAid' })
       .respond('p2', 'block', 'Duke')
       .blockRespond('p1', 'challenge')
+      // p2 has 2 cards -> lose_influence for card choice
+      .expectPhase('lose_influence')
+      .loseInfluence('p2', 0)
       // p2 bluffed -> blocker (p2) loses card, foreignAid executes
       .expectCards('p2', 1)
       .expectCoins('p1', 4) // +2 foreignAid
@@ -340,6 +370,9 @@ describe('Scenario: Block Challenges', () => {
       .action('p1', { type: 'assassinate', targetId: 'p2' })
       .respond('p2', 'block', 'Contessa')
       .blockRespond('p1', 'challenge')
+      // p1 has 2 cards -> lose_influence for card choice
+      .expectPhase('lose_influence')
+      .loseInfluence('p1', 0)
       // p2 really has Contessa -> challenger (p1) loses card, block holds, target safe
       .expectCards('p1', 1)
       .expectCards('p2', 2) // safe
@@ -359,6 +392,9 @@ describe('Scenario: Block Challenges', () => {
       .action('p1', { type: 'assassinate', targetId: 'p2' })
       .respond('p2', 'block', 'Contessa')
       .blockRespond('p1', 'challenge')
+      // p2 has 2 cards -> lose_influence for challenge card choice
+      .expectPhase('lose_influence')
+      .loseInfluence('p2', 0)
       // p2 bluffed Contessa -> p2 loses card from challenge, then assassinate executes
       .expectCards('p2', 1)
       .expectPhase('lose_influence')
@@ -379,6 +415,9 @@ describe('Scenario: Block Challenges', () => {
       .action('p1', { type: 'steal', targetId: 'p2' })
       .respond('p2', 'block', 'Captain')
       .blockRespond('p1', 'challenge')
+      // p1 has 2 cards -> lose_influence for card choice
+      .expectPhase('lose_influence')
+      .loseInfluence('p1', 0)
       // p2 really has Captain -> p1 loses card, block holds
       .expectCards('p1', 1)
       .expectCoins('p1', 2) // no steal
@@ -398,6 +437,9 @@ describe('Scenario: Block Challenges', () => {
       .action('p1', { type: 'steal', targetId: 'p2' })
       .respond('p2', 'block', 'Captain')
       .blockRespond('p1', 'challenge')
+      // p2 has 2 cards -> lose_influence for card choice
+      .expectPhase('lose_influence')
+      .loseInfluence('p2', 0)
       // p2 bluffed Captain -> p2 loses card, steal executes
       .expectCards('p2', 1)
       .expectCoins('p1', 4) // +2 stolen
