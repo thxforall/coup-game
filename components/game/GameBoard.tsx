@@ -430,7 +430,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             </header>
 
             {/* 상대방 플레이어 행 (가로) */}
-            <div className="flex-shrink-0 flex flex-row items-start gap-1 sm:gap-1.5 px-2 sm:px-4 py-1.5 sm:py-3 border-b border-border-subtle overflow-x-auto scrollbar-hide">
+            <div className="flex-shrink-0 flex flex-row flex-nowrap items-start gap-1 sm:gap-1.5 px-2 sm:px-4 py-1.5 sm:py-3 border-b border-border-subtle overflow-x-auto scrollbar-hide">
                 {others.map((player) => (
                     <PlayerArea
                         key={player.id}
@@ -442,17 +442,15 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             </div>
 
             {/* 모바일 컴팩트 로그 (항상 보임, 최근 3개 - 게임로그 + 채팅 병합) */}
-            <div className="lg:hidden flex-shrink-0 bg-bg-card/80 border-b border-border-subtle px-2 sm:px-3 py-2">
-                <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0 space-y-0.5">
+            <div className="lg:hidden flex-shrink-0 bg-bg-card border-b border-border-subtle px-2 sm:px-4 py-1.5">
+                <div className="flex items-center gap-2">
+                    <div className="flex-1 min-w-0 flex flex-col gap-0.5">
                         {(() => {
-                            // 게임 로그 항목에 타임스탬프 부여 (인덱스 기반)
                             const gameParts = state.log.map((entry, i) => ({
                                 type: 'game' as const,
                                 text: entry,
                                 timestamp: i,
                             }));
-                            // 채팅 로그 항목 (실제 timestamp 사용, 게임 로그보다 크게 보정)
                             const chatParts = chatLogs.map((c) => ({
                                 type: 'chat' as const,
                                 playerName: c.playerName,
@@ -467,18 +465,20 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                                 const isLatest = i === total - 1;
                                 if (item.type === 'chat') {
                                     return (
-                                        <div key={`chat-${i}`} className="truncate">
-                                            <span className={`font-mono text-[10px] leading-relaxed ${isLatest ? 'text-gold' : 'text-cyan-400'}`}>
-                                                &bull; 💬 {item.playerName}: {item.text}
+                                        <div key={`chat-${i}`} className="flex items-center gap-1.5 truncate">
+                                            <span className="text-cyan-400 text-[10px] flex-shrink-0">💬</span>
+                                            <span className={`font-mono text-[11px] truncate ${isLatest ? 'text-gold' : 'text-cyan-400/80'}`}>
+                                                {item.playerName}: {item.text}
                                             </span>
                                         </div>
                                     );
                                 }
-                                const color = isLatest ? 'text-gold' : getLogColor(item.text);
+                                const color = isLatest ? 'text-gold font-semibold' : getLogColor(item.text) + ' opacity-70';
                                 return (
-                                    <div key={`game-${i}`} className="truncate">
-                                        <span className={`font-mono text-[10px] leading-relaxed ${color}`}>
-                                            &bull; {item.text}
+                                    <div key={`game-${i}`} className="flex items-center gap-1.5 truncate">
+                                        <span className={`text-[10px] flex-shrink-0 ${isLatest ? 'text-gold' : 'text-border-subtle'}`}>▸</span>
+                                        <span className={`font-mono text-[11px] truncate ${color}`}>
+                                            {item.text}
                                         </span>
                                     </div>
                                 );
@@ -486,22 +486,45 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                         })()}
                     </div>
                     <button
-                        className="flex-shrink-0 ml-2 text-[10px] text-text-secondary hover:text-gold transition-colors"
+                        className="flex-shrink-0 ml-1 px-2 py-0.5 text-[10px] font-semibold text-text-secondary hover:text-gold border border-border-subtle hover:border-gold/40 rounded transition-colors"
                         onClick={() => setShowMobileLog(true)}
                     >
-                        전체 보기
+                        전체
                     </button>
                 </div>
             </div>
 
-            {/* 모바일 로그 패널 (오버레이) */}
+            {/* 모바일 로그 패널 (fixed 바텀 시트) */}
             {showMobileLog && (
-                <div className="lg:hidden relative z-30" ref={mobileLogRef}>
-                    <div className="absolute inset-x-0 top-0 max-h-[50vh] overflow-y-auto bg-bg-dark/95 p-3">
-                        <EventLog log={state.log} structuredLog={state.structuredLog} />
+                <div className="lg:hidden fixed inset-0 z-40 flex flex-col justify-end" ref={mobileLogRef}>
+                    {/* 딤 배경 */}
+                    <div
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        onClick={() => setShowMobileLog(false)}
+                    />
+                    {/* 로그 시트 */}
+                    <div className="relative z-10 flex flex-col bg-bg-dark rounded-t-2xl border-t border-border-subtle max-h-[72vh] animate-slide-up">
+                        {/* 핸들 + 헤더 */}
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle/50 flex-shrink-0">
+                            <div className="w-8 h-1 rounded-full bg-border-subtle" />
+                            <span className="font-sora text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                                게임 로그
+                            </span>
+                            <button
+                                className="text-[11px] font-semibold text-text-muted hover:text-gold transition-colors px-2 py-0.5 border border-border-subtle hover:border-gold/40 rounded"
+                                onClick={() => setShowMobileLog(false)}
+                            >
+                                닫기
+                            </button>
+                        </div>
+                        {/* 스크롤 영역 */}
+                        <div className="flex-1 overflow-y-auto">
+                            <EventLog log={state.log} structuredLog={state.structuredLog} chatLogs={chatLogs} />
+                        </div>
                     </div>
                 </div>
             )}
+
 
             {/* 중앙 영역: EventLog(좌, 320px desktop) + TurnArea(우) */}
             <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
@@ -532,20 +555,38 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
 
                     {/* 대기 메시지: 다른 플레이어 턴 */}
                     {!isMyTurn && !mustRespond && state.phase === 'action' && (
-                        <div className="flex-1 flex items-center justify-center">
-                            <p className="text-text-muted text-sm animate-pulse">
-                                {currentPlayer?.name}의 턴입니다...
-                            </p>
+                        <div className="flex-1 flex items-center justify-center p-4">
+                            <div className="glass-panel px-5 py-4 text-center max-w-xs w-full">
+                                <p className="text-text-muted text-xs uppercase tracking-widest mb-1">대기 중</p>
+                                <p className="text-text-primary font-bold text-base">
+                                    {currentPlayer?.name}
+                                    <span className="text-text-muted font-normal text-sm">의 턴</span>
+                                </p>
+                                <div className="mt-2 flex items-center justify-center gap-1">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
+                                    <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse [animation-delay:150ms]" />
+                                    <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse [animation-delay:300ms]" />
+                                </div>
+                            </div>
                         </div>
                     )}
 
                     {/* 대기 메시지: 다른 플레이어가 카드 선택 중 */}
                     {state.phase === 'lose_influence' &&
                         state.pendingAction?.losingPlayerId !== playerId && (
-                            <div className="flex-1 flex items-center justify-center">
-                                <p className="text-text-muted text-sm animate-pulse">
-                                    {state.players.find((p) => p.id === state.pendingAction?.losingPlayerId)?.name}이(가) 잃을 카드를 선택하고 있습니다...
-                                </p>
+                            <div className="flex-1 flex items-center justify-center p-4">
+                                <div className="glass-panel px-5 py-4 text-center max-w-xs w-full">
+                                    <p className="text-text-muted text-xs uppercase tracking-widest mb-1">대기 중</p>
+                                    <p className="text-text-primary font-bold text-base">
+                                        {state.players.find((p) => p.id === state.pendingAction?.losingPlayerId)?.name}
+                                    </p>
+                                    <p className="text-text-secondary text-sm mt-0.5">잃을 카드를 선택하는 중...</p>
+                                    <div className="mt-2 flex items-center justify-center gap-1">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse [animation-delay:150ms]" />
+                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse [animation-delay:300ms]" />
+                                    </div>
+                                </div>
                             </div>
                         )}
 
