@@ -242,20 +242,19 @@ describe('Full Game Scenario: Phase 4 - 최후의 3인', () => {
       .expectPhase('action');
   });
 
-  test('0코인 대상에 갈취 → 유효하지만 0코인 이동', () => {
-    GameScenario.create({
+  test('0코인 대상에 갈취 → 서버에서 에러 반환 (갈취 불가)', () => {
+    const scenario = GameScenario.create({
       players: [
         { id: 'p2', name: 'P2', coins: 6, cards: ['Captain', 'Duke'] as [Character, Character], revealedIndices: [0] },
         { id: 'p3', name: 'P3', coins: 0, cards: ['Duke', 'Duke'] as [Character, Character] },
       ],
       currentTurnId: 'p2',
       deck: ['Contessa', 'Ambassador'],
-    })
-      // P2가 사령관으로 P3 갈취 (P3 코인 0)
-      .action('p2', { type: 'steal', targetId: 'p3' })
-      .allPass()
-      .expectCoins('p2', 6) // 0코인 갈취 → 변동 없음
-      .expectCoins('p3', 0);
+    });
+    // P2가 사령관으로 P3 갈취 시도 (P3 코인 0) → 에러
+    expect(() =>
+      scenario.action('p2', { type: 'steal', targetId: 'p3' })
+    ).toThrow('갈취: 대상의 코인이 0입니다');
   });
 });
 

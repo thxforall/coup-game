@@ -178,17 +178,15 @@ describe('기본 액션', () => {
     expect(getPlayer(s, 'p2').coins).toBe(0);
   });
 
-  test('steal: 대상 코인이 0이면 0개 탈취', () => {
+  test('steal: 대상 코인이 0이면 에러 (갈취 불가)', () => {
     const state = createTestState({
       players: createTestState().players.map(p =>
         p.id === 'p2' ? { ...p, coins: 0 } : p
       ),
     });
-    let s = processAction(state, 'p1', { type: 'steal', targetId: 'p2' });
-    s = allPass(s);
-
-    expect(getPlayer(s, 'p1').coins).toBe(2);
-    expect(getPlayer(s, 'p2').coins).toBe(0);
+    expect(() =>
+      processAction(state, 'p1', { type: 'steal', targetId: 'p2' })
+    ).toThrow('갈취: 대상의 코인이 0입니다');
   });
 
   test('assassinate: 코인 -3, awaiting_response', () => {

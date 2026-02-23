@@ -678,18 +678,17 @@ describe('Scenario: Edge Cases', () => {
       .expectCurrentTurn('p2');
   });
 
-  test('steal from player with 0 coins -> still valid, steals 0', () => {
-    GameScenario.create({
+  test('steal from player with 0 coins -> throws error (not allowed)', () => {
+    const scenario = GameScenario.create({
       players: [
         { id: 'p1', name: 'Alice', cards: ['Captain', 'Duke'] as [Character, Character] },
         { id: 'p2', name: 'Bob', coins: 0, cards: ['Assassin', 'Contessa'] as [Character, Character] },
         { id: 'p3', name: 'Charlie', cards: ['Ambassador', 'Duke'] as [Character, Character] },
       ],
-    })
-      .action('p1', { type: 'steal', targetId: 'p2' })
-      .allPass()
-      .expectCoins('p1', 2) // 0 stolen
-      .expectCoins('p2', 0);
+    });
+    expect(() =>
+      scenario.action('p1', { type: 'steal', targetId: 'p2' })
+    ).toThrow('갈취: 대상의 코인이 0입니다');
   });
 
   test('steal from player with 1 coin -> steals only 1', () => {

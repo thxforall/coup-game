@@ -251,6 +251,12 @@ export function processAction(
       if ((type === 'assassinate' || type === 'steal') && !targetId) {
         throw new Error(`${type}: 대상이 필요합니다`);
       }
+      if (type === 'steal' && targetId) {
+        const stealTarget = getPlayer(s, targetId);
+        if (stealTarget.coins === 0) {
+          throw new Error('갈취: 대상의 코인이 0입니다');
+        }
+      }
       if (type === 'assassinate') {
         if (actor.coins < 3) throw new Error('암살: 코인 3개 필요');
         const updatedPlayers = s.players.map((p) =>
