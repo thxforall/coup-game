@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-23 - Completed quick-021 (로비/게임 헤더 게임 규칙 모달)
+- Last activity: 2026-02-23 - Completed quick-023 (game_over 후 방 유지 + 재시작 대기 UX)
 
 ### Quick Tasks Completed
 
