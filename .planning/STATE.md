@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-23 - Completed quick-009 (설정 기어 아이콘 + 게임 재시작/나가기 모달)
+- Last activity: 2026-02-23 - Completed quick-010 (5인 풀 게임 시나리오 테스트)
 
 ### Quick Tasks Completed
 
@@ -18,11 +18,12 @@
 | 007 | 액션 타임아웃 auto-pass 버그 수정 (서버 사이드 + 클라이언트 폴링) | 2026-02-23 | 941abae | [007-fix-action-timeout-auto-pass-bug](./quick/007-fix-action-timeout-auto-pass-bug/) |
 | 008 | 도전/블록도전 시 카드를 잃는 플레이어가 직접 카드 선택 | 2026-02-23 | 212298b | [008-choose-own-card-to-lose](./quick/008-choose-own-card-to-lose/) |
 | 009 | 설정 기어 아이콘 + SettingsModal (게임 재시작/나가기) | 2026-02-23 | 9ff9f56 | [009-gear-settings-game-reset](./quick/009-gear-settings-game-reset/) |
+| 010 | 5인 풀 게임 시나리오 테스트 (소득→블록→교환→강탈→암살→쿠→우승) | 2026-02-23 | ed2f817 | [010-full-game-scenario-playwright-test](./quick/010-full-game-scenario-playwright-test/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-23T13:30:00Z
-- Stopped at: Completed quick-009-PLAN.md
+- Last session: 2026-02-23T22:25:00Z
+- Stopped at: Completed quick-010
 - Resume file: None
