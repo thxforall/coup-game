@@ -163,8 +163,8 @@ function ActionPanel({ state, playerId, onAction }: Props) {
             setTargetId('');
             setGuessChar(null);
         } else {
-            // Fire immediately
-            handleAction(actionType, false);
+            // Show confirm modal for non-target actions too
+            setConfirmAction({ type: actionType, targetId: '' });
         }
     };
 
@@ -174,8 +174,26 @@ function ActionPanel({ state, playerId, onAction }: Props) {
         setGuessChar(null);
     };
 
-    // Actions that need confirmation before firing (cost-based)
-    const needsConfirm = (type: ActionType) => type === 'coup' || type === 'assassinate';
+    const getConfirmInfo = (type: ActionType, target?: { name: string }) => {
+        switch (type) {
+            case 'income':
+                return { title: '소득 확인', message: '소득을 선택하시겠습니까? (코인 +1)', label: '소득', color: 'var(--gold)' };
+            case 'foreignAid':
+                return { title: '외국 원조 확인', message: '외국 원조를 선택하시겠습니까? (코인 +2, 공작이 막을 수 있음)', label: '외국 원조', color: 'var(--gold)' };
+            case 'tax':
+                return { title: '세금징수 확인', message: '세금징수를 선택하시겠습니까? (코인 +3, 도전 가능)', label: '세금징수', color: 'var(--duke)' };
+            case 'exchange':
+                return { title: '교환 확인', message: '카드 교환을 선택하시겠습니까? (도전 가능)', label: '교환', color: 'var(--ambassador)' };
+            case 'steal':
+                return { title: '갈취 확인', message: `${target?.name}에게서 코인을 갈취하시겠습니까?`, label: '갈취', color: 'var(--captain)' };
+            case 'assassinate':
+                return { title: '암살 확인', message: `정말 ${target?.name}을(를) 암살하시겠습니까? (3코인 소모)`, label: '암살', color: 'var(--assassin)' };
+            case 'coup':
+                return { title: '쿠데타 확인', message: `정말 ${target?.name}에게 쿠데타를 하시겠습니까? (7코인 소모)`, label: '쿠데타', color: 'var(--gold)' };
+            default:
+                return { title: '확인', message: '이 행동을 선택하시겠습니까?', label: '확인', color: 'var(--gold)' };
+        }
+    };
 
     const handleTargetSelect = (selectedId: string) => {
         if (!pendingActionType) return;
@@ -183,26 +201,10 @@ function ActionPanel({ state, playerId, onAction }: Props) {
         if (isCoupGuess) {
             // In guess mode, need character selection before firing
             setTargetId(selectedId);
-        } else if (needsConfirm(pendingActionType)) {
-            // Show confirm modal for cost-based actions
+        } else {
+            // Show confirm modal for all target actions
             setTargetId(selectedId);
             setConfirmAction({ type: pendingActionType, targetId: selectedId });
-        } else {
-            // Non-cost: set target and fire immediately
-            setTargetId(selectedId);
-            const actionDef = ACTION_BUTTONS.find((a) => a.type === pendingActionType);
-            if (actionDef) {
-                setLoading(true);
-                onAction({
-                    type: pendingActionType,
-                    targetId: selectedId,
-                }).then(() => {
-                    setGuessChar(null);
-                    setTargetId('');
-                    setPendingActionType(null);
-                    setLoading(false);
-                });
-            }
         }
     };
 
@@ -211,7 +213,7 @@ function ActionPanel({ state, playerId, onAction }: Props) {
         setLoading(true);
         await onAction({
             type: confirmAction.type,
-            targetId: confirmAction.targetId,
+            targetId: confirmAction.targetId || undefined,
             ...(confirmAction.type === 'coup' && isGuessMode && confirmAction.guessChar
                 ? { guessedCharacter: confirmAction.guessChar }
                 : {}),
@@ -240,18 +242,15 @@ function ActionPanel({ state, playerId, onAction }: Props) {
         ? ACTION_BUTTONS.find((a) => a.type === pendingActionType)
         : null;
 
-    // Confirm modal for cost-based actions
-    const confirmTarget = confirmAction ? state.players.find((p) => p.id === confirmAction.targetId) : null;
-    const confirmModalNode = confirmAction && confirmTarget ? (
+    // Confirm modal for all actions
+    const confirmTarget = confirmAction?.targetId ? state.players.find((p) => p.id === confirmAction.targetId) : undefined;
+    const confirmInfo = confirmAction ? getConfirmInfo(confirmAction.type, confirmTarget) : null;
+    const confirmModalNode = confirmAction && confirmInfo ? (
         <ConfirmModal
-            title={confirmAction.type === 'coup' ? '쿠데타 확인' : '암살 확인'}
-            message={
-                confirmAction.type === 'coup'
-                    ? `정말 ${confirmTarget.name}에게 쿠데타를 하시겠습니까? (7코인 소모)`
-                    : `정말 ${confirmTarget.name}을(를) 암살하시겠습니까? (3코인 소모)`
-            }
-            confirmLabel={confirmAction.type === 'coup' ? '쿠데타' : '암살'}
-            confirmColor={confirmAction.type === 'coup' ? 'var(--gold)' : 'var(--assassin)'}
+            title={confirmInfo.title}
+            message={confirmInfo.message}
+            confirmLabel={confirmInfo.label}
+            confirmColor={confirmInfo.color}
             onConfirm={handleConfirm}
             onCancel={handleConfirmCancel}
             loading={loading}
