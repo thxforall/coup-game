@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-24 - Completed quick-048 (갈취 대상 코인 수 반영)
+- Last activity: 2026-02-24 - Completed quick-049 (game_over 화면에 게임 로그 표시)
 
 ### Quick Tasks Completed
 
@@ -53,11 +53,12 @@
 | 045 | README.md v0.5.0 업데이트 (기능/구조/릴리스 노트) | 2026-02-24 | 463b929 | [045-update-readme-md](./quick/045-update-readme-md/) |
 | 047 | 게임 로그+채팅 로그 mergedStructured timestamp 기반 정렬 수정 (채팅 하단 집중 버그 수정) | 2026-02-24 | 131875e | [047-game-log-scroll-bottom-chat-priority-fix](./quick/047-game-log-scroll-bottom-chat-priority-fix/) |
 | 048 | 갈취 대상 코인 수 반영 — 1코인 대상 안내 표시 + 확인 메시지 실제 금액 | 2026-02-24 | 656c929 | [048-steal-show-target-coin-count](./quick/048-steal-show-target-coin-count/) |
+| 049 | game_over 화면에 스크롤 가능한 게임 로그(EventLog) 표시 | 2026-02-24 | c6c0c21 | [049-game-over-show-game-log](./quick/049-game-over-show-game-log/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-24T17:06:00Z
-- Stopped at: Completed quick-047 (게임 로그 채팅 timestamp 정렬 수정)
+- Last session: 2026-02-24T17:19:52Z
+- Stopped at: Completed quick-049 (game_over 화면에 게임 로그 표시)
 - Resume file: None
