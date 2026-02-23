@@ -457,7 +457,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             </header>
 
             {/* 상대방 플레이어 행 (가로) */}
-            <div className="flex-shrink-0 flex flex-row flex-nowrap items-start gap-1 sm:gap-1.5 px-2 sm:px-4 py-1.5 sm:py-3 border-b border-border-subtle overflow-x-auto scrollbar-hide">
+            <div className="flex-shrink-0 flex flex-row flex-nowrap items-start gap-1 sm:gap-1.5 px-2 sm:px-4 py-1.5 sm:py-3 border-b border-border-subtle overflow-x-auto scrollbar-hide bg-overlay">
                 {others.map((player) => (
                     <PlayerArea
                         key={player.id}
@@ -535,7 +535,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                         onClick={() => setShowMobileLog(false)}
                     />
                     {/* 로그 시트 */}
-                    <div className="relative z-10 flex flex-col bg-bg-dark rounded-t-2xl border-t border-border-subtle max-h-[75vh] animate-slide-up">
+                    <div className="relative z-10 flex flex-col rounded-t-2xl border-t border-border-subtle max-h-[75vh] animate-slide-up bg-overlay">
                         {/* 드래그 핸들 */}
                         <div className="flex justify-center pt-2.5 pb-1 flex-shrink-0">
                             <div className="w-10 h-1 rounded-full bg-border-subtle" />
@@ -571,12 +571,12 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             {/* 중앙 영역: EventLog(좌, 320px desktop) + TurnArea(우) */}
             <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
                 {/* 게임 로그 — 데스크톱에서만 표시 */}
-                <div className="hidden lg:block w-80 flex-shrink-0 border-r border-border-subtle p-3 overflow-hidden">
+                <div className="hidden lg:block w-80 flex-shrink-0 border-r border-border-subtle p-3 overflow-hidden bg-overlay">
                     <EventLog log={state.log} structuredLog={state.structuredLog} chatLogs={chatLogs} players={state.players} />
                 </div>
 
                 {/* 턴 영역 */}
-                <div className="flex-1 flex flex-col p-2 sm:p-4 overflow-y-auto">
+                <div className="flex-1 flex flex-col p-2 sm:p-4 overflow-y-auto bg-overlay">
                     {/* 내 턴 레이블 */}
                     {isMyTurn && state.phase === 'action' && (
                         <div className="mb-3 flex justify-center">

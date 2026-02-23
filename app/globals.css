@@ -3,9 +3,14 @@
 @tailwind utilities;
 
 :root {
-  --bg-dark: #0D0D0D;
-  --bg-card: #1A1A1A;
-  --bg-surface: #252525;
+  --bg-dark-rgb: 13, 13, 13;
+  --bg-card-rgb: 26, 26, 26;
+  --bg-surface-rgb: 37, 37, 37;
+  
+  --bg-dark: rgb(var(--bg-dark-rgb));
+  --bg-card: rgb(var(--bg-card-rgb));
+  --bg-surface: rgb(var(--bg-surface-rgb));
+  
   --border-subtle: #333333;
   --text-primary: #F0F0F0;
   --text-secondary: #999999;
@@ -96,6 +101,33 @@
   .input-field:focus {
     border-color: var(--gold);
     --tw-ring-color: rgba(200, 169, 96, 0.2);
+  }
+
+  /* Glassmorphism for Background Image */
+  .has-bg-image .bg-bg-card,
+  .has-bg-image .glass-panel {
+    background-color: rgba(var(--bg-card-rgb), 0.8) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .has-bg-image .bg-bg-surface {
+    background-color: rgba(var(--bg-surface-rgb), 0.7) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .has-bg-image header {
+    background-color: rgba(var(--bg-card-rgb), 0.85) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  /* 게임보드 주요 섹션에 반투명 배경 */
+  .has-bg-image .bg-overlay {
+    background-color: rgba(var(--bg-dark-rgb), 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 }
 
