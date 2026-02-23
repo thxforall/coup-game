@@ -2,6 +2,8 @@
 // 게임 타입 정의
 // ============================================================
 
+export type GameMode = 'standard' | 'guess';
+
 export type Character = 'Duke' | 'Contessa' | 'Captain' | 'Assassin' | 'Ambassador';
 
 export type ActionType =
@@ -38,6 +40,11 @@ export interface Player {
   isReady: boolean; // 대기실에서 준비 완료 여부
 }
 
+export interface ChallengeLoseContext {
+  // 도전/블록도전 후 카드를 잃는 플레이어가 선택을 완료하면 어디로 이어질지
+  continuation: 'execute_action' | 'next_turn' | 'block_success_next_turn';
+}
+
 export interface PendingAction {
   type: ActionType;
   actorId: string;
@@ -48,6 +55,8 @@ export interface PendingAction {
   losingPlayerId?: string;                                 // 카드를 잃어야 하는 플레이어 ID
   exchangeCards?: Character[];                             // 대사가 뽑은 카드 2장
   responseDeadline?: number;                               // 응답 제한시간 (Unix timestamp ms)
+  guessedCharacter?: Character;                            // guess 모드: 쿠 시 추측 캐릭터
+  challengeLoseContext?: ChallengeLoseContext;              // 도전으로 인한 카드 잃기 컨텍스트
 }
 
 export interface GameState {
@@ -57,14 +66,16 @@ export interface GameState {
   deck: Character[];
   pendingAction: PendingAction | null;
   log: string[];
+  structuredLog?: LogEntry[];
   winnerId?: string;
+  gameMode?: GameMode;
 }
 
 // 액션 요청 타입 (API 전달용)
 export type GameAction =
   | { type: 'income' }
   | { type: 'foreignAid' }
-  | { type: 'coup'; targetId: string }
+  | { type: 'coup'; targetId: string; guessedCharacter?: Character }
   | { type: 'tax' }
   | { type: 'assassinate'; targetId: string }
   | { type: 'steal'; targetId: string }
@@ -101,6 +112,8 @@ export interface FilteredPendingAction {
   losingPlayerId?: string;
   exchangeCards?: Character[]; // 본인 exchange일 때만 포함
   responseDeadline?: number;   // 응답 제한시간 (Unix timestamp ms)
+  guessedCharacter?: Character; // guess 모드: 쿠 시 추측 캐릭터
+  challengeLoseContext?: ChallengeLoseContext; // 도전으로 인한 카드 잃기 컨텍스트
 }
 
 export interface FilteredGameState {
@@ -109,7 +122,9 @@ export interface FilteredGameState {
   phase: GamePhase;
   pendingAction: FilteredPendingAction | null;
   log: string[];
+  structuredLog?: LogEntry[];
   winnerId?: string;
+  gameMode?: GameMode;
   // deck 제외 — 클라이언트에 절대 노출 안함
 }
 
@@ -147,3 +162,26 @@ export const CHARACTER_ACTIONS: Partial<Record<Character, ActionType>> = {
   Assassin: 'assassinate',
   Ambassador: 'exchange',
 };
+
+// ============================================================
+// 구조화된 게임 로그
+// ============================================================
+
+export type LogEntryType =
+  | 'game_start' | 'action_declared' | 'action_resolved'
+  | 'challenge_success' | 'challenge_fail'
+  | 'block_declared' | 'block_confirmed'
+  | 'block_challenge_success' | 'block_challenge_fail'
+  | 'lose_influence' | 'player_eliminated'
+  | 'exchange_complete' | 'game_over'
+  | 'guess_success' | 'guess_fail';
+
+export interface LogEntry {
+  type: LogEntryType;
+  timestamp: number;
+  actorId?: string;
+  targetId?: string;
+  action?: ActionType;
+  character?: Character;
+  message: string;  // 기존 string 로그 호환
+}

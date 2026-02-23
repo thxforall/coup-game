@@ -10,6 +10,9 @@ import {
   CHARACTER_NAMES,
   ACTION_NAMES,
   BLOCK_CHARACTERS,
+  ChallengeLoseContext,
+  LogEntry,
+  LogEntryType,
 } from './types';
 
 // ============================================================
@@ -37,8 +40,9 @@ function shuffle<T>(arr: T[]): T[] {
 // 게임 초기화
 // ============================================================
 
-export function initGame(players: { id: string; name: string }[]): GameState {
+export function initGame(players: { id: string; name: string }[], gameMode?: string): GameState {
   const deck = shuffle([...ALL_CHARACTERS]);
+  const mode: GameMode = gameMode === 'guess' ? 'guess' : 'standard';
   const gamePlayers: Player[] = players.map((p) => ({
     id: p.id,
     name: p.name,
@@ -57,7 +61,8 @@ export function initGame(players: { id: string; name: string }[]): GameState {
     phase: 'action',
     deck,
     pendingAction: null,
-    log: ['게임이 시작되었습니다!'],
+    log: [mode === 'guess' ? '게임이 시작되었습니다! (추측 모드)' : '게임이 시작되었습니다!'],
+    gameMode: mode,
   };
 }
 
@@ -132,7 +137,7 @@ function checkWinner(state: GameState): GameState {
 export function processAction(
   state: GameState,
   actorId: string,
-  action: { type: ActionType; targetId?: string }
+  action: { type: ActionType; targetId?: string; guessedCharacter?: Character }
 ): GameState {
   const actor = getPlayer(state, actorId);
   const { type, targetId } = action;
@@ -157,11 +162,49 @@ export function processAction(
     case 'coup': {
       if (!targetId) throw new Error('쿠: 대상이 필요합니다');
       if (actor.coins < 7) throw new Error('쿠: 코인 7개 필요');
-      // 코인 차감, 상대방 카드 잃기 단계로 진입
+      const target = getPlayer(s, targetId);
+
+      // Guess 모드: 캐릭터 추측
+      if (s.gameMode === 'guess') {
+        const guessed = action.guessedCharacter;
+        if (!guessed) throw new Error('추측 모드: 캐릭터를 선택해야 합니다');
+
+        const updatedPlayers = s.players.map((p) =>
+          p.id === actorId ? { ...p, coins: p.coins - 7 } : p
+        );
+        s = { ...s, players: updatedPlayers };
+
+        if (hasCharacter(target, guessed)) {
+          // 정답: 해당 카드 공개
+          const cardIdx = target.cards.findIndex((c) => c.character === guessed && !c.revealed);
+          const revealedPlayers = s.players.map((p) =>
+            p.id === targetId ? revealCard(p, cardIdx) : p
+          );
+          s = addLog(
+            { ...s, players: revealedPlayers },
+            `${actor.name}이(가) ${target.name}에게 쿠! ${CHARACTER_NAMES[guessed]} 추측 성공!`
+          );
+          const updatedTarget = revealedPlayers.find((p) => p.id === targetId)!;
+          if (!updatedTarget.isAlive) {
+            s = addLog(s, `${target.name}이(가) 탈락했습니다`);
+          }
+          s = checkWinner(s);
+          if (s.phase === 'game_over') return s;
+          return nextTurn(s);
+        } else {
+          // 오답: 코인만 소모, 상대 카드 유지
+          s = addLog(
+            s,
+            `${actor.name}이(가) ${target.name}에게 쿠! ${CHARACTER_NAMES[guessed]} 추측 실패... 코인만 잃었습니다`
+          );
+          return nextTurn(s);
+        }
+      }
+
+      // Standard 모드: 기존 로직
       const updatedPlayers = s.players.map((p) =>
         p.id === actorId ? { ...p, coins: p.coins - 7 } : p
       );
-      const target = getPlayer(s, targetId);
       s = addLog(
         { ...s, players: updatedPlayers },
         `${actor.name}이(가) ${target.name}에게 쿠를 선언했습니다!`
@@ -309,7 +352,7 @@ export function processBlockResponse(
     const blockerHasCard = hasCharacter(blocker, pending.blockerCharacter!);
 
     if (blockerHasCard) {
-      // 블록이 사실 → 도전자가 카드 잃음, 블로커 카드 교체
+      // 블록이 사실 → 블로커 카드 교체 먼저, 도전자가 카드 잃음
       const newDeck = [...s.deck, pending.blockerCharacter!];
       const shuffledDeck = shuffle(newDeck);
       const newCard = shuffledDeck.pop()!;
@@ -318,35 +361,70 @@ export function processBlockResponse(
           ? { ...c, character: newCard }
           : c
       );
-      let updatedPlayers = s.players.map((p) =>
+      const updatedPlayers = s.players.map((p) =>
         p.id === pending.blockerId ? { ...p, cards: updatedBlockerCards } : p
-      );
-      // 도전자 카드 잃음
-      updatedPlayers = updatedPlayers.map((p) =>
-        p.id === responderId ? removeFirstLiveCard(p) : p
       );
       s = addLog(
         { ...s, players: updatedPlayers, deck: shuffledDeck },
         `${responder.name}의 도전 실패! ${blocker.name}이(가) 진짜 ${CHARACTER_NAMES[pending.blockerCharacter!]}이었습니다`
       );
-      // 블록 성공 → 액션 무효, 다음 턴
-      s = addLog(s, '블록 성공! 행동이 취소되었습니다');
-      s = checkWinner(s);
-      if (s.phase === 'game_over') return s;
-      return nextTurn(s);
+
+      // 도전자가 카드를 잃음 — 2장 이상이면 선택, 1장이면 자동 제거
+      const challengerPlayer = getPlayer(s, responderId);
+      if (getLiveCardCount(challengerPlayer) > 1) {
+        s = checkWinner(s);
+        if (s.phase === 'game_over') return s;
+        return {
+          ...s,
+          phase: 'lose_influence',
+          pendingAction: {
+            ...s.pendingAction!,
+            losingPlayerId: responderId,
+            challengeLoseContext: { continuation: 'block_success_next_turn' },
+          },
+        };
+      } else {
+        // 카드 1장 남음 — 자동 제거
+        const autoUpdated = s.players.map((p) =>
+          p.id === responderId ? removeFirstLiveCard(p) : p
+        );
+        s = { ...s, players: autoUpdated };
+        s = addLog(s, '블록 성공! 행동이 취소되었습니다');
+        s = checkWinner(s);
+        if (s.phase === 'game_over') return s;
+        return nextTurn(s);
+      }
     } else {
       // 블록이 거짓 → 블로커가 카드 잃음, 행동 진행
-      let updatedPlayers = s.players.map((p) =>
-        p.id === pending.blockerId ? removeFirstLiveCard(p) : p
-      );
       s = addLog(
-        { ...s, players: updatedPlayers },
+        s,
         `${responder.name}의 도전 성공! ${blocker.name}이(가) 블러프였습니다`
       );
-      s = checkWinner(s);
-      if (s.phase === 'game_over') return s;
-      // 행동 진행
-      return executeAction(s);
+
+      // 블로커가 카드를 잃음 — 2장 이상이면 선택, 1장이면 자동 제거
+      const blockerPlayer = getPlayer(s, pending.blockerId);
+      if (getLiveCardCount(blockerPlayer) > 1) {
+        s = checkWinner(s);
+        if (s.phase === 'game_over') return s;
+        return {
+          ...s,
+          phase: 'lose_influence',
+          pendingAction: {
+            ...s.pendingAction!,
+            losingPlayerId: pending.blockerId,
+            challengeLoseContext: { continuation: 'execute_action' },
+          },
+        };
+      } else {
+        // 카드 1장 남음 — 자동 제거
+        const autoUpdated = s.players.map((p) =>
+          p.id === pending.blockerId ? removeFirstLiveCard(p) : p
+        );
+        s = { ...s, players: autoUpdated };
+        s = checkWinner(s);
+        if (s.phase === 'game_over') return s;
+        return executeAction(s);
+      }
     }
   }
 
@@ -382,11 +460,11 @@ function resolveChallenge(state: GameState, challengerId: string): GameState {
   let s = state;
 
   if (actorHasCard) {
-    // 도전 실패: 도전자가 카드 잃음, 행동자는 카드 교체
+    // 도전 실패: 행동자 카드 교체 먼저
     const newDeck = [...s.deck, requiredChar];
     const shuffled = shuffle(newDeck);
     const newCard = shuffled.pop()!;
-    const updatedActorCards = actor.cards.map((c, i) => {
+    const updatedActorCards = actor.cards.map((c) => {
       if (c.character === requiredChar && !c.revealed) {
         return { ...c, character: newCard };
       }
@@ -395,31 +473,64 @@ function resolveChallenge(state: GameState, challengerId: string): GameState {
     let updatedPlayers = s.players.map((p) =>
       p.id === pending.actorId ? { ...p, cards: updatedActorCards } : p
     );
-    updatedPlayers = updatedPlayers.map((p) =>
-      p.id === challengerId ? removeFirstLiveCard(p) : p
-    );
     s = addLog(
       { ...s, players: updatedPlayers, deck: shuffled },
       `${challenger.name}의 도전 실패! ${actor.name}이(가) 진짜 ${CHARACTER_NAMES[requiredChar]}이었습니다`
     );
-    s = checkWinner(s);
-    if (s.phase === 'game_over') return s;
-    // 행동 실행
-    return executeAction(s);
+
+    // 도전자가 카드를 잃음 — 2장 이상이면 선택, 1장이면 자동 제거
+    const challengerPlayer = getPlayer(s, challengerId);
+    if (getLiveCardCount(challengerPlayer) > 1) {
+      s = checkWinner(s);
+      if (s.phase === 'game_over') return s;
+      return {
+        ...s,
+        phase: 'lose_influence',
+        pendingAction: {
+          ...s.pendingAction!,
+          losingPlayerId: challengerId,
+          challengeLoseContext: { continuation: 'execute_action' },
+        },
+      };
+    } else {
+      updatedPlayers = s.players.map((p) =>
+        p.id === challengerId ? removeFirstLiveCard(p) : p
+      );
+      s = { ...s, players: updatedPlayers };
+      s = checkWinner(s);
+      if (s.phase === 'game_over') return s;
+      return executeAction(s);
+    }
   } else {
     // 도전 성공: 행동자가 카드 잃음, 행동 무효
-    let updatedPlayers = s.players.map((p) =>
-      p.id === pending.actorId ? removeFirstLiveCard(p) : p
-    );
     s = addLog(
-      { ...s, players: updatedPlayers },
+      s,
       `${challenger.name}의 도전 성공! ${actor.name}이(가) 블러프였습니다`
     );
 
-    // 암살의 경우 코인 환불 안함 (공식 룰)
-    s = checkWinner(s);
-    if (s.phase === 'game_over') return s;
-    return nextTurn(s);
+    // 행동자가 카드를 잃음 — 2장 이상이면 선택, 1장이면 자동 제거
+    const actorPlayer = getPlayer(s, pending.actorId);
+    if (getLiveCardCount(actorPlayer) > 1) {
+      s = checkWinner(s);
+      if (s.phase === 'game_over') return s;
+      return {
+        ...s,
+        phase: 'lose_influence',
+        pendingAction: {
+          ...s.pendingAction!,
+          losingPlayerId: pending.actorId,
+          challengeLoseContext: { continuation: 'next_turn' },
+        },
+      };
+    } else {
+      const updatedPlayers = s.players.map((p) =>
+        p.id === pending.actorId ? removeFirstLiveCard(p) : p
+      );
+      s = { ...s, players: updatedPlayers };
+      s = checkWinner(s);
+      if (s.phase === 'game_over') return s;
+      return nextTurn(s);
+    }
   }
 }
 
@@ -593,6 +704,27 @@ export function processLoseInfluence(
 
   s = checkWinner(s);
   if (s.phase === 'game_over') return s;
+
+  // 도전으로 인한 카드 잃기: continuation에 따라 분기
+  const ctx = pending.challengeLoseContext;
+  if (ctx) {
+    // challengeLoseContext 제거 (다음 lose_influence에 영향 주지 않도록)
+    const cleanPending = { ...s.pendingAction! };
+    delete cleanPending.challengeLoseContext;
+    delete cleanPending.losingPlayerId;
+    s = { ...s, pendingAction: cleanPending };
+
+    if (ctx.continuation === 'execute_action') {
+      return executeAction(s);
+    } else if (ctx.continuation === 'block_success_next_turn') {
+      s = addLog(s, '블록 성공! 행동이 취소되었습니다');
+      return nextTurn(s);
+    } else {
+      // 'next_turn'
+      return nextTurn(s);
+    }
+  }
+
   return nextTurn(s);
 }
 

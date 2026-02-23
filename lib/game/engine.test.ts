@@ -237,6 +237,12 @@ describe('도전 (Challenge)', () => {
     let s = processAction(state, 'p1', { type: 'tax' });
     s = processResponse(s, 'p2', 'challenge');
 
+    // p1이 2장 보유 → lose_influence 전환
+    expect(s.phase).toBe('lose_influence');
+    expect(s.pendingAction!.losingPlayerId).toBe('p1');
+    // p1이 카드 선택
+    s = processLoseInfluence(s, 'p1', 0);
+
     // 행동자(p1) 카드 잃음
     const alice = getPlayer(s, 'p1');
     expect(alice.cards.some(c => c.revealed)).toBe(true);
@@ -252,6 +258,12 @@ describe('도전 (Challenge)', () => {
     const state = createTestState(); // Alice has Duke
     let s = processAction(state, 'p1', { type: 'tax' });
     s = processResponse(s, 'p2', 'challenge');
+
+    // p2가 2장 보유 → lose_influence 전환
+    expect(s.phase).toBe('lose_influence');
+    expect(s.pendingAction!.losingPlayerId).toBe('p2');
+    // p2가 카드 선택
+    s = processLoseInfluence(s, 'p2', 0);
 
     // 도전자(p2) 카드 잃음
     const bob = getPlayer(s, 'p2');
@@ -277,6 +289,12 @@ describe('도전 (Challenge)', () => {
     expect(getPlayer(s, 'p1').coins).toBe(2);
     s = processResponse(s, 'p2', 'challenge');
 
+    // p1이 2장 보유 → lose_influence 전환
+    expect(s.phase).toBe('lose_influence');
+    expect(s.pendingAction!.losingPlayerId).toBe('p1');
+    // p1이 카드 선택
+    s = processLoseInfluence(s, 'p1', 0);
+
     // 도전 성공 → 행동자 카드 잃음
     const alice = getPlayer(s, 'p1');
     expect(alice.cards.some(c => c.revealed)).toBe(true);
@@ -292,6 +310,12 @@ describe('도전 (Challenge)', () => {
     const state = createTestState();
     let s = processAction(state, 'p1', { type: 'steal', targetId: 'p2' });
     s = processResponse(s, 'p2', 'challenge');
+
+    // p2가 2장 보유 → lose_influence 전환
+    expect(s.phase).toBe('lose_influence');
+    expect(s.pendingAction!.losingPlayerId).toBe('p2');
+    // p2가 카드 선택
+    s = processLoseInfluence(s, 'p2', 0);
 
     // 도전 실패 → Bob 카드 잃음
     const bob = getPlayer(s, 'p2');
@@ -312,6 +336,11 @@ describe('도전 (Challenge)', () => {
     });
     let s = processAction(state, 'p1', { type: 'exchange' });
     s = processResponse(s, 'p2', 'challenge');
+
+    // p1이 2장 보유 → lose_influence 전환
+    expect(s.phase).toBe('lose_influence');
+    expect(s.pendingAction!.losingPlayerId).toBe('p1');
+    s = processLoseInfluence(s, 'p1', 0);
 
     // 행동자 카드 잃음
     const alice = getPlayer(s, 'p1');
@@ -450,6 +479,11 @@ describe('블록 도전 (Block Challenge)', () => {
     // p1이 블록을 도전
     s = processBlockResponse(s, 'p1', 'challenge');
 
+    // p1이 2장 보유 → lose_influence 전환
+    expect(s.phase).toBe('lose_influence');
+    expect(s.pendingAction!.losingPlayerId).toBe('p1');
+    s = processLoseInfluence(s, 'p1', 0);
+
     // 블로커가 진짜 → 도전자(p1) 카드 잃음
     const alice = getPlayer(s, 'p1');
     expect(alice.cards.some(c => c.revealed)).toBe(true);
@@ -465,6 +499,11 @@ describe('블록 도전 (Block Challenge)', () => {
     s = processResponse(s, 'p2', 'block', 'Duke');
     // p1이 블록을 도전
     s = processBlockResponse(s, 'p1', 'challenge');
+
+    // p2가 2장 보유 → lose_influence 전환
+    expect(s.phase).toBe('lose_influence');
+    expect(s.pendingAction!.losingPlayerId).toBe('p2');
+    s = processLoseInfluence(s, 'p2', 0);
 
     // 블로커(p2) 블러프 → 카드 잃음
     const bob = getPlayer(s, 'p2');
@@ -499,6 +538,11 @@ describe('블록 도전 (Block Challenge)', () => {
     expect(s.phase).toBe('awaiting_block_response');
     // p1이 블록에 도전 → 도전 실패 (p2가 진짜 Contessa)
     s = processBlockResponse(s, 'p1', 'challenge');
+
+    // p1이 2장 보유 → lose_influence 전환
+    expect(s.phase).toBe('lose_influence');
+    expect(s.pendingAction!.losingPlayerId).toBe('p1');
+    s = processLoseInfluence(s, 'p1', 0);
 
     // 도전 실패 → p1 카드 잃음
     const alice = getPlayer(s, 'p1');
@@ -536,17 +580,147 @@ describe('블록 도전 (Block Challenge)', () => {
     // p1이 블록에 도전 → 도전 성공 (p2에게 Contessa 없음)
     s = processBlockResponse(s, 'p1', 'challenge');
 
+    // p2가 2장 보유 → lose_influence 전환 (블록 도전 성공으로 카드 잃기)
+    expect(s.phase).toBe('lose_influence');
+    expect(s.pendingAction!.losingPlayerId).toBe('p2');
+    s = processLoseInfluence(s, 'p2', 0);
+
     // 블로커(p2) 카드 잃음
     const bob = getPlayer(s, 'p2');
     expect(bob.cards.some(c => c.revealed)).toBe(true);
-    // 암살 실행 → p2가 추가 카드 잃어야 함 (lose_influence)
+    // 암살 실행 → p2가 추가 카드 잃어야 함 (lose_influence, challengeLoseContext 없음)
     expect(s.phase).toBe('lose_influence');
     expect(s.pendingAction!.losingPlayerId).toBe('p2');
   });
 });
 
 // ============================================================
-// 5. 카드 잃기 + 대사 교환
+// 5. 도전 시 카드 선택 (lose_influence 경유)
+// ============================================================
+
+describe('도전 시 카드 선택 (lose_influence)', () => {
+  test('도전 실패: 도전자가 2장 보유 시 선택할 카드를 고를 수 있다', () => {
+    // p1이 진짜 Duke로 tax, p2가 도전 → 도전 실패
+    // p2는 2장 보유 → lose_influence 전환
+    const state = createTestState(); // p1 has Duke, p2 has Assassin/Contessa
+    let s = processAction(state, 'p1', { type: 'tax' });
+    s = processResponse(s, 'p2', 'challenge');
+
+    expect(s.phase).toBe('lose_influence');
+    expect(s.pendingAction!.losingPlayerId).toBe('p2');
+    expect(s.pendingAction!.challengeLoseContext?.continuation).toBe('execute_action');
+
+    // p2가 두 번째 카드(index 1)를 선택
+    s = processLoseInfluence(s, 'p2', 1);
+
+    // 선택한 카드(index 1, Contessa)가 공개됨
+    const bob = getPlayer(s, 'p2');
+    expect(bob.cards[1].revealed).toBe(true);
+    expect(bob.cards[0].revealed).toBe(false); // 첫 번째 카드는 유지
+    // tax 실행됨
+    expect(getPlayer(s, 'p1').coins).toBe(5);
+    expect(s.phase).toBe('action');
+  });
+
+  test('도전 성공: 블러퍼가 2장 보유 시 원하는 카드를 잃을 수 있다', () => {
+    // p1이 블러프 tax (Duke 없음), p2가 도전 성공
+    const state = createTestState({
+      players: createTestState().players.map(p =>
+        p.id === 'p1'
+          ? { ...p, cards: [{ character: 'Captain' as Character, revealed: false }, { character: 'Ambassador' as Character, revealed: false }] }
+          : p
+      ),
+    });
+    let s = processAction(state, 'p1', { type: 'tax' });
+    s = processResponse(s, 'p2', 'challenge');
+
+    expect(s.phase).toBe('lose_influence');
+    expect(s.pendingAction!.losingPlayerId).toBe('p1');
+    expect(s.pendingAction!.challengeLoseContext?.continuation).toBe('next_turn');
+
+    // p1이 첫 번째 카드 선택
+    s = processLoseInfluence(s, 'p1', 0);
+
+    const alice = getPlayer(s, 'p1');
+    expect(alice.cards[0].revealed).toBe(true);
+    // 행동 취소 → 다음 턴 (tax 실행 안 됨)
+    expect(alice.coins).toBe(2);
+    expect(s.phase).toBe('action');
+    expect(s.currentTurnId).toBe('p2');
+  });
+
+  test('블록 도전: 블로커가 진짜 → 도전자가 카드 선택', () => {
+    // foreignAid → p3가 Duke로 블록 (진짜) → p1이 블록 도전 → 도전 실패
+    const state = createTestState(); // p3 has Duke
+    let s = processAction(state, 'p1', { type: 'foreignAid' });
+    s = processResponse(s, 'p3', 'block', 'Duke');
+    s = processBlockResponse(s, 'p1', 'challenge');
+
+    expect(s.phase).toBe('lose_influence');
+    expect(s.pendingAction!.losingPlayerId).toBe('p1');
+    expect(s.pendingAction!.challengeLoseContext?.continuation).toBe('block_success_next_turn');
+
+    s = processLoseInfluence(s, 'p1', 0);
+
+    // 블록 성공 → foreignAid 안 받음
+    expect(getPlayer(s, 'p1').coins).toBe(2);
+    expect(s.phase).toBe('action');
+  });
+
+  test('블록 도전: 블로커가 블러프 → 블로커가 카드 선택 후 액션 실행', () => {
+    // foreignAid → p2가 Duke로 블록 (블러프) → p1이 블록 도전 → 도전 성공
+    const state = createTestState(); // p2 has Assassin/Contessa, not Duke
+    let s = processAction(state, 'p1', { type: 'foreignAid' });
+    s = processResponse(s, 'p2', 'block', 'Duke');
+    s = processBlockResponse(s, 'p1', 'challenge');
+
+    expect(s.phase).toBe('lose_influence');
+    expect(s.pendingAction!.losingPlayerId).toBe('p2');
+    expect(s.pendingAction!.challengeLoseContext?.continuation).toBe('execute_action');
+
+    s = processLoseInfluence(s, 'p2', 0);
+
+    // foreignAid 실행됨
+    expect(getPlayer(s, 'p1').coins).toBe(4);
+    expect(s.phase).toBe('action');
+  });
+
+  test('카드 1장 보유 시 자동 제거 (lose_influence 미전환)', () => {
+    // p2 카드 1장만 남은 상태에서 도전 실패 → 자동 제거, lose_influence 없음
+    const state = createTestState({
+      players: [
+        {
+          id: 'p1', name: 'Alice', coins: 2,
+          cards: [{ character: 'Duke' as Character, revealed: false }, { character: 'Captain' as Character, revealed: false }],
+          isAlive: true, isReady: true,
+        },
+        {
+          id: 'p2', name: 'Bob', coins: 2,
+          cards: [{ character: 'Assassin' as Character, revealed: true }, { character: 'Contessa' as Character, revealed: false }],
+          isAlive: true, isReady: true,
+        },
+        {
+          id: 'p3', name: 'Charlie', coins: 2,
+          cards: [{ character: 'Ambassador' as Character, revealed: false }, { character: 'Duke' as Character, revealed: false }],
+          isAlive: true, isReady: true,
+        },
+      ],
+    });
+
+    let s = processAction(state, 'p1', { type: 'tax' });
+    // p2가 도전 → 실패 → p2 마지막 카드 자동 제거 → 탈락
+    s = processResponse(s, 'p2', 'challenge');
+
+    // lose_influence 없이 바로 결과
+    expect(s.phase).toBe('action');
+    expect(getPlayer(s, 'p2').isAlive).toBe(false);
+    // tax 실행됨
+    expect(getPlayer(s, 'p1').coins).toBe(5);
+  });
+});
+
+// ============================================================
+// 6. 카드 잃기 + 대사 교환
 // ============================================================
 
 describe('카드 잃기 & 교환', () => {
@@ -605,7 +779,7 @@ describe('카드 잃기 & 교환', () => {
 });
 
 // ============================================================
-// 6. 엣지 케이스
+// 7. 엣지 케이스
 // ============================================================
 
 describe('엣지 케이스', () => {
@@ -781,7 +955,7 @@ describe('엣지 케이스', () => {
 });
 
 // ============================================================
-// 7. 복합 시나리오 (연속 턴 진행)
+// 8. 복합 시나리오 (연속 턴 진행)
 // ============================================================
 
 describe('복합 시나리오', () => {

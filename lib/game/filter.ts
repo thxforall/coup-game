@@ -56,6 +56,8 @@ export function filterStateForPlayer(
       blockerCharacter: pa.blockerCharacter,
       losingPlayerId: pa.losingPlayerId,
       responseDeadline: pa.responseDeadline,
+      guessedCharacter: pa.guessedCharacter,
+      challengeLoseContext: pa.challengeLoseContext,
     };
     // exchangeCards: 본인 exchange일 때만 포함
     if (pa.exchangeCards && pa.actorId === playerId) {
@@ -70,5 +72,6 @@ export function filterStateForPlayer(
     pendingAction,
     log: state.log,
     ...(state.winnerId !== undefined && { winnerId: state.winnerId }),
+    ...(state.gameMode && { gameMode: state.gameMode }),
   };
 }
