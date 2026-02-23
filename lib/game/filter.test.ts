@@ -114,6 +114,23 @@ describe('filterStateForPlayer', () => {
     expect(filtered.winnerId).toBe('p1');
   });
 
+  test('handles undefined cards from Firebase (empty array dropped)', () => {
+    const state: GameState = {
+      ...createTestState(),
+      players: createTestState().players.map(p => ({
+        ...p,
+        cards: undefined as any,  // Firebase drops empty arrays
+      })),
+    };
+    // Should not throw
+    const result = filterStateForPlayer(state, 'p1');
+    // Self: gets empty cards array
+    expect(result.players.find(p => p.id === 'p1')!.cards).toEqual([]);
+    // Others: get empty masked cards array
+    expect(result.players.find(p => p.id === 'p2')!.cards).toEqual([]);
+    expect(result.players.find(p => p.id === 'p3')!.cards).toEqual([]);
+  });
+
   test('코인, isAlive 등 기본 정보 보존', () => {
     const state = createTestState();
     const filtered = filterStateForPlayer(state, 'p1');
