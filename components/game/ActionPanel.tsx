@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useState } from 'react';
-import { Coins, Handshake, Crown, Crosshair, Anchor, Repeat, Zap, Shield } from 'lucide-react';
+import { Coins, Handshake, Crown, Crosshair, Anchor, Repeat, Zap, Shield, X, ChevronRight } from 'lucide-react';
 import { FilteredGameState, Player, ActionType, Character, CHARACTER_NAMES, BLOCK_CHARACTERS, ACTION_NAMES } from '@/lib/game/types';
 
 interface Props {
@@ -108,6 +108,15 @@ const VARIANT_ICON_COLORS: Record<ButtonVariant, string> = {
     coup: 'text-bg-dark',
 };
 
+const VARIANT_TEXT_COLORS: Record<ButtonVariant, string> = {
+    general: 'var(--gold)',
+    duke: 'var(--duke)',
+    assassin: 'var(--assassin)',
+    captain: 'var(--captain)',
+    ambassador: 'var(--ambassador)',
+    coup: 'var(--gold)',
+};
+
 const ALL_CHARACTERS: Character[] = ['Duke', 'Contessa', 'Captain', 'Assassin', 'Ambassador'];
 
 const GUESS_CHAR_ICONS: Record<Character, React.ElementType> = {
@@ -122,6 +131,8 @@ function ActionPanel({ state, playerId, onAction }: Props) {
     const [targetId, setTargetId] = useState('');
     const [loading, setLoading] = useState(false);
     const [guessChar, setGuessChar] = useState<Character | null>(null);
+    const [pendingActionType, setPendingActionType] = useState<ActionType | null>(null);
+
     const me = state.players.find((p) => p.id === playerId)!;
     const aliveOthers = state.players.filter((p) => p.isAlive && p.id !== playerId);
     const mustCoup = me.coins >= 10;
@@ -136,8 +147,56 @@ function ActionPanel({ state, playerId, onAction }: Props) {
             targetId: needsTarget ? targetId : undefined,
             ...(type === 'coup' && isGuessMode && guessChar ? { guessedCharacter: guessChar } : {}),
         });
+        // Reset state after action fires
         setGuessChar(null);
+        setTargetId('');
+        setPendingActionType(null);
         setLoading(false);
+    };
+
+    const handleActionButtonClick = (actionType: ActionType, needsTarget: boolean) => {
+        if (needsTarget) {
+            // Enter target selection mode
+            setPendingActionType(actionType);
+            setTargetId('');
+            setGuessChar(null);
+        } else {
+            // Fire immediately
+            handleAction(actionType, false);
+        }
+    };
+
+    const handleCancelTargetSelection = () => {
+        setPendingActionType(null);
+        setTargetId('');
+        setGuessChar(null);
+    };
+
+    const handleTargetSelect = (playerId: string) => {
+        if (!pendingActionType) return;
+        const isCoupGuess = pendingActionType === 'coup' && isGuessMode;
+        if (isCoupGuess) {
+            // In guess mode, need character selection before firing
+            setTargetId(playerId);
+        } else {
+            // Non-guess: set target and fire immediately
+            setTargetId(playerId);
+            // Use the action button definition to check needsTarget
+            const actionDef = ACTION_BUTTONS.find((a) => a.type === pendingActionType);
+            if (actionDef) {
+                // Fire the action with this target
+                setLoading(true);
+                onAction({
+                    type: pendingActionType,
+                    targetId: playerId,
+                }).then(() => {
+                    setGuessChar(null);
+                    setTargetId('');
+                    setPendingActionType(null);
+                    setLoading(false);
+                });
+            }
+        }
     };
 
     const visibleButtons = ACTION_BUTTONS.filter((a) => {
@@ -148,85 +207,147 @@ function ActionPanel({ state, playerId, onAction }: Props) {
     const row1 = visibleButtons.filter((a) => a.row === 1);
     const row2 = visibleButtons.filter((a) => a.row === 2);
 
-    return (
-        <div className="space-y-3">
-            {/* 대상 선택 */}
-            {aliveOthers.length > 0 && (
-                <div>
-                    <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
-                        대상 선택 (갈취·암살·쿠데타에 필요)
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                        {aliveOthers.map((p) => (
+    const pendingActionDef = pendingActionType
+        ? ACTION_BUTTONS.find((a) => a.type === pendingActionType)
+        : null;
+
+    // Target selection mode
+    if (pendingActionType && pendingActionDef) {
+        const isCoupGuess = pendingActionType === 'coup' && isGuessMode;
+        const PendingIcon = pendingActionDef.icon;
+        const headerColor = VARIANT_TEXT_COLORS[pendingActionDef.variant];
+
+        return (
+            <div className="space-y-3">
+                {/* Header: selected action + cancel */}
+                <div
+                    className="flex items-center justify-between rounded-xl px-3 py-2 border"
+                    style={{
+                        borderColor: headerColor,
+                        backgroundColor: `color-mix(in srgb, ${headerColor} 12%, transparent)`,
+                    }}
+                >
+                    <div className="flex items-center gap-2">
+                        <PendingIcon
+                            className="w-4 h-4 shrink-0"
+                            style={{ color: headerColor }}
+                        />
+                        <span className="font-bold text-sm text-text-primary">
+                            {pendingActionDef.label}
+                        </span>
+                        <ChevronRight className="w-3 h-3 text-text-muted" />
+                        <span className="text-sm text-text-muted">대상을 선택하세요</span>
+                    </div>
+                    <button
+                        onClick={handleCancelTargetSelection}
+                        className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs text-text-muted hover:text-text-primary border border-border-subtle hover:border-border-muted transition-all"
+                        disabled={loading}
+                    >
+                        <X size={11} />
+                        취소
+                    </button>
+                </div>
+
+                {/* Target player buttons */}
+                <div className="flex flex-wrap gap-2">
+                    {aliveOthers.map((p) => {
+                        const isSelected = targetId === p.id;
+                        return (
                             <button
                                 key={p.id}
-                                onClick={() => setTargetId(p.id === targetId ? '' : p.id)}
-                                className={`px-2.5 py-1 rounded-full text-sm font-semibold border transition-all ${targetId === p.id
-                                        ? 'border-gold text-text-primary'
-                                        : 'bg-bg-surface border-border-subtle text-text-secondary hover:border-gold/50'
-                                    }`}
+                                onClick={() => handleTargetSelect(p.id)}
+                                disabled={loading}
+                                className={`flex items-center gap-2 px-3 py-2 rounded-xl border font-semibold text-sm transition-all disabled:opacity-40 active:scale-95 ${
+                                    isSelected
+                                        ? 'text-text-primary'
+                                        : 'bg-bg-surface border-border-subtle text-text-secondary hover:border-gold/50 hover:text-text-primary'
+                                }`}
                                 style={
-                                    targetId === p.id
-                                        ? { backgroundColor: 'rgba(200, 169, 96, 0.15)' }
+                                    isSelected
+                                        ? {
+                                              borderColor: headerColor,
+                                              backgroundColor: `color-mix(in srgb, ${headerColor} 15%, transparent)`,
+                                              color: 'var(--text-primary)',
+                                          }
                                         : undefined
                                 }
                             >
                                 {p.name}
-                                <span className="ml-1.5 text-xs" style={{ color: 'var(--coin-color)' }}>
+                                <span className="text-xs font-semibold" style={{ color: 'var(--coin-color)' }}>
                                     {p.coins}
                                 </span>
                             </button>
-                        ))}
-                    </div>
+                        );
+                    })}
                 </div>
-            )}
 
-            {/* Guess 모드: 캐릭터 추측 선택 */}
-            {isGuessMode && targetId && me.coins >= 7 && (
-                <div>
-                    <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
-                        쿠데타 추측 캐릭터 선택
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                        {ALL_CHARACTERS.map((ch) => {
-                            const Icon = GUESS_CHAR_ICONS[ch];
-                            const selected = guessChar === ch;
-                            return (
-                                <button
-                                    key={ch}
-                                    onClick={() => setGuessChar(selected ? null : ch)}
-                                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold border transition-all ${selected
-                                            ? 'border-gold bg-gold/15 text-text-primary'
-                                            : 'bg-bg-surface border-border-subtle text-text-secondary hover:border-gold/50'
+                {/* Guess mode: character selection after target is picked */}
+                {isCoupGuess && targetId && (
+                    <div>
+                        <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
+                            쿠데타 추측 캐릭터 선택
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                            {ALL_CHARACTERS.map((ch) => {
+                                const Icon = GUESS_CHAR_ICONS[ch];
+                                const selected = guessChar === ch;
+                                return (
+                                    <button
+                                        key={ch}
+                                        onClick={() => setGuessChar(selected ? null : ch)}
+                                        disabled={loading}
+                                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold border transition-all disabled:opacity-40 ${
+                                            selected
+                                                ? 'border-gold bg-gold/15 text-text-primary'
+                                                : 'bg-bg-surface border-border-subtle text-text-secondary hover:border-gold/50'
                                         }`}
-                                >
-                                    <Icon size={13} />
-                                    {CHARACTER_NAMES[ch]}
-                                </button>
-                            );
-                        })}
+                                    >
+                                        <Icon size={13} />
+                                        {CHARACTER_NAMES[ch]}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        {/* Confirm button for guess mode */}
+                        <button
+                            onClick={() => handleAction('coup', true)}
+                            disabled={!guessChar || loading}
+                            className="mt-3 w-full py-2 rounded-xl font-bold text-sm border transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
+                            style={{
+                                backgroundColor: 'var(--gold)',
+                                color: 'var(--bg-dark)',
+                                borderColor: 'var(--gold)',
+                            }}
+                        >
+                            <Zap className="inline w-4 h-4 mr-1.5" />
+                            쿠데타 확인
+                        </button>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
+        );
+    }
 
+    // Default view: action buttons
+    return (
+        <div className="space-y-3">
             {/* 액션 버튼 — Row 1: 소득 / 외국 원조 / 쿠데타 */}
             {row1.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {row1.map((a) => {
                         const canAfford = a.cost ? me.coins >= a.cost : true;
-                        const hasTarget = a.needsTarget ? !!targetId : true;
-                        const needsGuess = a.type === 'coup' && isGuessMode && !guessChar;
-                        const disabled = !canAfford || !hasTarget || needsGuess || loading;
+                        const disabled = !canAfford || loading;
                         const Icon = a.icon;
                         const isCoup = a.variant === 'coup';
 
                         return (
                             <button
                                 key={a.type}
-                                onClick={() => handleAction(a.type, !!a.needsTarget)}
+                                onClick={() => handleActionButtonClick(a.type, !!a.needsTarget)}
                                 disabled={disabled}
-                                className={`flex flex-col items-start p-1.5 sm:p-3 rounded-xl border transition-all text-left disabled:opacity-40 ${disabled ? 'cursor-not-allowed' : 'active:scale-95'
-                                    } ${VARIANT_STYLES[a.variant]}`}
+                                className={`flex flex-col items-start p-1.5 sm:p-3 rounded-xl border transition-all text-left disabled:opacity-40 ${
+                                    disabled ? 'cursor-not-allowed' : 'active:scale-95'
+                                } ${VARIANT_STYLES[a.variant]}`}
                                 style={isCoup ? { backgroundColor: 'var(--gold)' } : undefined}
                             >
                                 <div className="flex items-center gap-2 mb-1 w-full">
@@ -267,17 +388,17 @@ function ActionPanel({ state, playerId, onAction }: Props) {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {row2.map((a) => {
                         const canAfford = a.cost ? me.coins >= a.cost : true;
-                        const hasTarget = a.needsTarget ? !!targetId : true;
-                        const disabled = !canAfford || !hasTarget || loading;
+                        const disabled = !canAfford || loading;
                         const Icon = a.icon;
 
                         return (
                             <button
                                 key={a.type}
-                                onClick={() => handleAction(a.type, !!a.needsTarget)}
+                                onClick={() => handleActionButtonClick(a.type, !!a.needsTarget)}
                                 disabled={disabled}
-                                className={`flex flex-col items-start p-1.5 sm:p-3 rounded-xl border transition-all text-left disabled:opacity-40 ${disabled ? 'cursor-not-allowed' : 'active:scale-95'
-                                    } ${VARIANT_STYLES[a.variant]}`}
+                                className={`flex flex-col items-start p-1.5 sm:p-3 rounded-xl border transition-all text-left disabled:opacity-40 ${
+                                    disabled ? 'cursor-not-allowed' : 'active:scale-95'
+                                } ${VARIANT_STYLES[a.variant]}`}
                             >
                                 <div className="flex items-center gap-1.5 mb-1 w-full">
                                     <Icon

@@ -204,3 +204,29 @@
     transform: translateY(0);
   }
 }
+
+/* ============================================================ */
+/* 퀵챗 말풍선 애니메이션                                        */
+/* ============================================================ */
+
+@keyframes chatBubbleIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes chatBubbleOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.9);
+  }
+}

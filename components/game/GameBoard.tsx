@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { Skull, Settings, Trophy, ScrollText, RotateCcw } from 'lucide-react';
 import { FilteredGameState, Card, Player, ACTION_NAMES } from '@/lib/game/types';
-import { PresenceMap } from '@/lib/firebase.client';
+import { PresenceMap, subscribeToChatMessages, CHAT_MESSAGES } from '@/lib/firebase.client';
 import { clearActiveRoom } from '@/lib/storage';
 import { useGameAudio } from '@/lib/useGameAudio';
 import PlayerArea from './PlayerArea';
@@ -13,6 +13,8 @@ import ActionPanel from './ActionPanel';
 import EventLog, { getLogColor } from './EventLog';
 import GameToast from './GameToast';
 import BgmPlayer from './BgmPlayer';
+import QuickChat from './QuickChat';
+import ChatBubble from './ChatBubble';
 
 // 응답 대기 표시 컴포넌트
 function WaitingResponseIndicator({ state, playerId }: { state: FilteredGameState; playerId: string }) {
@@ -117,6 +119,11 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
     const [showSettings, setShowSettings] = useState(false);
     const mobileLogRef = useRef<HTMLDivElement>(null);
 
+    // 퀵챗 말풍선 상태: playerId -> { message, leaving }
+    const [chatBubbles, setChatBubbles] = useState<Map<string, { message: string; leaving: boolean }>>(new Map());
+    const chatTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+    const seenChatKeysRef = useRef<Set<string>>(new Set());
+
     // Close mobile log when tapping outside
     const handleOutsideClick = useCallback((e: MouseEvent) => {
         if (mobileLogRef.current && !mobileLogRef.current.contains(e.target as Node)) {
@@ -148,6 +155,66 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
     );
 
     useGameAudio(state, playerId);
+
+    // 퀵챗 구독
+    useEffect(() => {
+        const unsub = subscribeToChatMessages(roomId, (messages) => {
+            const now = Date.now();
+            Object.entries(messages).forEach(([key, msg]) => {
+                // 이미 처리한 메시지 스킵
+                if (seenChatKeysRef.current.has(key)) return;
+                // 30초 이상 된 메시지 무시 (페이지 로드 시 과거 메시지)
+                if (now - msg.timestamp > 30000) {
+                    seenChatKeysRef.current.add(key);
+                    return;
+                }
+                seenChatKeysRef.current.add(key);
+
+                const message = CHAT_MESSAGES[msg.messageId] ?? '';
+                if (!message) return;
+
+                const { playerId: senderPlayerId } = msg;
+
+                // 기존 타이머 취소
+                const existingTimer = chatTimersRef.current.get(senderPlayerId);
+                if (existingTimer) clearTimeout(existingTimer);
+
+                // 말풍선 추가
+                setChatBubbles((prev) => {
+                    const next = new Map(prev);
+                    next.set(senderPlayerId, { message, leaving: false });
+                    return next;
+                });
+
+                // 3초 후 leaving=true
+                const leaveTimer = setTimeout(() => {
+                    setChatBubbles((prev) => {
+                        const next = new Map(prev);
+                        const existing = next.get(senderPlayerId);
+                        if (existing) next.set(senderPlayerId, { ...existing, leaving: true });
+                        return next;
+                    });
+                    // 0.5초 후 제거 (애니메이션 완료)
+                    setTimeout(() => {
+                        setChatBubbles((prev) => {
+                            const next = new Map(prev);
+                            next.delete(senderPlayerId);
+                            return next;
+                        });
+                        chatTimersRef.current.delete(senderPlayerId);
+                    }, 500);
+                }, 3000);
+
+                chatTimersRef.current.set(senderPlayerId, leaveTimer);
+            });
+        });
+        const timers = chatTimersRef.current;
+        return () => {
+            unsub();
+            timers.forEach((t) => clearTimeout(t));
+            timers.clear();
+        };
+    }, [roomId]);
 
     const mustLoseCard = useMemo(
         () =>
@@ -405,6 +472,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                         player={player}
                         isCurrentTurn={state.currentTurnId === player.id}
                         online={!!presence[player.id]?.online}
+                        chatBubble={chatBubbles.get(player.id)}
                     />
                 ))}
             </div>
@@ -502,8 +570,27 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
 
             {/* 내 플레이어 영역 (하단) */}
             {me && (
-                <div className="flex-shrink-0 border-t border-border-subtle p-2 sm:p-4 bg-bg-card">
-                    <MyPlayerArea player={me as Player} />
+                <div className="flex-shrink-0 border-t border-border-subtle bg-bg-card">
+                    {/* 퀵챗 버튼 */}
+                    <div className="relative">
+                        {/* 내 말풍선 */}
+                        {chatBubbles.has(playerId) && (
+                            <div className="flex justify-center pt-1.5">
+                                <ChatBubble
+                                    message={chatBubbles.get(playerId)!.message}
+                                    leaving={chatBubbles.get(playerId)!.leaving}
+                                />
+                            </div>
+                        )}
+                        <QuickChat
+                            roomId={roomId}
+                            playerId={playerId}
+                            disabled={!me.isAlive}
+                        />
+                    </div>
+                    <div className="p-2 sm:p-4">
+                        <MyPlayerArea player={me as Player} />
+                    </div>
                 </div>
             )}
 
