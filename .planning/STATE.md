@@ -33,12 +33,13 @@
 | 024 | 게임 UX: 턴 시작 로그 구분선 + 퀵챗 낙관적 UI/3회 제한 + 쿠데타/암살 확인 모달 | 2026-02-23 | f36e83b | [024-game-ux-log-chat-confirm-optimization](./quick/024-game-ux-log-chat-confirm-optimization/) |
 | 025 | Firebase RTDB 방 자동 정리: GameState 타임스탬프 + Vercel Cron cleanup API | 2026-02-23 | c3d12b5 | [025-auto-cleanup-stale-game-rooms](./quick/025-auto-cleanup-stale-game-rooms/) |
 | 026 | 랜덤 첫 턴 플레이어 (initGame Math.random) | 2026-02-23 | d6bbc6e | [026-random-first-turn-player](./quick/026-random-first-turn-player/) |
+| 027 | 퀵챗 말풍선 제거 + 이벤트 로그 통합 + 확인 모달 아이콘/서술형 레이블 | 2026-02-24 | 0deccf2 | [027-chat-to-log-and-confirm-modal-ux](./quick/027-chat-to-log-and-confirm-modal-ux/) |
 | 028 | '블러프' -> '거짓말' 한국어 용어 통일 (7개 소스/테스트 파일) | 2026-02-24 | 3028af7 | [028-bluff-to-lie-korean-terminology](./quick/028-bluff-to-lie-korean-terminology/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-24T00:00:00Z
-- Stopped at: Completed quick-028 (블러프→거짓말 한국어 용어 통일)
+- Last session: 2026-02-24T14:58:15Z
+- Stopped at: Completed quick-027 (퀵챗 로그 통합 + 확인 모달 UX)
 - Resume file: None
