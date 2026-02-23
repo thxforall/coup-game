@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-23 - Completed quick-017 (실시간 퀵챗 이모티콘/텍스트 버튼 6개)
+- Last activity: 2026-02-23 - Completed quick-018 (ActionPanel 액션 선택 후 대상 선택 UX 개선)
 
 ### Quick Tasks Completed
 
@@ -25,11 +25,12 @@
 | 015 | Galaxy S21 (360px) 소형 모바일 반응형 수정 | 2026-02-23 | 5e15e69 | [015-galaxy-s21-small-mobile-responsive-fix](./quick/015-galaxy-s21-small-mobile-responsive-fix/) |
 | 016 | Game Win / Lobby / Restart Fixes (game_over guard + waiting room restart + lobby button) | 2026-02-23 | c427ecd | [016-game-win-lobby-restart-fixes](./quick/016-game-win-lobby-restart-fixes/) |
 | 017 | 실시간 퀵챗 이모티콘/텍스트 버튼 6개 (Firebase RTDB 직접 구독 + 말풍선 3초 소멸) | 2026-02-23 | 93de992 | [017-realtime-chat-emoji-textbox-6](./quick/017-realtime-chat-emoji-textbox-6/) |
+| 018 | ActionPanel 액션 선택 후 대상 선택 UX 개선 (action-first then target selection two-step flow) | 2026-02-23 | 9812d41 | [018-action-first-then-target-selection](./quick/018-action-first-then-target-selection/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-23T14:25:00Z
-- Stopped at: Completed quick-017 (실시간 퀵챗 이모티콘/텍스트 버튼 6개)
+- Last session: 2026-02-23T14:23:00Z
+- Stopped at: Completed quick-018 (ActionPanel 액션 선택 후 대상 선택 UX 개선)
 - Resume file: None
