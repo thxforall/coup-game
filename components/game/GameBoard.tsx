@@ -314,6 +314,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
     if (state.phase === 'game_over') {
         const winner = state.players.find((p) => p.id === state.winnerId);
         const iWon = state.winnerId === playerId;
+        const isHost = state.players[0]?.id === playerId;
         return (
             <div className="min-h-screen flex items-center justify-center bg-bg-dark px-4">
                 <GameToast
@@ -349,7 +350,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                             : `${winner?.name}이(가) 승리했습니다`}
                     </p>
                     <div className="mt-6 flex flex-col gap-3">
-                        {state.players[0]?.id === playerId && onRestart && (
+                        {isHost && onRestart ? (
                             <button
                                 className="btn-gold w-full py-3 flex items-center justify-center gap-2 text-base"
                                 onClick={onRestart}
@@ -357,12 +358,17 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                                 <RotateCcw size={18} />
                                 다시 시작
                             </button>
+                        ) : (
+                            <div className="flex items-center justify-center gap-2 py-3 text-text-muted text-sm">
+                                <RotateCcw size={16} className="animate-spin" />
+                                방장의 재시작을 기다리는 중...
+                            </div>
                         )}
                         <button
                             className="btn-primary inline-block px-8 py-3 text-center w-full"
                             onClick={() => { clearActiveRoom(); window.location.href = '/'; }}
                         >
-                            로비로 돌아가기
+                            방 나가기
                         </button>
                     </div>
                 </div>
