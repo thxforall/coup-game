@@ -2,7 +2,7 @@
 
 import { memo, useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { Skull, Settings, Trophy, ScrollText, RotateCcw, BookOpen } from 'lucide-react';
+import { Skull, Settings, Trophy, ScrollText, RotateCcw, BookOpen, LogOut } from 'lucide-react';
 import { FilteredGameState, Card, Player, ACTION_NAMES } from '@/lib/game/types';
 import { PresenceMap, subscribeToChatMessages, CHAT_MESSAGES } from '@/lib/firebase.client';
 import { clearActiveRoom } from '@/lib/storage';
@@ -381,7 +381,8 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
     }
 
     return (
-        <div className="h-screen bg-bg-dark flex flex-col overflow-hidden">
+        <div className="h-screen bg-bg-dark flex flex-col overflow-hidden relative">
+
             {/* 토스트 알림 */}
             <GameToast
                 log={state.log}
@@ -439,6 +440,18 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                         onClick={() => setShowSettings(true)}
                     >
                         <Settings className="w-5 h-5" />
+                    </button>
+                    <button
+                        className="p-2 rounded-lg text-text-muted hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                        aria-label="방 나가기"
+                        onClick={() => {
+                            if (window.confirm('방에서 나가시겠습니까?')) {
+                                clearActiveRoom();
+                                window.location.href = '/';
+                            }
+                        }}
+                    >
+                        <LogOut className="w-5 h-5" />
                     </button>
                 </div>
             </header>

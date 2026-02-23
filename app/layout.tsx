@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Sora, Space_Mono } from 'next/font/google';
 import './globals.css';
+import GlobalBackground from '@/components/ui/GlobalBackground';
 
 const sora = Sora({
     subsets: ['latin'],
@@ -57,7 +58,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="ko" className={`${sora.variable} ${spaceMono.variable}`}>
-            <body className="bg-bg-dark text-text-primary min-h-screen font-sora">{children}</body>
+            <body className="bg-bg-dark text-text-primary min-h-screen font-sora">
+                <GlobalBackground />
+                {children}
+            </body>
         </html>
     );
 }
