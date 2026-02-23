@@ -36,19 +36,19 @@ function GameToast({ log, playerId, currentTurnId, phase, winnerId, players }: P
     const prevTurn = useRef(currentTurnId);
     const idCounter = useRef(0);
 
-    const addToast = (message: string, type: ToastItem['type']) => {
+    const addToast = (message: string, type: ToastItem['type'], duration = 2500) => {
         const id = ++idCounter.current;
         setToasts((prev) => [...prev.slice(-2), { id, message, type }]);
-        // 2.5초 후 페이드아웃 시작
+        // duration 후 페이드아웃 시작
         setTimeout(() => {
             setToasts((prev) =>
                 prev.map((t) => (t.id === id ? { ...t, leaving: true } : t))
             );
-        }, 2500);
-        // 3초 후 제거
+        }, duration);
+        // duration + 500ms 후 제거
         setTimeout(() => {
             setToasts((prev) => prev.filter((t) => t.id !== id));
-        }, 3000);
+        }, duration + 500);
     };
 
     useEffect(() => {
@@ -64,6 +64,8 @@ function GameToast({ log, playerId, currentTurnId, phase, winnerId, players }: P
                     addToast(entry, 'cardLost');
                 } else if (entry.includes('승리')) {
                     addToast(entry, 'victory');
+                } else {
+                    addToast(entry, 'action', 2000);
                 }
             }
         }
