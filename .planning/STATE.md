@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-23 - Completed quick-019 (암살 블러프 도전 2명 피해 경고 UI + 이벤트 로그)
+- Last activity: 2026-02-23 - Completed quick-020 (게임 로그 모달 선 테두리 제거)
 
 ### Quick Tasks Completed
 
@@ -27,6 +27,7 @@
 | 017 | 실시간 퀵챗 이모티콘/텍스트 버튼 6개 (Firebase RTDB 직접 구독 + 말풍선 3초 소멸) | 2026-02-23 | 93de992 | [017-realtime-chat-emoji-textbox-6](./quick/017-realtime-chat-emoji-textbox-6/) |
 | 018 | ActionPanel 액션 선택 후 대상 선택 UX 개선 (action-first then target selection two-step flow) | 2026-02-23 | 9812d41 | [018-action-first-then-target-selection](./quick/018-action-first-then-target-selection/) |
 | 019 | 암살 블러프 도전 2명 피해 경고 배너 + 이벤트 로그 (ResponseModal warning banner + engine double-death log) | 2026-02-23 | c68fdb0 | [019-assassin-bluff-double-death-warning-mess](./quick/019-assassin-bluff-double-death-warning-mess/) |
+| 020 | 게임 로그 모달 선 테두리 제거 | 2026-02-23 | 6113ac5 | [020-game-log-modal-border-line-fix](./quick/020-game-log-modal-border-line-fix/) |
 
 ### Blockers/Concerns
 - None currently
