@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { memo, useEffect, useState, useRef } from 'react';
 
 export interface ToastItem {
     id: number;
@@ -29,7 +29,7 @@ interface Props {
     players: { id: string; name: string }[];
 }
 
-export default function GameToast({ log, playerId, currentTurnId, phase, winnerId, players }: Props) {
+function GameToast({ log, playerId, currentTurnId, phase, winnerId, players }: Props) {
     const [toasts, setToasts] = useState<ToastItem[]>([]);
     const prevLogLength = useRef(log.length);
     const prevPhase = useRef(phase);
@@ -112,3 +112,5 @@ export default function GameToast({ log, playerId, currentTurnId, phase, winnerI
         </div>
     );
 }
+
+export default memo(GameToast);

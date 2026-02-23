@@ -1,7 +1,11 @@
 'use client';
 
+import { memo, useState } from 'react';
 import Image from 'next/image';
-import { FilteredPlayer, Card, Character, CHARACTER_NAMES } from '@/lib/game/types';
+import { Player, Character, CHARACTER_NAMES } from '@/lib/game/types';
+import CardInfoModal from './CardInfoModal';
+
+// ── constants ──────────────────────────────────────────────────────────────
 
 const CARD_IMAGES: Record<Character, string> = {
     Duke: '/cards/duke.jpg',
@@ -11,64 +15,192 @@ const CARD_IMAGES: Record<Character, string> = {
     Ambassador: '/cards/ambassador.jpg',
 };
 
-const CHAR_BORDER: Record<Character, string> = {
-    Duke: 'border-violet-500 shadow-violet-500/30',
-    Contessa: 'border-red-500 shadow-red-500/30',
-    Captain: 'border-blue-500 shadow-blue-500/30',
-    Assassin: 'border-slate-500 shadow-slate-500/30',
-    Ambassador: 'border-emerald-500 shadow-emerald-500/30',
+/** Inline border color via CSS variable so Tailwind purging is not an issue */
+const CHAR_BORDER_COLOR: Record<Character, string> = {
+    Duke: 'var(--duke-color)',
+    Assassin: 'var(--assassin-color)',
+    Captain: 'var(--captain-color)',
+    Ambassador: 'var(--ambassador-color)',
+    Contessa: 'var(--contessa-color)',
 };
 
-interface Props {
-    player: FilteredPlayer;
+// ── sub-components ─────────────────────────────────────────────────────────
+
+interface PlayerBadgeProps {
+    name: string;
 }
 
-export default function MyPlayerArea({ player }: Props) {
+function PlayerBadge({ name }: PlayerBadgeProps) {
+    const initial = name.charAt(0).toUpperCase();
     return (
-        <div className="glass-panel p-4">
-            <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                    <span className="text-sm text-slate-400">나:</span>
-                    <span className="font-bold text-white">{player.name}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-400">코인</span>
-                    <div className="flex gap-1">
-                        {Array.from({ length: Math.min(player.coins, 13) }).map((_, i) => (
-                            <div key={i} className="w-4 h-4 rounded-full bg-amber-400 border border-amber-300 shadow-sm shadow-amber-500/50" />
-                        ))}
-                        {player.coins > 13 && <span className="text-amber-400 text-xs self-center">+{player.coins - 13}</span>}
-                    </div>
-                    <span className="font-bold text-amber-400">{player.coins}</span>
-                </div>
+        <div className="flex items-center gap-2">
+            {/* Circular avatar with gold background and gold border */}
+            <div
+                className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                style={{
+                    backgroundColor: 'var(--gold)',
+                    border: '2px solid var(--gold-light)',
+                    color: '#0D0D0D',
+                }}
+            >
+                {initial}
             </div>
-
-            {/* 내 카드 (앞면 공개) */}
-            <div className="flex gap-3 justify-center">
-                {(player.cards as Card[]).map((card, i) => (
-                    <div key={i} className={`relative rounded-xl border-2 overflow-hidden ${card.revealed ? 'opacity-40 grayscale' : ''} ${CHAR_BORDER[card.character]} shadow-lg`}
-                        style={{ width: '100px', height: '140px' }}>
-                        <Image
-                            src={CARD_IMAGES[card.character]}
-                            alt={CHARACTER_NAMES[card.character]}
-                            fill
-                            className="object-cover"
-                            sizes="100px"
-                        />
-                        {/* 카드 이름 오버레이 */}
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-                            <span className="text-xs font-bold text-white block text-center">
-                                {CHARACTER_NAMES[card.character]}
-                            </span>
-                        </div>
-                        {card.revealed && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                                <span className="text-xs text-slate-300 font-bold bg-black/60 px-2 py-1 rounded">공개됨</span>
-                            </div>
-                        )}
-                    </div>
-                ))}
-            </div>
+            <span
+                className="font-sora font-bold text-sm"
+                style={{ color: 'var(--text-primary)' }}
+            >
+                {name}
+            </span>
         </div>
     );
 }
+
+interface CoinBadgeProps {
+    coins: number;
+}
+
+function CoinBadge({ coins }: CoinBadgeProps) {
+    return (
+        <div
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold"
+            style={{
+                border: '1.5px solid var(--coin-color)',
+                color: 'var(--coin-color)',
+                backgroundColor: 'rgba(241, 196, 15, 0.08)',
+            }}
+        >
+            <span style={{ color: 'var(--coin-color)' }}>&#9679;</span>
+            <span>{coins}</span>
+        </div>
+    );
+}
+
+// ── card component ─────────────────────────────────────────────────────────
+
+interface CharacterCardProps {
+    character: Character;
+    revealed: boolean;
+    onClick: () => void;
+}
+
+function CharacterCard({ character, revealed, onClick }: CharacterCardProps) {
+    const borderColor = CHAR_BORDER_COLOR[character];
+
+    return (
+        <button
+            onClick={onClick}
+            disabled={revealed}
+            className={[
+                'relative overflow-hidden rounded-lg transition-transform',
+                revealed
+                    ? 'opacity-40 grayscale cursor-default'
+                    : 'cursor-pointer hover:scale-105 active:scale-95',
+            ].join(' ')}
+            style={{
+                width: '120px',
+                height: '170px',
+                border: `2px solid ${borderColor}`,
+                boxShadow: revealed ? 'none' : `0 4px 16px ${borderColor}4D`,
+            }}
+        >
+            <Image
+                src={CARD_IMAGES[character]}
+                alt={CHARACTER_NAMES[character]}
+                fill
+                className="object-cover"
+                sizes="120px"
+            />
+
+            {/* Character name overlay at bottom */}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/85 to-transparent px-2 py-2">
+                <span className="font-sora text-xs font-bold text-white block text-center leading-tight">
+                    {CHARACTER_NAMES[character]}
+                </span>
+                {!revealed && (
+                    <span className="text-[9px] text-white/40 block text-center mt-0.5">
+                        탭하여 정보 보기
+                    </span>
+                )}
+            </div>
+
+            {/* Eliminated overlay */}
+            {revealed && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                    <span
+                        className="font-mono text-xs font-bold px-2 py-1 rounded"
+                        style={{
+                            color: 'var(--text-secondary)',
+                            backgroundColor: 'rgba(0,0,0,0.65)',
+                        }}
+                    >
+                        Eliminated
+                    </span>
+                </div>
+            )}
+        </button>
+    );
+}
+
+// ── main component ─────────────────────────────────────────────────────────
+
+interface Props {
+    player: Player;
+}
+
+function MyPlayerArea({ player }: Props) {
+    const [selectedCard, setSelectedCard] = useState<Character | null>(null);
+
+    function handleCardClick(character: Character, revealed: boolean) {
+        if (!revealed) {
+            setSelectedCard(character);
+        }
+    }
+
+    return (
+        <>
+            <div
+                className="p-4 rounded-2xl"
+                style={{
+                    backgroundColor: 'var(--bg-card)',
+                    border: '1px solid var(--border-subtle)',
+                }}
+            >
+                {/* Header row: PlayerBadge + label + CoinBadge */}
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                        <PlayerBadge name={player.name} />
+                        <span
+                            className="font-mono text-xs uppercase tracking-widest"
+                            style={{ color: 'var(--text-muted)' }}
+                        >
+                            Your Influence
+                        </span>
+                    </div>
+                    <CoinBadge coins={player.coins} />
+                </div>
+
+                {/* Card row */}
+                <div className="flex gap-3 justify-center">
+                    {player.cards.map((card, i) => (
+                        <CharacterCard
+                            key={i}
+                            character={card.character}
+                            revealed={card.revealed}
+                            onClick={() => handleCardClick(card.character, card.revealed)}
+                        />
+                    ))}
+                </div>
+            </div>
+
+            {/* Card info modal */}
+            {selectedCard && (
+                <CardInfoModal
+                    character={selectedCard}
+                    onClose={() => setSelectedCard(null)}
+                />
+            )}
+        </>
+    );
+}
+
+export default memo(MyPlayerArea);

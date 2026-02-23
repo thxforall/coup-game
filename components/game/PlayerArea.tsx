@@ -1,80 +1,215 @@
 'use client';
 
+import { memo } from 'react';
+import Image from 'next/image';
+import {
+    Crown,
+    Crosshair,
+    Anchor,
+    Repeat,
+    Shield,
+    Coins,
+} from 'lucide-react';
 import { FilteredPlayer, Character, CHARACTER_NAMES } from '@/lib/game/types';
 
-const CHAR_STYLES: Record<Character, string> = {
-    Duke: 'from-violet-600 to-violet-900 border-violet-500',
-    Contessa: 'from-red-600 to-red-900 border-red-500',
-    Captain: 'from-blue-600 to-blue-900 border-blue-500',
-    Assassin: 'from-slate-600 to-slate-950 border-slate-500',
-    Ambassador: 'from-emerald-600 to-emerald-900 border-emerald-500',
-};
-
-const CHAR_EMOJI: Record<Character, string> = {
-    Duke: '👑',
-    Contessa: '🌹',
-    Captain: '⚔️',
-    Assassin: '🗡️',
-    Ambassador: '🕊️',
-};
+// ----------------------------------------------------------------
+// Types & constants
+// ----------------------------------------------------------------
 
 interface Props {
     player: FilteredPlayer;
     isCurrentTurn: boolean;
 }
 
-export default function PlayerArea({ player, isCurrentTurn }: Props) {
-    const liveCards = player.cards.filter((c) => !c.revealed).length;
+const PLAYER_AVATAR_COLORS = [
+    '#8E44AD', // violet
+    '#2980B9', // blue
+    '#27AE60', // green
+    '#C0392B', // red
+    '#E67E22', // orange
+    '#16A085', // teal
+];
+
+const CHAR_COLORS: Record<Character, string> = {
+    Duke: '#8E44AD',
+    Assassin: '#2C3E50',
+    Captain: '#2980B9',
+    Ambassador: '#27AE60',
+    Contessa: '#C0392B',
+};
+
+const CHAR_ICONS: Record<Character, React.ElementType> = {
+    Duke: Crown,
+    Assassin: Crosshair,
+    Captain: Anchor,
+    Ambassador: Repeat,
+    Contessa: Shield,
+};
+
+// ----------------------------------------------------------------
+// Sub-components
+// ----------------------------------------------------------------
+
+interface PlayerBadgeProps {
+    name: string;
+    playerIndex: number;
+    isCurrentTurn: boolean;
+}
+
+function PlayerBadge({ name, playerIndex, isCurrentTurn }: PlayerBadgeProps) {
+    const avatarColor = PLAYER_AVATAR_COLORS[playerIndex % PLAYER_AVATAR_COLORS.length];
+    const initial = name.charAt(0).toUpperCase();
+
+    return (
+        <div className="flex items-center gap-2 min-w-0">
+            <div
+                className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm"
+                style={{ backgroundColor: avatarColor }}
+            >
+                {initial}
+            </div>
+            <span className="text-sm font-semibold text-text-primary truncate">
+                {isCurrentTurn && (
+                    <span className="text-gold mr-1">&#9658;</span>
+                )}
+                {name}
+            </span>
+        </div>
+    );
+}
+
+interface CoinBadgeProps {
+    coins: number;
+}
+
+function CoinBadge({ coins }: CoinBadgeProps) {
+    return (
+        <div
+            className="flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-bold"
+            style={{
+                borderColor: '#F1C40F',
+                color: '#F1C40F',
+                backgroundColor: 'rgba(241, 196, 15, 0.1)',
+            }}
+        >
+            <Coins size={11} strokeWidth={2.5} />
+            <span>{coins}</span>
+        </div>
+    );
+}
+
+interface FaceDownCardProps {
+    width?: number;
+    height?: number;
+}
+
+function FaceDownCard({ width = 80, height = 112 }: FaceDownCardProps) {
+    return (
+        <div
+            className="rounded-lg flex flex-col items-center justify-center gap-1 shadow-md flex-shrink-0"
+            style={{
+                width,
+                height,
+                background: 'linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%)',
+                border: '1px solid #3A3A3A',
+            }}
+        >
+            <Shield size={22} strokeWidth={1.5} className="text-slate-400" />
+            <span
+                className="text-[9px] font-bold tracking-widest"
+                style={{ color: '#5A5A5A' }}
+            >
+                COUP
+            </span>
+        </div>
+    );
+}
+
+interface RevealedCardProps {
+    character: Character;
+    width?: number;
+    height?: number;
+}
+
+function RevealedCard({ character, width = 80, height = 112 }: RevealedCardProps) {
+    const CharIcon = CHAR_ICONS[character];
+    const accentColor = CHAR_COLORS[character];
 
     return (
         <div
-            className={`glass-panel p-3 min-w-[130px] transition-all ${!player.isAlive ? 'opacity-40' : ''
-                } ${isCurrentTurn ? 'ring-2 ring-amber-400/60 shadow-lg shadow-amber-400/20' : ''}`}
+            className="rounded-lg overflow-hidden relative flex-shrink-0 shadow-md"
+            style={{ width, height }}
         >
-            {/* 이름 & 코인 */}
-            <div className="flex items-center justify-between mb-2 gap-2">
-                <span className="text-sm font-bold text-white truncate max-w-[80px]">
-                    {isCurrentTurn && <span className="text-amber-400 mr-1">▶</span>}
-                    {player.name}
+            <Image
+                src={`/cards/${character.toLowerCase()}.jpg`}
+                alt={CHARACTER_NAMES[character]}
+                fill
+                className="object-cover opacity-40 grayscale"
+                sizes={`${width}px`}
+            />
+            {/* Eliminated overlay */}
+            <div className="absolute inset-0 flex flex-col items-center justify-end pb-2 bg-black/30">
+                <CharIcon
+                    size={14}
+                    strokeWidth={2}
+                    style={{ color: accentColor }}
+                    className="mb-0.5 opacity-70"
+                />
+                <span className="text-[8px] font-bold text-white/60 tracking-wide">
+                    탈락
                 </span>
+            </div>
+        </div>
+    );
+}
+
+// ----------------------------------------------------------------
+// Main component
+// ----------------------------------------------------------------
+
+function PlayerArea({ player, isCurrentTurn }: Props) {
+    // Derive player index from id for stable avatar color (fallback: 0)
+    // PlayerArea doesn't receive index directly, so we hash from id
+    const playerIndex = player.id
+        ? player.id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
+        : 0;
+
+    return (
+        <div
+            className={`
+                bg-bg-card border border-border-subtle rounded-xl p-3
+                transition-all duration-200 min-w-[140px]
+                ${!player.isAlive ? 'opacity-50' : ''}
+                ${isCurrentTurn ? 'ring-2 ring-gold shadow-lg' : ''}
+            `}
+            style={isCurrentTurn ? { boxShadow: '0 0 16px rgba(241, 196, 15, 0.2)' } : undefined}
+        >
+            {/* Header: badge + coin */}
+            <div className="flex items-center justify-between mb-3 gap-2">
+                <PlayerBadge
+                    name={player.name}
+                    playerIndex={playerIndex}
+                    isCurrentTurn={isCurrentTurn}
+                />
                 {player.isAlive ? (
-                    <span className="coin text-xs w-6 h-6">{player.coins}</span>
+                    <CoinBadge coins={player.coins} />
                 ) : (
-                    <span className="text-slate-500 text-xs">탈락</span>
+                    <span className="text-[11px] text-text-muted font-medium">탈락</span>
                 )}
             </div>
 
-            {/* 카드 (뒷면) */}
+            {/* Cards */}
             <div className="flex gap-2 justify-center">
-                {player.cards.map((card, i) => (
-                    <div key={i}>
-                        {card.revealed && card.character ? (
-                            <div
-                                className={`w-12 h-18 rounded-lg border-2 bg-gradient-to-b ${CHAR_STYLES[card.character]} opacity-40 grayscale flex flex-col items-center justify-center p-1`}
-                                style={{ height: '72px', width: '48px' }}
-                            >
-                                <span className="text-lg">{CHAR_EMOJI[card.character]}</span>
-                                <span className="text-[9px] text-white/60 text-center leading-tight">
-                                    {CHARACTER_NAMES[card.character]}
-                                </span>
-                            </div>
-                        ) : (
-                            <div
-                                className="rounded-lg border-2 border-slate-600 bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center shadow"
-                                style={{ height: '72px', width: '48px' }}
-                            >
-                                <span className="text-2xl">🂠</span>
-                            </div>
-                        )}
-                    </div>
-                ))}
-                {/* 살아있는 카드 수 */}
-                {player.isAlive && (
-                    <div className="self-end">
-                        <span className="text-[10px] text-slate-500">×{liveCards}</span>
-                    </div>
+                {player.cards.map((card, i) =>
+                    card.revealed && card.character ? (
+                        <RevealedCard key={i} character={card.character} />
+                    ) : (
+                        <FaceDownCard key={i} />
+                    )
                 )}
             </div>
         </div>
     );
 }
+
+export default memo(PlayerArea);

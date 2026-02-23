@@ -1,6 +1,8 @@
 'use client';
 
+import { memo } from 'react';
 import Image from 'next/image';
+import { Skull } from 'lucide-react';
 import { FilteredPlayer, Card, Character, CHARACTER_NAMES } from '@/lib/game/types';
 
 const CARD_IMAGES: Record<Character, string> = {
@@ -12,11 +14,11 @@ const CARD_IMAGES: Record<Character, string> = {
 };
 
 const CHAR_BORDER: Record<Character, string> = {
-    Duke: 'border-violet-500',
-    Contessa: 'border-red-500',
-    Captain: 'border-blue-500',
-    Assassin: 'border-slate-500',
-    Ambassador: 'border-emerald-500',
+    Duke: 'border-duke',
+    Contessa: 'border-contessa',
+    Captain: 'border-captain',
+    Assassin: 'border-assassin',
+    Ambassador: 'border-ambassador',
 };
 
 interface Props {
@@ -26,7 +28,7 @@ interface Props {
     onSelect: (cardIndex: number) => void;
 }
 
-export default function CardSelectModal({ player, title, subtitle, onSelect }: Props) {
+function CardSelectModal({ player, title, subtitle, onSelect }: Props) {
     const selectableCards = (player.cards as Card[])
         .map((c, i) => ({ ...c, index: i }))
         .filter((c) => !c.revealed);
@@ -34,9 +36,11 @@ export default function CardSelectModal({ player, title, subtitle, onSelect }: P
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="glass-panel w-full max-w-xs p-6 animate-slide-up text-center">
-                <div className="text-4xl mb-2">💀</div>
-                <h2 className="text-xl font-black text-white mb-1">{title}</h2>
-                <p className="text-slate-400 text-sm mb-5">{subtitle}</p>
+                <div className="flex justify-center mb-2">
+                    <Skull size={36} color="var(--gold)" />
+                </div>
+                <h2 className="text-xl font-black text-text-primary mb-1">{title}</h2>
+                <p className="text-text-secondary text-sm mb-5">{subtitle}</p>
 
                 <div className="flex gap-4 justify-center">
                     {selectableCards.map((card) => (
@@ -62,8 +66,10 @@ export default function CardSelectModal({ player, title, subtitle, onSelect }: P
                     ))}
                 </div>
 
-                <p className="text-slate-600 text-xs mt-4">선택한 카드가 공개됩니다</p>
+                <p className="text-text-muted text-xs mt-4">선택한 카드가 공개됩니다</p>
             </div>
         </div>
     );
 }
+
+export default memo(CardSelectModal);

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import Image from 'next/image';
+import { Repeat } from 'lucide-react';
 import { FilteredPlayer, Card, Character, CHARACTER_NAMES } from '@/lib/game/types';
 
 const CARD_IMAGES: Record<Character, string> = {
@@ -13,11 +14,11 @@ const CARD_IMAGES: Record<Character, string> = {
 };
 
 const CHAR_BORDER: Record<Character, string> = {
-    Duke: 'border-violet-500',
-    Contessa: 'border-red-500',
-    Captain: 'border-blue-500',
-    Assassin: 'border-slate-500',
-    Ambassador: 'border-emerald-500',
+    Duke: 'border-duke',
+    Contessa: 'border-contessa',
+    Captain: 'border-captain',
+    Assassin: 'border-assassin',
+    Ambassador: 'border-ambassador',
 };
 
 interface Props {
@@ -26,7 +27,7 @@ interface Props {
     onSelect: (keptIndices: number[]) => void;
 }
 
-export default function ExchangeModal({ player, exchangeCards, onSelect }: Props) {
+function ExchangeModal({ player, exchangeCards, onSelect }: Props) {
     const [selected, setSelected] = useState<number[]>([]);
     const liveCards = (player.cards as Card[]).filter((c) => !c.revealed);
     const liveCount = liveCards.length;
@@ -46,8 +47,11 @@ export default function ExchangeModal({ player, exchangeCards, onSelect }: Props
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="glass-panel w-full max-w-sm p-6 animate-slide-up text-center">
-                <h2 className="text-xl font-black text-white mb-1">🕊️ 카드 교환</h2>
-                <p className="text-slate-400 text-sm mb-1">대사 능력 — 카드를 교환합니다</p>
+                <div className="flex items-center justify-center gap-2 mb-1">
+                    <Repeat size={20} color="var(--ambassador-color)" />
+                    <h2 className="text-xl font-black text-text-primary">카드 교환</h2>
+                </div>
+                <p className="text-text-secondary text-sm mb-1">대사 능력 — 카드를 교환합니다</p>
                 <p className="text-amber-400 text-xs mb-5">유지할 카드 {liveCount}장을 선택하세요</p>
 
                 <div className="flex flex-wrap gap-3 justify-center mb-4">
@@ -58,7 +62,7 @@ export default function ExchangeModal({ player, exchangeCards, onSelect }: Props
                             <button
                                 key={i}
                                 onClick={() => toggle(i)}
-                                className={`relative rounded-xl border-2 overflow-hidden ${CHAR_BORDER[char]} transition-all shadow ${isSelected ? 'ring-2 ring-white scale-105' : 'opacity-70 hover:opacity-100'}`}
+                                className={`relative rounded-xl border-2 overflow-hidden ${CHAR_BORDER[char]} transition-all shadow ${isSelected ? 'ring-2 ring-gold scale-105' : 'opacity-70 hover:opacity-100'}`}
                                 style={{ width: '80px', height: '110px' }}
                             >
                                 <Image
@@ -76,7 +80,7 @@ export default function ExchangeModal({ player, exchangeCards, onSelect }: Props
                                         <span className="text-[9px] text-white/60 block text-center">현재</span>
                                     )}
                                     {!isOwned && (
-                                        <span className="text-[9px] text-emerald-300 block text-center">새 카드</span>
+                                        <span className="text-[9px] text-ambassador block text-center">새 카드</span>
                                     )}
                                 </div>
                             </button>
@@ -85,13 +89,15 @@ export default function ExchangeModal({ player, exchangeCards, onSelect }: Props
                 </div>
 
                 <button
-                    className="w-full btn-primary py-3"
+                    className="w-full btn-gold py-3"
                     onClick={() => onSelect(selected)}
                     disabled={selected.length !== liveCount}
                 >
-                    {selected.length === liveCount ? '✅ 교환 완료' : `${liveCount - selected.length}장 더 선택하세요`}
+                    {selected.length === liveCount ? '교환 완료' : `${liveCount - selected.length}장 더 선택하세요`}
                 </button>
             </div>
         </div>
     );
 }
+
+export default memo(ExchangeModal);
