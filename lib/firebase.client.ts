@@ -131,3 +131,34 @@ export function subscribeToPresence(
 
   return unsub;
 }
+
+// ============================================================
+// Quick Chat
+// ============================================================
+
+export const CHAT_MESSAGES = ['드루와', '공작 업', 'ㅠㅠ', '넌 뒤졌다', '봐줘', '👍'] as const;
+
+export interface ChatMessage {
+  playerId: string;
+  messageId: number;
+  timestamp: number;
+}
+
+export function sendChatMessage(roomId: string, playerId: string, messageId: number): void {
+  const db = getDb();
+  const key = `${playerId}_${Date.now()}`;
+  const chatRef = ref(db, `game_rooms/${roomId}/chat/${key}`);
+  set(chatRef, { playerId, messageId, timestamp: Date.now() });
+}
+
+export function subscribeToChatMessages(
+  roomId: string,
+  callback: (messages: Record<string, ChatMessage>) => void
+): () => void {
+  const db = getDb();
+  const chatRef = ref(db, `game_rooms/${roomId}/chat`);
+  const unsub = onValue(chatRef, (snap) => {
+    callback(snap.exists() ? (snap.val() as Record<string, ChatMessage>) : {});
+  });
+  return unsub;
+}
