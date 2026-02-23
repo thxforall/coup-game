@@ -8,7 +8,7 @@
 const { initializeApp, getApps } = require('firebase/app');
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { getDatabase, ref, onValue, get } = require('firebase/database');
-import { GameState } from './game/types';
+import { FilteredGameState } from './game/types';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -28,20 +28,43 @@ function getDb() {
   return getDatabase(getApp());
 }
 
-export async function getRoom(roomId: string): Promise<{ id: string; state: GameState } | null> {
-  const snapshot = await get(ref(getDb(), `game_rooms/${roomId}`));
+export async function getRoom(roomId: string, playerId?: string): Promise<{ id: string; state: FilteredGameState } | null> {
+  // playerId가 있으면 views/{playerId}에서 읽기, 없으면 state에서 읽기 (대기실 등)
+  const path = playerId
+    ? `game_rooms/${roomId}/views/${playerId}`
+    : `game_rooms/${roomId}/state`;
+  const snapshot = await get(ref(getDb(), path));
   if (!snapshot.exists()) return null;
-  return { id: roomId, state: snapshot.val().state as GameState };
+  return { id: roomId, state: snapshot.val() as FilteredGameState };
 }
 
 export function subscribeToRoom(
   roomId: string,
-  callback: (state: GameState) => void
+  playerId: string,
+  callback: (state: FilteredGameState) => void
 ): () => void {
-  const roomRef = ref(getDb(), `game_rooms/${roomId}`);
-  return onValue(roomRef, (snapshot: { exists: () => boolean; val: () => { state: GameState } }) => {
+  // views/{playerId} 경로 구독
+  const viewRef = ref(getDb(), `game_rooms/${roomId}/views/${playerId}`);
+  const unsubView = onValue(viewRef, (snapshot: { exists: () => boolean; val: () => FilteredGameState }) => {
     if (snapshot.exists()) {
-      callback(snapshot.val().state);
+      callback(snapshot.val());
     }
   });
+
+  // fallback: views가 아직 없을 수 있으므로 state도 구독 (waiting 단계)
+  const stateRef = ref(getDb(), `game_rooms/${roomId}/state`);
+  const unsubState = onValue(stateRef, (snapshot: { exists: () => boolean; val: () => FilteredGameState }) => {
+    if (snapshot.exists()) {
+      const val = snapshot.val();
+      // views가 쓰여지면 state 구독은 무시 (views가 우선)
+      if (val.phase === 'waiting') {
+        callback(val);
+      }
+    }
+  });
+
+  return () => {
+    unsubView();
+    unsubState();
+  };
 }

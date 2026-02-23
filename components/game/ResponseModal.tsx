@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { GameState, Card, Character, CHARACTER_NAMES, BLOCK_CHARACTERS, ACTION_NAMES } from '@/lib/game/types';
+import { FilteredGameState, Card, Character, CHARACTER_NAMES, BLOCK_CHARACTERS, ACTION_NAMES } from '@/lib/game/types';
 
 interface Props {
-    state: GameState;
+    state: FilteredGameState;
     playerId: string;
     myCards: Card[];
     onAction: (action: object) => Promise<void>;

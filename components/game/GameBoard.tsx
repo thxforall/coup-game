@@ -1,6 +1,6 @@
 'use client';
 
-import { GameState, Character, CHARACTER_NAMES } from '@/lib/game/types';
+import { FilteredGameState, Card, Character, CHARACTER_NAMES } from '@/lib/game/types';
 import { useGameAudio } from '@/lib/useGameAudio';
 import PlayerArea from './PlayerArea';
 import MyPlayerArea from './MyPlayerArea';
@@ -12,7 +12,7 @@ import EventLog from './EventLog';
 import GameToast from './GameToast';
 
 interface Props {
-    state: GameState;
+    state: FilteredGameState;
     playerId: string;
     roomId: string;
     onAction: (action: object) => Promise<void>;
@@ -74,7 +74,7 @@ export default function GameBoard({ state, playerId, onAction }: Props) {
     const mustRespond =
         (state.phase === 'awaiting_response' || state.phase === 'awaiting_block_response') &&
         me?.isAlive &&
-        state.pendingAction?.responses?.[playerId] === null &&
+        state.pendingAction?.responses?.[playerId] === 'pending' &&
         state.pendingAction?.actorId !== playerId;
 
     return (
@@ -151,7 +151,7 @@ export default function GameBoard({ state, playerId, onAction }: Props) {
                 <ResponseModal
                     state={state}
                     playerId={playerId}
-                    myCards={me.cards}
+                    myCards={me.cards as Card[]}
                     onAction={onAction}
                 />
             )}

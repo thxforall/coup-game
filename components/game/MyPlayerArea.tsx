@@ -1,25 +1,26 @@
 'use client';
 
-import { Player, Character, CHARACTER_NAMES } from '@/lib/game/types';
+import Image from 'next/image';
+import { FilteredPlayer, Card, Character, CHARACTER_NAMES } from '@/lib/game/types';
 
-const CHAR_STYLES: Record<Character, string> = {
-    Duke: 'from-violet-600 to-violet-900 border-violet-500',
-    Contessa: 'from-red-600 to-red-900 border-red-500',
-    Captain: 'from-blue-600 to-blue-900 border-blue-500',
-    Assassin: 'from-slate-600 to-slate-950 border-slate-500',
-    Ambassador: 'from-emerald-600 to-emerald-900 border-emerald-500',
+const CARD_IMAGES: Record<Character, string> = {
+    Duke: '/cards/duke.jpg',
+    Contessa: '/cards/contessa.jpg',
+    Captain: '/cards/captain.jpg',
+    Assassin: '/cards/assassin.jpg',
+    Ambassador: '/cards/ambassador.jpg',
 };
 
-const CHAR_EMOJI: Record<Character, string> = {
-    Duke: '👑',
-    Contessa: '🌹',
-    Captain: '⚔️',
-    Assassin: '🗡️',
-    Ambassador: '🕊️',
+const CHAR_BORDER: Record<Character, string> = {
+    Duke: 'border-violet-500 shadow-violet-500/30',
+    Contessa: 'border-red-500 shadow-red-500/30',
+    Captain: 'border-blue-500 shadow-blue-500/30',
+    Assassin: 'border-slate-500 shadow-slate-500/30',
+    Ambassador: 'border-emerald-500 shadow-emerald-500/30',
 };
 
 interface Props {
-    player: Player;
+    player: FilteredPlayer;
 }
 
 export default function MyPlayerArea({ player }: Props) {
@@ -44,16 +45,25 @@ export default function MyPlayerArea({ player }: Props) {
 
             {/* 내 카드 (앞면 공개) */}
             <div className="flex gap-3 justify-center">
-                {player.cards.map((card, i) => (
-                    <div key={i} className={`relative rounded-xl border-2 bg-gradient-to-b ${card.revealed ? 'opacity-40 grayscale' : ''} ${CHAR_STYLES[card.character]} flex flex-col items-center justify-center gap-1 shadow-lg p-3`}
-                        style={{ width: '90px', height: '120px' }}>
-                        <span className="text-3xl">{CHAR_EMOJI[card.character]}</span>
-                        <span className="text-xs font-bold text-white text-center leading-tight">
-                            {CHARACTER_NAMES[card.character]}
-                        </span>
+                {(player.cards as Card[]).map((card, i) => (
+                    <div key={i} className={`relative rounded-xl border-2 overflow-hidden ${card.revealed ? 'opacity-40 grayscale' : ''} ${CHAR_BORDER[card.character]} shadow-lg`}
+                        style={{ width: '100px', height: '140px' }}>
+                        <Image
+                            src={CARD_IMAGES[card.character]}
+                            alt={CHARACTER_NAMES[card.character]}
+                            fill
+                            className="object-cover"
+                            sizes="100px"
+                        />
+                        {/* 카드 이름 오버레이 */}
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                            <span className="text-xs font-bold text-white block text-center">
+                                {CHARACTER_NAMES[card.character]}
+                            </span>
+                        </div>
                         {card.revealed && (
-                            <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/50">
-                                <span className="text-xs text-slate-300">공개됨</span>
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                                <span className="text-xs text-slate-300 font-bold bg-black/60 px-2 py-1 rounded">공개됨</span>
                             </div>
                         )}
                     </div>

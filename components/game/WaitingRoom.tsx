@@ -1,10 +1,10 @@
 'use client';
 
-import { GameState } from '@/lib/game/types';
+import { FilteredGameState } from '@/lib/game/types';
 import { useState } from 'react';
 
 interface Props {
-    state: GameState;
+    state: FilteredGameState;
     playerId: string;
     roomId: string;
     onStart: () => void;

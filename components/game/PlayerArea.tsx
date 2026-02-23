@@ -1,6 +1,6 @@
 'use client';
 
-import { Player, Character, CHARACTER_NAMES } from '@/lib/game/types';
+import { FilteredPlayer, Character, CHARACTER_NAMES } from '@/lib/game/types';
 
 const CHAR_STYLES: Record<Character, string> = {
     Duke: 'from-violet-600 to-violet-900 border-violet-500',
@@ -19,7 +19,7 @@ const CHAR_EMOJI: Record<Character, string> = {
 };
 
 interface Props {
-    player: Player;
+    player: FilteredPlayer;
     isCurrentTurn: boolean;
 }
 
@@ -48,7 +48,7 @@ export default function PlayerArea({ player, isCurrentTurn }: Props) {
             <div className="flex gap-2 justify-center">
                 {player.cards.map((card, i) => (
                     <div key={i}>
-                        {card.revealed ? (
+                        {card.revealed && card.character ? (
                             <div
                                 className={`w-12 h-18 rounded-lg border-2 bg-gradient-to-b ${CHAR_STYLES[card.character]} opacity-40 grayscale flex flex-col items-center justify-center p-1`}
                                 style={{ height: '72px', width: '48px' }}

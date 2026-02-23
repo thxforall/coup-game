@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { subscribeToRoom, getRoom } from '@/lib/firebase.client';
-import { GameState } from '@/lib/game/types';
+import { FilteredGameState } from '@/lib/game/types';
 import WaitingRoom from '@/components/game/WaitingRoom';
 import GameBoard from '@/components/game/GameBoard';
 
@@ -21,7 +21,7 @@ export default function GamePage() {
     const params = useParams();
     const router = useRouter();
     const roomId = (params.roomId as string).toUpperCase();
-    const [state, setState] = useState<GameState | null>(null);
+    const [state, setState] = useState<FilteredGameState | null>(null);
     const [playerId, setPlayerId] = useState('');
     const [loading, setLoading] = useState(true);
 
@@ -31,26 +31,34 @@ export default function GamePage() {
 
     // 초기 상태 로드 + Realtime 구독
     useEffect(() => {
-        if (!roomId) return;
+        if (!roomId || !playerId) return;
 
         // 방 존재 여부 먼저 확인
-        getRoom(roomId).then((room) => {
+        getRoom(roomId, playerId).then((room) => {
             if (!room) {
-                router.push('/');
+                // views가 아직 없을 수 있으므로 state에서도 시도
+                getRoom(roomId).then((fallback) => {
+                    if (!fallback) {
+                        router.push('/');
+                        return;
+                    }
+                    setState(fallback.state);
+                    setLoading(false);
+                });
                 return;
             }
             setState(room.state);
             setLoading(false);
         });
 
-        // Firebase onValue 실시간 구독
-        const unsubscribe = subscribeToRoom(roomId, (newState) => {
+        // Firebase onValue 실시간 구독 (views/{playerId})
+        const unsubscribe = subscribeToRoom(roomId, playerId, (newState) => {
             setState(newState);
             setLoading(false);
         });
 
         return () => unsubscribe();
-    }, [roomId, router]);
+    }, [roomId, playerId, router]);
 
     const sendAction = useCallback(
         async (action: object) => {

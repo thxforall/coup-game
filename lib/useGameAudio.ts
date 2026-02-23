@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { GameState } from './game/types';
+import { FilteredGameState } from './game/types';
 import { soundManager } from './audio';
 
 /**
  * 게임 상태 변화를 감지하여 자동으로 효과음을 재생하는 훅
  */
-export function useGameAudio(state: GameState | null, playerId: string) {
-  const prevState = useRef<GameState | null>(null);
+export function useGameAudio(state: FilteredGameState | null, playerId: string) {
+  const prevState = useRef<FilteredGameState | null>(null);
   const prevLogLength = useRef(0);
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export function useGameAudio(state: GameState | null, playerId: string) {
         case 'awaiting_block_response':
           // 내가 응답해야 할 때
           if (
-            state.pendingAction?.responses?.[playerId] === null &&
+            state.pendingAction?.responses?.[playerId] === 'pending' &&
             state.pendingAction?.actorId !== playerId
           ) {
             soundManager.play('notification');

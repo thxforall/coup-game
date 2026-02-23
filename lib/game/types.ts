@@ -42,7 +42,7 @@ export interface PendingAction {
   type: ActionType;
   actorId: string;
   targetId?: string;                                        // 대상이 있는 액션 (쿠, 암살, 강탈)
-  responses: Record<string, ResponseType | null>;          // 플레이어별 응답
+  responses: Record<string, ResponseType | 'pending'>;          // 플레이어별 응답 ('pending' = 미응답)
   blockerId?: string;                                      // 블로커 플레이어 ID
   blockerCharacter?: Character;                            // 블로커가 주장하는 캐릭터
   losingPlayerId?: string;                                 // 카드를 잃어야 하는 플레이어 ID
@@ -71,6 +71,45 @@ export type GameAction =
   | { type: 'respond'; response: ResponseType; character?: Character } // block 시 character 필요
   | { type: 'lose_influence'; cardIndex: number }
   | { type: 'exchange_select'; keptIndices: number[] };
+
+// ============================================================
+// Server-side filtered state (클라이언트에 전달)
+// ============================================================
+
+export interface MaskedCard {
+  revealed: boolean;
+  character: Character | null; // null when revealed === false (상대방 비공개 카드)
+}
+
+export interface FilteredPlayer {
+  id: string;
+  name: string;
+  coins: number;
+  cards: Card[] | MaskedCard[]; // self: Card[], opponent: MaskedCard[]
+  isAlive: boolean;
+  isReady: boolean;
+}
+
+export interface FilteredPendingAction {
+  type: ActionType;
+  actorId: string;
+  targetId?: string;
+  responses: Record<string, ResponseType | 'pending'>;
+  blockerId?: string;
+  blockerCharacter?: Character;
+  losingPlayerId?: string;
+  exchangeCards?: Character[]; // 본인 exchange일 때만 포함
+}
+
+export interface FilteredGameState {
+  players: FilteredPlayer[];
+  currentTurnId: string;
+  phase: GamePhase;
+  pendingAction: FilteredPendingAction | null;
+  log: string[];
+  winnerId?: string;
+  // deck 제외 — 클라이언트에 절대 노출 안함
+}
 
 // 캐릭터 한국어 이름
 export const CHARACTER_NAMES: Record<Character, string> = {

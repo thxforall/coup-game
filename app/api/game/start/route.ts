@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRoom, updateRoom } from '@/lib/firebase';
+import { getRoom, updateRoomWithViews } from '@/lib/firebase';
 import { initGame } from '@/lib/game/engine';
+import { filterStateForPlayer } from '@/lib/game/filter';
 
 export async function POST(req: NextRequest) {
   const { roomId, playerId } = await req.json();
@@ -13,6 +14,12 @@ export async function POST(req: NextRequest) {
   if (state.players[0].id !== playerId) return NextResponse.json({ error: '방장만 시작 가능' }, { status: 403 });
 
   const newState = initGame(state.players.map((p) => ({ id: p.id, name: p.name })));
-  await updateRoom(roomId, newState);
+
+  const views: Record<string, import('@/lib/game/types').FilteredGameState> = {};
+  for (const p of newState.players) {
+    views[p.id] = filterStateForPlayer(newState, p.id);
+  }
+
+  await updateRoomWithViews(roomId, newState, views);
   return NextResponse.json({ ok: true });
 }

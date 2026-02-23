@@ -3,7 +3,7 @@
  * 서버리스 환경에서 안정적인 fetch 기반 통신
  */
 
-import { GameState } from './game/types';
+import { GameState, FilteredGameState } from './game/types';
 
 const DB_URL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL;
 
@@ -44,5 +44,30 @@ export async function updateRoom(roomId: string, state: GameState): Promise<void
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`Failed to update room: ${res.status} ${text}`);
+  }
+}
+
+/**
+ * state + 플레이어별 filtered views를 동시에 쓰기 (multi-path PATCH)
+ */
+export async function updateRoomWithViews(
+  roomId: string,
+  state: GameState,
+  views: Record<string, FilteredGameState>
+): Promise<void> {
+  const payload: Record<string, unknown> = {
+    [`game_rooms/${roomId}/state`]: state,
+  };
+  for (const [playerId, view] of Object.entries(views)) {
+    payload[`game_rooms/${roomId}/views/${playerId}`] = view;
+  }
+  const res = await fetch(`${DB_URL}/.json`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to update room with views: ${res.status} ${text}`);
   }
 }

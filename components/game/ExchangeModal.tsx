@@ -1,31 +1,35 @@
 'use client';
 
 import { useState } from 'react';
-import { Player, Character, CHARACTER_NAMES } from '@/lib/game/types';
+import Image from 'next/image';
+import { FilteredPlayer, Card, Character, CHARACTER_NAMES } from '@/lib/game/types';
 
-const CHAR_STYLES: Record<Character, string> = {
-    Duke: 'from-violet-600 to-violet-900 border-violet-500',
-    Contessa: 'from-red-600 to-red-900 border-red-500',
-    Captain: 'from-blue-600 to-blue-900 border-blue-500',
-    Assassin: 'from-slate-600 to-slate-950 border-slate-500',
-    Ambassador: 'from-emerald-600 to-emerald-900 border-emerald-500',
+const CARD_IMAGES: Record<Character, string> = {
+    Duke: '/cards/duke.jpg',
+    Contessa: '/cards/contessa.jpg',
+    Captain: '/cards/captain.jpg',
+    Assassin: '/cards/assassin.jpg',
+    Ambassador: '/cards/ambassador.jpg',
 };
 
-const CHAR_EMOJI: Record<Character, string> = {
-    Duke: '👑', Contessa: '🌹', Captain: '⚔️', Assassin: '🗡️', Ambassador: '🕊️',
+const CHAR_BORDER: Record<Character, string> = {
+    Duke: 'border-violet-500',
+    Contessa: 'border-red-500',
+    Captain: 'border-blue-500',
+    Assassin: 'border-slate-500',
+    Ambassador: 'border-emerald-500',
 };
 
 interface Props {
-    player: Player;
+    player: FilteredPlayer;
     exchangeCards: Character[];
     onSelect: (keptIndices: number[]) => void;
 }
 
 export default function ExchangeModal({ player, exchangeCards, onSelect }: Props) {
     const [selected, setSelected] = useState<number[]>([]);
-    const liveCards = player.cards.filter((c) => !c.revealed);
+    const liveCards = (player.cards as Card[]).filter((c) => !c.revealed);
     const liveCount = liveCards.length;
-    // 현재 카드 + 교환 카드를 합쳐서 표시
     const allOptions: Character[] = [
         ...liveCards.map((c) => c.character),
         ...exchangeCards,
@@ -34,7 +38,7 @@ export default function ExchangeModal({ player, exchangeCards, onSelect }: Props
     const toggle = (i: number) => {
         setSelected((prev) => {
             if (prev.includes(i)) return prev.filter((x) => x !== i);
-            if (prev.length >= liveCount) return prev; // 최대 선택 수 제한
+            if (prev.length >= liveCount) return prev;
             return [...prev, i];
         });
     };
@@ -42,8 +46,7 @@ export default function ExchangeModal({ player, exchangeCards, onSelect }: Props
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="glass-panel w-full max-w-sm p-6 animate-slide-up text-center">
-                <div className="text-3xl mb-2">🕊️</div>
-                <h2 className="text-xl font-black text-white mb-1">카드 교환</h2>
+                <h2 className="text-xl font-black text-white mb-1">🕊️ 카드 교환</h2>
                 <p className="text-slate-400 text-sm mb-1">대사 능력 — 카드를 교환합니다</p>
                 <p className="text-amber-400 text-xs mb-5">유지할 카드 {liveCount}장을 선택하세요</p>
 
@@ -55,20 +58,27 @@ export default function ExchangeModal({ player, exchangeCards, onSelect }: Props
                             <button
                                 key={i}
                                 onClick={() => toggle(i)}
-                                className={`flex flex-col items-center justify-center rounded-xl border-2 bg-gradient-to-b ${CHAR_STYLES[char]} p-2 transition-all shadow ${isSelected ? 'ring-2 ring-white scale-105' : 'opacity-70 hover:opacity-100'
-                                    }`}
-                                style={{ width: '76px', height: '100px' }}
+                                className={`relative rounded-xl border-2 overflow-hidden ${CHAR_BORDER[char]} transition-all shadow ${isSelected ? 'ring-2 ring-white scale-105' : 'opacity-70 hover:opacity-100'}`}
+                                style={{ width: '80px', height: '110px' }}
                             >
-                                <span className="text-2xl">{CHAR_EMOJI[char]}</span>
-                                <span className="text-[10px] font-bold text-white mt-1 text-center leading-tight">
-                                    {CHARACTER_NAMES[char]}
-                                </span>
-                                {isOwned && !isSelected && (
-                                    <span className="text-[9px] text-white/60 mt-1">현재</span>
-                                )}
-                                {!isOwned && (
-                                    <span className="text-[9px] text-emerald-300 mt-1">새 카드</span>
-                                )}
+                                <Image
+                                    src={CARD_IMAGES[char]}
+                                    alt={CHARACTER_NAMES[char]}
+                                    fill
+                                    className="object-cover"
+                                    sizes="80px"
+                                />
+                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-1.5">
+                                    <span className="text-[10px] font-bold text-white block text-center">
+                                        {CHARACTER_NAMES[char]}
+                                    </span>
+                                    {isOwned && !isSelected && (
+                                        <span className="text-[9px] text-white/60 block text-center">현재</span>
+                                    )}
+                                    {!isOwned && (
+                                        <span className="text-[9px] text-emerald-300 block text-center">새 카드</span>
+                                    )}
+                                </div>
                             </button>
                         );
                     })}

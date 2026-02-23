@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRoom, updateRoom } from '@/lib/firebase';
+import { getRoom, updateRoomWithViews } from '@/lib/firebase';
 import {
   processAction,
   processResponse,
@@ -8,6 +8,15 @@ import {
   processExchangeSelect,
 } from '@/lib/game/engine';
 import { ActionType, Character, ResponseType } from '@/lib/game/types';
+import { filterStateForPlayer } from '@/lib/game/filter';
+
+function buildViews(state: import('@/lib/game/types').GameState) {
+  const views: Record<string, import('@/lib/game/types').FilteredGameState> = {};
+  for (const p of state.players) {
+    views[p.id] = filterStateForPlayer(state, p.id);
+  }
+  return views;
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -58,6 +67,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: err instanceof Error ? err.message : '오류' }, { status: 400 });
   }
 
-  await updateRoom(roomId, state);
+  await updateRoomWithViews(roomId, state, buildViews(state));
   return NextResponse.json({ ok: true });
 }

@@ -1,28 +1,33 @@
 'use client';
 
-import { Player, Character, CHARACTER_NAMES } from '@/lib/game/types';
+import Image from 'next/image';
+import { FilteredPlayer, Card, Character, CHARACTER_NAMES } from '@/lib/game/types';
 
-const CHAR_STYLES: Record<Character, string> = {
-    Duke: 'from-violet-600 to-violet-900 border-violet-500',
-    Contessa: 'from-red-600 to-red-900 border-red-500',
-    Captain: 'from-blue-600 to-blue-900 border-blue-500',
-    Assassin: 'from-slate-600 to-slate-950 border-slate-500',
-    Ambassador: 'from-emerald-600 to-emerald-900 border-emerald-500',
+const CARD_IMAGES: Record<Character, string> = {
+    Duke: '/cards/duke.jpg',
+    Contessa: '/cards/contessa.jpg',
+    Captain: '/cards/captain.jpg',
+    Assassin: '/cards/assassin.jpg',
+    Ambassador: '/cards/ambassador.jpg',
 };
 
-const CHAR_EMOJI: Record<Character, string> = {
-    Duke: '👑', Contessa: '🌹', Captain: '⚔️', Assassin: '🗡️', Ambassador: '🕊️',
+const CHAR_BORDER: Record<Character, string> = {
+    Duke: 'border-violet-500',
+    Contessa: 'border-red-500',
+    Captain: 'border-blue-500',
+    Assassin: 'border-slate-500',
+    Ambassador: 'border-emerald-500',
 };
 
 interface Props {
-    player: Player;
+    player: FilteredPlayer;
     title: string;
     subtitle: string;
     onSelect: (cardIndex: number) => void;
 }
 
 export default function CardSelectModal({ player, title, subtitle, onSelect }: Props) {
-    const selectableCards = player.cards
+    const selectableCards = (player.cards as Card[])
         .map((c, i) => ({ ...c, index: i }))
         .filter((c) => !c.revealed);
 
@@ -38,13 +43,21 @@ export default function CardSelectModal({ player, title, subtitle, onSelect }: P
                         <button
                             key={card.index}
                             onClick={() => onSelect(card.index)}
-                            className={`flex flex-col items-center justify-center rounded-xl border-2 bg-gradient-to-b ${CHAR_STYLES[card.character]} p-3 transition-all hover:scale-105 active:scale-95 shadow-lg`}
-                            style={{ width: '90px', height: '120px' }}
+                            className={`relative rounded-xl border-2 overflow-hidden ${CHAR_BORDER[card.character]} transition-all hover:scale-105 active:scale-95 shadow-lg`}
+                            style={{ width: '100px', height: '140px' }}
                         >
-                            <span className="text-3xl">{CHAR_EMOJI[card.character]}</span>
-                            <span className="text-xs font-bold text-white mt-2 text-center leading-tight">
-                                {CHARACTER_NAMES[card.character]}
-                            </span>
+                            <Image
+                                src={CARD_IMAGES[card.character]}
+                                alt={CHARACTER_NAMES[card.character]}
+                                fill
+                                className="object-cover"
+                                sizes="100px"
+                            />
+                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                                <span className="text-xs font-bold text-white block text-center">
+                                    {CHARACTER_NAMES[card.character]}
+                                </span>
+                            </div>
                         </button>
                     ))}
                 </div>

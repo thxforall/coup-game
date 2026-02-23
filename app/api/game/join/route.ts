@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRoom, updateRoom } from '@/lib/firebase';
+import { getRoom, updateRoomWithViews } from '@/lib/firebase';
 import { Player } from '@/lib/game/types';
+import { filterStateForPlayer } from '@/lib/game/filter';
 
 export async function POST(req: NextRequest) {
   const { roomId, playerName, playerId } = await req.json();
@@ -21,11 +22,17 @@ export async function POST(req: NextRequest) {
     cards: [], isAlive: true, isReady: false,
   };
 
-  await updateRoom(roomId.toUpperCase(), {
+  const newState = {
     ...state,
     players: [...state.players, newPlayer],
     log: [...state.log, `${playerName}이(가) 참가했습니다`],
-  });
+  };
 
+  const views: Record<string, import('@/lib/game/types').FilteredGameState> = {};
+  for (const p of newState.players) {
+    views[p.id] = filterStateForPlayer(newState, p.id);
+  }
+
+  await updateRoomWithViews(roomId.toUpperCase(), newState, views);
   return NextResponse.json({ roomId });
 }
