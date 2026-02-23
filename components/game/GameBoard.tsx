@@ -320,13 +320,12 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                                 다시 시작
                             </button>
                         )}
-                        <a
-                            href="/"
-                            className="btn-primary inline-block px-8 py-3 text-center"
-                            onClick={() => clearActiveRoom()}
+                        <button
+                            className="btn-primary inline-block px-8 py-3 text-center w-full"
+                            onClick={() => { clearActiveRoom(); window.location.href = '/'; }}
                         >
                             로비로 돌아가기
-                        </a>
+                        </button>
                     </div>
                 </div>
                 {showSettings && (
