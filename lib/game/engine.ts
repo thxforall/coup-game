@@ -412,7 +412,7 @@ export function processBlockResponse(
       // 블록이 거짓 → 블로커가 카드 잃음, 행동 진행
       s = addLog(
         s,
-        `${responder.name}의 도전 성공! ${blocker.name}이(가) 블러프였습니다`
+        `${responder.name}의 도전 성공! ${blocker.name}이(가) 거짓말이었습니다`
       );
 
       // 블로커가 카드를 잃음 — 2장 이상이면 선택, 1장이면 자동 제거
@@ -528,7 +528,7 @@ function resolveChallenge(state: GameState, challengerId: string): GameState {
     // 도전 성공: 행동자가 카드 잃음, 행동 무효
     s = addLog(
       s,
-      `${challenger.name}의 도전 성공! ${actor.name}이(가) 블러프였습니다`
+      `${challenger.name}의 도전 성공! ${actor.name}이(가) 거짓말이었습니다`
     );
 
     // 행동자가 카드를 잃음 — 2장 이상이면 선택, 1장이면 자동 제거

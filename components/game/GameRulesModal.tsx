@@ -62,7 +62,7 @@ export default function GameRulesModal({ onClose }: Props) {
                             </li>
                             <li className="flex gap-2">
                                 <span className="text-gold shrink-0">*</span>
-                                <span><span className="text-text-primary font-medium">블러프:</span> 가지고 있지 않은 캐릭터의 능력을 사용 가능, 도전당하면 카드를 잃음</span>
+                                <span><span className="text-text-primary font-medium">거짓말:</span> 가지고 있지 않은 캐릭터의 능력을 사용 가능, 도전당하면 카드를 잃음</span>
                             </li>
                         </ul>
                     </section>
@@ -120,7 +120,7 @@ export default function GameRulesModal({ onClose }: Props) {
                         <div className="space-y-2 text-xs text-text-secondary leading-relaxed">
                             <div>
                                 <span className="text-text-primary font-medium">도전:</span>{' '}
-                                상대가 블러프인지 확인. 블러프면 상대 카드 잃음, 진짜면 도전자 카드 잃음
+                                상대가 거짓말인지 확인. 거짓말이면 상대 카드 잃음, 진짜면 도전자 카드 잃음
                             </div>
                             <div>
                                 <span className="text-text-primary font-medium">블록:</span>{' '}

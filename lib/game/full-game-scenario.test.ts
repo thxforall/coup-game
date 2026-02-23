@@ -82,7 +82,7 @@ describe('Full Game Scenario: Phase 1 - 경제 활동', () => {
 // ============================================================
 
 describe('Full Game Scenario: Phase 2 - 직접 공격', () => {
-  test('Turn 4: P4 사령관 갈취(블러프) → P1 대사 방어(블러프) → P4 방어 도전 성공 → P1 카드 잃고 갈취 적중', () => {
+  test('Turn 4: P4 사령관 갈취(거짓말) → P1 대사 방어(거짓말) → P4 방어 도전 성공 → P1 카드 잃고 갈취 적중', () => {
     // P1이 3코인 보유 상태에서 시작 (Turn 1 income 반영)
     GameScenario.create({
       players: [
@@ -95,9 +95,9 @@ describe('Full Game Scenario: Phase 2 - 직접 공격', () => {
       currentTurnId: 'p4',
       deck: ['Assassin', 'Contessa', 'Ambassador', 'Captain', 'Ambassador'],
     })
-      // P4가 사령관으로 P1 갈취 (블러프 - Captain 없음)
+      // P4가 사령관으로 P1 갈취 (거짓말 - Captain 없음)
       .action('p4', { type: 'steal', targetId: 'p1' })
-      // P1이 대사로 방어 (블러프 - Ambassador 없음)
+      // P1이 대사로 방어 (거짓말 - Ambassador 없음)
       .respond('p1', 'block', 'Ambassador')
       // P4가 P1의 방어를 도전
       .blockRespond('p4', 'challenge')
@@ -220,7 +220,7 @@ describe('Full Game Scenario: Phase 3 - 탈락자 발생', () => {
 // ============================================================
 
 describe('Full Game Scenario: Phase 4 - 최후의 3인', () => {
-  test('P1 암살 블러프 도전 실패 → P1 탈락', () => {
+  test('P1 암살 거짓말 도전 실패 → P1 탈락', () => {
     // P1(Duke/생명1), P2(Duke/생명1), P3(Duke,Duke/생명2)
     GameScenario.create({
       players: [
@@ -231,7 +231,7 @@ describe('Full Game Scenario: Phase 4 - 최후의 3인', () => {
       currentTurnId: 'p1',
       deck: ['Contessa', 'Ambassador', 'Assassin', 'Captain', 'Ambassador'],
     })
-      // P1이 암살자로 P2 암살 시도 (블러프 - Assassin은 revealed 상태)
+      // P1이 암살자로 P2 암살 시도 (거짓말 - Assassin은 revealed 상태)
       // 실제로는 Duke만 남아있음
       .action('p1', { type: 'assassinate', targetId: 'p2' })
       .expectCoins('p1', 1) // 4 - 3 = 1
@@ -264,7 +264,7 @@ describe('Full Game Scenario: Phase 4 - 최후의 3인', () => {
 // ============================================================
 
 describe('Full Game Scenario: Phase 5 - 1대1 데스매치', () => {
-  test('P2 vs P3: 암살 → 귀부인 블러프 방어 → 도전 성공 → 이중 데스 → P3 우승', () => {
+  test('P2 vs P3: 암살 → 귀부인 거짓말 방어 → 도전 성공 → 이중 데스 → P3 우승', () => {
     // P2(Duke/생명1/7코인) vs P3(Duke,Assassin/생명2/3코인)
     // P2가 다음 턴 쿠를 쏠 수 있으므로 P3는 이번 턴에 반드시 행동해야 함
     GameScenario.create({
@@ -278,7 +278,7 @@ describe('Full Game Scenario: Phase 5 - 1대1 데스매치', () => {
       // P3가 암살자로 P2 암살 (진실 - Assassin 보유)
       .action('p3', { type: 'assassinate', targetId: 'p2' })
       .expectCoins('p3', 0) // 3 - 3 = 0
-      // P2가 귀부인으로 방어 (블러프 - Contessa 없음, Duke만 보유)
+      // P2가 귀부인으로 방어 (거짓말 - Contessa 없음, Duke만 보유)
       .respond('p2', 'block', 'Contessa')
       // P3가 P2의 방어를 도전
       .blockRespond('p3', 'challenge')
@@ -311,7 +311,7 @@ describe('Full Game Scenario: Phase 5 - 1대1 데스매치', () => {
       .exchangeSelect('p3', [1, 2]) // Duke(기존) + Duke(덱) 킵
       .expectCurrentTurn('p4')
       // === Phase 2: 공격 시작 ===
-      // Turn 4: P4 사령관 갈취 P1(블러프) → P1 대사 방어(블러프) → P4 도전
+      // Turn 4: P4 사령관 갈취 P1(거짓말) → P1 대사 방어(거짓말) → P4 도전
       .action('p4', { type: 'steal', targetId: 'p1' })
       .respond('p1', 'block', 'Ambassador')
       .blockRespond('p4', 'challenge')

@@ -225,8 +225,8 @@ describe('기본 액션', () => {
 // ============================================================
 
 describe('도전 (Challenge)', () => {
-  test('tax 도전 성공 (블러프) → 행동자 카드 잃음, 행동 취소', () => {
-    // p1이 Duke 없이 tax 선언 → 블러프
+  test('tax 도전 성공 (거짓말) → 행동자 카드 잃음, 행동 취소', () => {
+    // p1이 Duke 없이 tax 선언 → 거짓말
     const state = createTestState({
       players: createTestState().players.map(p =>
         p.id === 'p1'
@@ -276,7 +276,7 @@ describe('도전 (Challenge)', () => {
   });
 
   test('assassinate 도전 성공 → 코인 비환불, 행동 취소', () => {
-    // p1이 Assassin 없이 assassinate 선언 → 블러프
+    // p1이 Assassin 없이 assassinate 선언 → 거짓말
     const state = createTestState({
       players: createTestState().players.map(p =>
         p.id === 'p1'
@@ -326,7 +326,7 @@ describe('도전 (Challenge)', () => {
   });
 
   test('exchange 도전 성공 → 교환 취소', () => {
-    // p1이 Ambassador 없이 exchange 선언 → 블러프
+    // p1이 Ambassador 없이 exchange 선언 → 거짓말
     const state = createTestState({
       players: createTestState().players.map(p =>
         p.id === 'p1'
@@ -456,7 +456,7 @@ describe('블록 (Block)', () => {
     ).toThrow();
   });
 
-  test('블러프 블록 가능: 실제 카드 없이도 블록 선언 가능', () => {
+  test('거짓말 블록 가능: 실제 카드 없이도 블록 선언 가능', () => {
     // p2가 Duke가 없지만 foreignAid를 Duke로 블록
     const state = createTestState(); // p2 has Assassin/Contessa, no Duke
     let s = processAction(state, 'p1', { type: 'foreignAid' });
@@ -492,8 +492,8 @@ describe('블록 도전 (Block Challenge)', () => {
     expect(s.phase).toBe('action');
   });
 
-  test('블로커가 블러프 → 블로커 카드 잃음, 행동 실행', () => {
-    // p2가 Duke 없이 foreignAid 블록 (블러프)
+  test('블로커가 거짓말 → 블로커 카드 잃음, 행동 실행', () => {
+    // p2가 Duke 없이 foreignAid 블록 (거짓말)
     const state = createTestState(); // p2 has Assassin/Contessa
     let s = processAction(state, 'p1', { type: 'foreignAid' });
     s = processResponse(s, 'p2', 'block', 'Duke');
@@ -505,7 +505,7 @@ describe('블록 도전 (Block Challenge)', () => {
     expect(s.pendingAction!.losingPlayerId).toBe('p2');
     s = processLoseInfluence(s, 'p2', 0);
 
-    // 블로커(p2) 블러프 → 카드 잃음
+    // 블로커(p2) 거짓말 → 카드 잃음
     const bob = getPlayer(s, 'p2');
     expect(bob.cards.some(c => c.revealed)).toBe(true);
     // 행동 실행 → Alice 코인 +2
@@ -552,8 +552,8 @@ describe('블록 도전 (Block Challenge)', () => {
     expect(bob.cards.filter(c => !c.revealed).length).toBe(2);
   });
 
-  test('연쇄: 암살 → Contessa 블록(블러프) → 블록 도전 → 암살 실행', () => {
-    // p2가 Contessa 없이 블록 시도 (블러프)
+  test('연쇄: 암살 → Contessa 블록(거짓말) → 블록 도전 → 암살 실행', () => {
+    // p2가 Contessa 없이 블록 시도 (거짓말)
     const state = createTestState({
       players: [
         {
@@ -575,7 +575,7 @@ describe('블록 도전 (Block Challenge)', () => {
     });
 
     let s = processAction(state, 'p1', { type: 'assassinate', targetId: 'p2' });
-    // p2가 Contessa로 블록 (블러프!)
+    // p2가 Contessa로 블록 (거짓말!)
     s = processResponse(s, 'p2', 'block', 'Contessa');
     // p1이 블록에 도전 → 도전 성공 (p2에게 Contessa 없음)
     s = processBlockResponse(s, 'p1', 'challenge');
@@ -623,7 +623,7 @@ describe('도전 시 카드 선택 (lose_influence)', () => {
   });
 
   test('도전 성공: 블러퍼가 2장 보유 시 원하는 카드를 잃을 수 있다', () => {
-    // p1이 블러프 tax (Duke 없음), p2가 도전 성공
+    // p1이 거짓말 tax (Duke 없음), p2가 도전 성공
     const state = createTestState({
       players: createTestState().players.map(p =>
         p.id === 'p1'
@@ -667,8 +667,8 @@ describe('도전 시 카드 선택 (lose_influence)', () => {
     expect(s.phase).toBe('action');
   });
 
-  test('블록 도전: 블로커가 블러프 → 블로커가 카드 선택 후 액션 실행', () => {
-    // foreignAid → p2가 Duke로 블록 (블러프) → p1이 블록 도전 → 도전 성공
+  test('블록 도전: 블로커가 거짓말 → 블로커가 카드 선택 후 액션 실행', () => {
+    // foreignAid → p2가 Duke로 블록 (거짓말) → p1이 블록 도전 → 도전 성공
     const state = createTestState(); // p2 has Assassin/Contessa, not Duke
     let s = processAction(state, 'p1', { type: 'foreignAid' });
     s = processResponse(s, 'p2', 'block', 'Duke');
@@ -784,7 +784,7 @@ describe('카드 잃기 & 교환', () => {
 
 describe('엣지 케이스', () => {
   test('assassination double-loss guard: 블록 도전 실패로 탈락한 target에 암살 미실행', () => {
-    // p2가 카드 1장만 남은 상태에서 Contessa 블러프 블록 → 블록 도전 성공 → p2 탈락 → 암살 스킵
+    // p2가 카드 1장만 남은 상태에서 Contessa 거짓말 블록 → 블록 도전 성공 → p2 탈락 → 암살 스킵
     const state = createTestState({
       players: [
         {
@@ -806,7 +806,7 @@ describe('엣지 케이스', () => {
     });
 
     let s = processAction(state, 'p1', { type: 'assassinate', targetId: 'p2' });
-    // p2가 Contessa로 블록 (블러프! - Contessa 없음)
+    // p2가 Contessa로 블록 (거짓말! - Contessa 없음)
     s = processResponse(s, 'p2', 'block', 'Contessa');
     // p1이 블록에 도전 → 성공 → p2 마지막 카드 잃음 → 탈락
     s = processBlockResponse(s, 'p1', 'challenge');

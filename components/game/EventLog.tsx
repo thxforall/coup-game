@@ -16,7 +16,7 @@ interface Props {
 export function getLogColor(entry: string): string {
     if (entry.includes('승리')) return 'text-gold';
     if (entry.includes('탈락') || entry.includes('잃었습니다')) return 'text-contessa';
-    if (entry.includes('도전 성공') || entry.includes('블러프')) return 'text-ambassador';
+    if (entry.includes('도전 성공') || entry.includes('거짓말')) return 'text-ambassador';
     if (entry.includes('도전 실패')) return 'text-contessa';
     if (entry.includes('막습니다') || entry.includes('블록')) return 'text-captain';
     if (entry.includes('도전')) return 'text-gold-dark';

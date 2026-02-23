@@ -369,7 +369,7 @@ function ResponseModal({ state, playerId, myCards, onAction }: Props) {
                         >
                             <Zap size={16} />
                             {isBlockPhase
-                                ? '블록에 도전! (블러프라고 생각해요)'
+                                ? '블록에 도전! (거짓말이라고 생각해요)'
                                 : pending.type === 'assassinate'
                                     ? '도전! (암살자가 아니라고 생각해요)'
                                     : '도전! (거짓말이라고 생각해요)'

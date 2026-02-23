@@ -14,7 +14,6 @@ import EventLog, { getLogColor } from './EventLog';
 import GameToast from './GameToast';
 import BgmPlayer from './BgmPlayer';
 import QuickChat from './QuickChat';
-import ChatBubble from './ChatBubble';
 
 // 응답 대기 표시 컴포넌트 (memo 처리로 불필요한 리렌더 방지)
 const WaitingResponseIndicator = memo(function WaitingResponseIndicator({ state, playerId }: { state: FilteredGameState; playerId: string }) {
@@ -121,9 +120,8 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
     const [showRules, setShowRules] = useState(false);
     const mobileLogRef = useRef<HTMLDivElement>(null);
 
-    // 퀵챗 말풍선 상태: playerId -> { message, leaving }
-    const [chatBubbles, setChatBubbles] = useState<Map<string, { message: string; leaving: boolean }>>(new Map());
-    const chatTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+    // 퀵챗 로그 상태: 최근 50개 보관
+    const [chatLogs, setChatLogs] = useState<{ playerName: string; message: string; timestamp: number }[]>([]);
 
     // Close mobile log when tapping outside
     const handleOutsideClick = useCallback((e: MouseEvent) => {
@@ -157,47 +155,22 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
 
     useGameAudio(state, playerId);
 
-    // 말풍선 표시 헬퍼 (구독 + 낙관적 UI에서 공통 사용)
-    const showChatBubble = useCallback((senderPlayerId: string, message: string) => {
-        // 기존 타이머 취소
-        const existingTimer = chatTimersRef.current.get(senderPlayerId);
-        if (existingTimer) clearTimeout(existingTimer);
-
-        // 말풍선 추가
-        setChatBubbles((prev) => {
-            const next = new Map(prev);
-            next.set(senderPlayerId, { message, leaving: false });
-            return next;
+    // 채팅 로그 추가 헬퍼
+    const addChatLog = useCallback((senderPlayerId: string, message: string) => {
+        const playerName = state.players.find((p) => p.id === senderPlayerId)?.name ?? senderPlayerId;
+        setChatLogs((prev) => {
+            const next = [...prev, { playerName, message, timestamp: Date.now() }];
+            // 최대 50개 유지
+            return next.length > 50 ? next.slice(next.length - 50) : next;
         });
-
-        // 3초 후 leaving=true
-        const leaveTimer = setTimeout(() => {
-            setChatBubbles((prev) => {
-                const next = new Map(prev);
-                const existing = next.get(senderPlayerId);
-                if (existing) next.set(senderPlayerId, { ...existing, leaving: true });
-                return next;
-            });
-            // 0.5초 후 제거 (애니메이션 완료)
-            setTimeout(() => {
-                setChatBubbles((prev) => {
-                    const next = new Map(prev);
-                    next.delete(senderPlayerId);
-                    return next;
-                });
-                chatTimersRef.current.delete(senderPlayerId);
-            }, 500);
-        }, 3000);
-
-        chatTimersRef.current.set(senderPlayerId, leaveTimer);
-    }, []);
+    }, [state.players]);
 
     // 낙관적 UI: 내 채팅 즉시 표시
     const handleChatSend = useCallback((messageId: number) => {
         const message = CHAT_MESSAGES[messageId] ?? '';
         if (!message) return;
-        showChatBubble(playerId, message);
-    }, [playerId, showChatBubble]);
+        addChatLog(playerId, message);
+    }, [playerId, addChatLog]);
 
     // 퀵챗 구독 (상대 메시지만 - 내 메시지는 낙관적 UI로 이미 표시됨)
     useEffect(() => {
@@ -208,15 +181,10 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             const message = CHAT_MESSAGES[msg.messageId] ?? '';
             if (!message) return;
 
-            showChatBubble(msg.playerId, message);
+            addChatLog(msg.playerId, message);
         });
-        const timers = chatTimersRef.current;
-        return () => {
-            unsub();
-            timers.forEach((t) => clearTimeout(t));
-            timers.clear();
-        };
-    }, [roomId, playerId, showChatBubble]);
+        return unsub;
+    }, [roomId, playerId, addChatLog]);
 
     const mustLoseCard = useMemo(
         () =>
@@ -238,7 +206,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
         if (ctx.continuation === 'execute_action') {
             if (isActor) {
                 // 블록 도전 성공 → 블로커(행동자가 아닐 수도) 카드 잃음
-                return { title: '블러프 발각!', subtitle: '잃을 카드를 선택하세요' };
+                return { title: '거짓말 발각!', subtitle: '잃을 카드를 선택하세요' };
             }
             // 도전 실패 → 도전자 카드 잃음
             return { title: '도전 실패!', subtitle: '상대가 진짜였습니다. 잃을 카드를 선택하세요' };
@@ -247,7 +215,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             return { title: '도전 실패!', subtitle: '상대 블록이 진짜였습니다. 잃을 카드를 선택하세요' };
         }
         // 'next_turn' — 도전 성공, 행동자가 카드 잃음
-        return { title: '블러프 발각!', subtitle: '잃을 카드를 선택하세요' };
+        return { title: '거짓말 발각!', subtitle: '잃을 카드를 선택하세요' };
     }, [state.pendingAction?.challengeLoseContext, state.pendingAction?.losingPlayerId, state.pendingAction?.actorId]);
 
     const mustExchange = useMemo(
@@ -469,27 +437,53 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                         player={player}
                         isCurrentTurn={state.currentTurnId === player.id}
                         online={!!presence[player.id]?.online}
-                        chatBubble={chatBubbles.get(player.id)}
                     />
                 ))}
             </div>
 
-            {/* 모바일 컴팩트 로그 (항상 보임, 최근 3개) */}
+            {/* 모바일 컴팩트 로그 (항상 보임, 최근 3개 - 게임로그 + 채팅 병합) */}
             <div className="lg:hidden flex-shrink-0 bg-bg-card/80 border-b border-border-subtle px-2 sm:px-3 py-2">
                 <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0 space-y-0.5">
-                        {state.log.slice(-3).map((entry, i) => {
-                            const globalIndex = state.log.length - 3 + i;
-                            const isLatest = globalIndex === state.log.length - 1;
-                            const color = isLatest ? 'text-gold' : getLogColor(entry);
-                            return (
-                                <div key={globalIndex < 0 ? i : globalIndex} className="truncate">
-                                    <span className={`font-mono text-[10px] leading-relaxed ${color}`}>
-                                        &bull; {entry}
-                                    </span>
-                                </div>
-                            );
-                        })}
+                        {(() => {
+                            // 게임 로그 항목에 타임스탬프 부여 (인덱스 기반)
+                            const gameParts = state.log.map((entry, i) => ({
+                                type: 'game' as const,
+                                text: entry,
+                                timestamp: i,
+                            }));
+                            // 채팅 로그 항목 (실제 timestamp 사용, 게임 로그보다 크게 보정)
+                            const chatParts = chatLogs.map((c) => ({
+                                type: 'chat' as const,
+                                playerName: c.playerName,
+                                text: c.message,
+                                timestamp: gameParts.length + c.timestamp / 1e13,
+                            }));
+                            const merged = [...gameParts, ...chatParts]
+                                .sort((a, b) => a.timestamp - b.timestamp)
+                                .slice(-3);
+                            const total = merged.length;
+                            return merged.map((item, i) => {
+                                const isLatest = i === total - 1;
+                                if (item.type === 'chat') {
+                                    return (
+                                        <div key={`chat-${i}`} className="truncate">
+                                            <span className={`font-mono text-[10px] leading-relaxed ${isLatest ? 'text-gold' : 'text-cyan-400'}`}>
+                                                &bull; 💬 {item.playerName}: {item.text}
+                                            </span>
+                                        </div>
+                                    );
+                                }
+                                const color = isLatest ? 'text-gold' : getLogColor(item.text);
+                                return (
+                                    <div key={`game-${i}`} className="truncate">
+                                        <span className={`font-mono text-[10px] leading-relaxed ${color}`}>
+                                            &bull; {item.text}
+                                        </span>
+                                    </div>
+                                );
+                            });
+                        })()}
                     </div>
                     <button
                         className="flex-shrink-0 ml-2 text-[10px] text-text-secondary hover:text-gold transition-colors"
@@ -504,7 +498,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             {showMobileLog && (
                 <div className="lg:hidden relative z-30" ref={mobileLogRef}>
                     <div className="absolute inset-x-0 top-0 max-h-[50vh] overflow-y-auto bg-bg-dark/95 p-3">
-                        <EventLog log={state.log} structuredLog={state.structuredLog} />
+                        <EventLog log={state.log} structuredLog={state.structuredLog} chatLogs={chatLogs} />
                     </div>
                 </div>
             )}
@@ -513,7 +507,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
                 {/* 게임 로그 — 데스크톱에서만 표시 */}
                 <div className="hidden lg:block w-80 flex-shrink-0 border-r border-border-subtle p-3 overflow-hidden">
-                    <EventLog log={state.log} structuredLog={state.structuredLog} />
+                    <EventLog log={state.log} structuredLog={state.structuredLog} chatLogs={chatLogs} />
                 </div>
 
                 {/* 턴 영역 */}
@@ -570,15 +564,6 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                 <div className="flex-shrink-0 border-t border-border-subtle bg-bg-card">
                     {/* 퀵챗 버튼 */}
                     <div className="relative">
-                        {/* 내 말풍선 */}
-                        {chatBubbles.has(playerId) && (
-                            <div className="flex justify-center pt-1.5">
-                                <ChatBubble
-                                    message={chatBubbles.get(playerId)!.message}
-                                    leaving={chatBubbles.get(playerId)!.leaving}
-                                />
-                            </div>
-                        )}
                         <QuickChat
                             roomId={roomId}
                             playerId={playerId}
