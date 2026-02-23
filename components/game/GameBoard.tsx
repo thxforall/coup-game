@@ -154,6 +154,30 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
         [state.phase, state.pendingAction?.losingPlayerId, playerId, me]
     );
 
+    // 도전으로 인한 카드 잃기 시 상황별 title/subtitle
+    const loseCardModal = useMemo(() => {
+        const ctx = state.pendingAction?.challengeLoseContext;
+        if (!ctx) {
+            return { title: '카드를 잃어야 합니다', subtitle: '공개할 카드를 선택하세요' };
+        }
+        const losingPlayerId = state.pendingAction?.losingPlayerId;
+        const actorId = state.pendingAction?.actorId;
+        const isActor = losingPlayerId === actorId;
+        if (ctx.continuation === 'execute_action') {
+            if (isActor) {
+                // 블록 도전 성공 → 블로커(행동자가 아닐 수도) 카드 잃음
+                return { title: '블러프 발각!', subtitle: '잃을 카드를 선택하세요' };
+            }
+            // 도전 실패 → 도전자 카드 잃음
+            return { title: '도전 실패!', subtitle: '상대가 진짜였습니다. 잃을 카드를 선택하세요' };
+        }
+        if (ctx.continuation === 'block_success_next_turn') {
+            return { title: '도전 실패!', subtitle: '상대 블록이 진짜였습니다. 잃을 카드를 선택하세요' };
+        }
+        // 'next_turn' — 도전 성공, 행동자가 카드 잃음
+        return { title: '블러프 발각!', subtitle: '잃을 카드를 선택하세요' };
+    }, [state.pendingAction?.challengeLoseContext, state.pendingAction?.losingPlayerId, state.pendingAction?.actorId]);
+
     const mustExchange = useMemo(
         () =>
             state.phase === 'exchange_select' &&
@@ -434,6 +458,16 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                         </div>
                     )}
 
+                    {/* 대기 메시지: 다른 플레이어가 카드 선택 중 */}
+                    {state.phase === 'lose_influence' &&
+                        state.pendingAction?.losingPlayerId !== playerId && (
+                        <div className="flex-1 flex items-center justify-center">
+                            <p className="text-text-muted text-sm animate-pulse">
+                                {state.players.find((p) => p.id === state.pendingAction?.losingPlayerId)?.name}이(가) 잃을 카드를 선택하고 있습니다...
+                            </p>
+                        </div>
+                    )}
+
                     {/* 응답 대기 중 — 타이머 + 플레이어 응답 상태 표시 */}
                     {(state.phase === 'awaiting_response' ||
                         state.phase === 'awaiting_block_response') &&
@@ -465,8 +499,8 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             {mustLoseCard && me && (
                 <CardSelectModal
                     player={me}
-                    title="카드를 잃어야 합니다"
-                    subtitle="공개할 카드를 선택하세요"
+                    title={loseCardModal.title}
+                    subtitle={loseCardModal.subtitle}
                     onSelect={(idx) => onAction({ type: 'lose_influence', cardIndex: idx })}
                 />
             )}
