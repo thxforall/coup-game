@@ -177,21 +177,21 @@ function ActionPanel({ state, playerId, onAction }: Props) {
     const getConfirmInfo = (type: ActionType, target?: { name: string }) => {
         switch (type) {
             case 'income':
-                return { title: '소득 확인', message: '소득을 선택하시겠습니까? (코인 +1)', label: '소득', color: 'var(--gold)' };
+                return { title: '소득 확인', message: '소득을 선택하시겠습니까? (코인 +1)', label: '소득 받기', color: 'var(--gold)', icon: Coins };
             case 'foreignAid':
-                return { title: '외국 원조 확인', message: '외국 원조를 선택하시겠습니까? (코인 +2, 공작이 막을 수 있음)', label: '외국 원조', color: 'var(--gold)' };
+                return { title: '외국 원조 확인', message: '외국 원조를 선택하시겠습니까? (코인 +2, 공작이 막을 수 있음)', label: '원조 받기', color: 'var(--gold)', icon: Handshake };
             case 'tax':
-                return { title: '세금징수 확인', message: '세금징수를 선택하시겠습니까? (코인 +3, 도전 가능)', label: '세금징수', color: 'var(--duke)' };
+                return { title: '세금징수 확인', message: '세금징수를 선택하시겠습니까? (코인 +3, 도전 가능)', label: '세금 징수하기', color: 'var(--duke)', icon: Crown };
             case 'exchange':
-                return { title: '교환 확인', message: '카드 교환을 선택하시겠습니까? (도전 가능)', label: '교환', color: 'var(--ambassador)' };
+                return { title: '교환 확인', message: '카드 교환을 선택하시겠습니까? (도전 가능)', label: '카드 교환하기', color: 'var(--ambassador)', icon: Repeat };
             case 'steal':
-                return { title: '갈취 확인', message: `${target?.name}에게서 코인을 갈취하시겠습니까?`, label: '갈취', color: 'var(--captain)' };
+                return { title: '갈취 확인', message: `${target?.name}에게서 코인을 갈취하시겠습니까?`, label: `${target?.name ?? ''} 갈취하기`, color: 'var(--captain)', icon: Anchor };
             case 'assassinate':
-                return { title: '암살 확인', message: `정말 ${target?.name}을(를) 암살하시겠습니까? (3코인 소모)`, label: '암살', color: 'var(--assassin)' };
+                return { title: '암살 확인', message: `정말 ${target?.name}을(를) 암살하시겠습니까? (3코인 소모)`, label: `${target?.name ?? ''} 암살하기`, color: 'var(--assassin)', icon: Crosshair };
             case 'coup':
-                return { title: '쿠데타 확인', message: `정말 ${target?.name}에게 쿠데타를 하시겠습니까? (7코인 소모)`, label: '쿠데타', color: 'var(--gold)' };
+                return { title: '쿠데타 확인', message: `정말 ${target?.name}에게 쿠데타를 하시겠습니까? (7코인 소모)`, label: `${target?.name ?? ''} 쿠데타`, color: 'var(--gold)', icon: Zap };
             default:
-                return { title: '확인', message: '이 행동을 선택하시겠습니까?', label: '확인', color: 'var(--gold)' };
+                return { title: '확인', message: '이 행동을 선택하시겠습니까?', label: '확인', color: 'var(--gold)', icon: undefined as React.ElementType | undefined };
         }
     };
 
@@ -251,6 +251,7 @@ function ActionPanel({ state, playerId, onAction }: Props) {
             message={confirmInfo.message}
             confirmLabel={confirmInfo.label}
             confirmColor={confirmInfo.color}
+            confirmIcon={confirmInfo.icon}
             onConfirm={handleConfirm}
             onCancel={handleConfirmCancel}
             loading={loading}
@@ -299,18 +300,21 @@ function ActionPanel({ state, playerId, onAction }: Props) {
                     <div className="flex flex-wrap gap-2">
                         {aliveOthers.map((p) => {
                             const isSelected = targetId === p.id;
+                            const isStealNoCoins = pendingActionType === 'steal' && p.coins === 0;
                             return (
                                 <button
                                     key={p.id}
-                                    onClick={() => handleTargetSelect(p.id)}
-                                    disabled={loading}
-                                    className={`flex items-center gap-2 px-3 py-2 rounded-xl border font-semibold text-sm transition-all disabled:opacity-40 active:scale-95 ${
-                                        isSelected
-                                            ? 'text-text-primary'
-                                            : 'bg-bg-surface border-border-subtle text-text-secondary hover:border-gold/50 hover:text-text-primary'
+                                    onClick={() => !isStealNoCoins && handleTargetSelect(p.id)}
+                                    disabled={loading || isStealNoCoins}
+                                    className={`flex items-center gap-2 px-3 py-2 rounded-xl border font-semibold text-sm transition-all disabled:opacity-40 ${
+                                        isStealNoCoins
+                                            ? 'cursor-not-allowed bg-bg-surface border-border-subtle text-text-muted'
+                                            : isSelected
+                                            ? 'text-text-primary active:scale-95'
+                                            : 'bg-bg-surface border-border-subtle text-text-secondary hover:border-gold/50 hover:text-text-primary active:scale-95'
                                     }`}
                                     style={
-                                        isSelected
+                                        isSelected && !isStealNoCoins
                                             ? {
                                                   borderColor: headerColor,
                                                   backgroundColor: `color-mix(in srgb, ${headerColor} 15%, transparent)`,
@@ -320,9 +324,12 @@ function ActionPanel({ state, playerId, onAction }: Props) {
                                     }
                                 >
                                     {p.name}
-                                    <span className="text-xs font-semibold" style={{ color: 'var(--coin-color)' }}>
+                                    <span className="text-xs font-semibold" style={{ color: isStealNoCoins ? 'var(--text-muted)' : 'var(--coin-color)' }}>
                                         {p.coins}
                                     </span>
+                                    {isStealNoCoins && (
+                                        <span className="text-[10px] text-text-muted">코인 없음</span>
+                                    )}
                                 </button>
                             );
                         })}
@@ -442,7 +449,8 @@ function ActionPanel({ state, playerId, onAction }: Props) {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {row2.map((a) => {
                         const canAfford = a.cost ? me.coins >= a.cost : true;
-                        const disabled = !canAfford || loading;
+                        const hasStealTarget = a.type === 'steal' ? aliveOthers.some((p) => p.coins > 0) : true;
+                        const disabled = !canAfford || !hasStealTarget || loading;
                         const Icon = a.icon;
 
                         return (

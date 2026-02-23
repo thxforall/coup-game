@@ -8,12 +8,13 @@ interface Props {
     message: string;
     confirmLabel: string;
     confirmColor?: string;
+    confirmIcon?: React.ElementType;
     onConfirm: () => void;
     onCancel: () => void;
     loading?: boolean;
 }
 
-function ConfirmModal({ title, message, confirmLabel, confirmColor, onConfirm, onCancel, loading }: Props) {
+function ConfirmModal({ title, message, confirmLabel, confirmColor, confirmIcon: ConfirmIcon, onConfirm, onCancel, loading }: Props) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
             <div className="glass-panel p-5 max-w-xs w-full animate-slide-up space-y-4">
@@ -38,14 +39,21 @@ function ConfirmModal({ title, message, confirmLabel, confirmColor, onConfirm, o
                     <button
                         onClick={onConfirm}
                         disabled={loading}
-                        className="flex-1 py-2 rounded-xl text-sm font-bold transition-all disabled:opacity-40 active:scale-95"
+                        className="flex-1 py-2 rounded-xl text-sm font-bold transition-all disabled:opacity-40 active:scale-95 flex items-center justify-center gap-1.5"
                         style={{
                             backgroundColor: confirmColor ?? 'var(--gold)',
                             color: 'var(--bg-dark)',
                             border: `1px solid ${confirmColor ?? 'var(--gold)'}`,
                         }}
                     >
-                        {loading ? '...' : confirmLabel}
+                        {loading ? (
+                            '...'
+                        ) : (
+                            <>
+                                {ConfirmIcon && <ConfirmIcon size={14} strokeWidth={2.5} />}
+                                {confirmLabel}
+                            </>
+                        )}
                     </button>
                 </div>
             </div>
