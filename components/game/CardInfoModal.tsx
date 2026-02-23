@@ -42,9 +42,9 @@ const CHARACTER_INFO: Record<Character, CharacterInfo> = {
         action: '세금징수 💰',
         actionDesc: '국고에서 코인 3개를 가져옵니다.',
         actionCost: null,
-        blocks: '외국 원조 차단 🛡️',
-        blocksDesc: '다른 플레이어의 외국 원조(+2코인)를 막습니다.',
-        tip: '초반에 빠르게 자금을 확보하세요. 외국 원조 차단도 강력합니다!',
+        blocks: '해외원조 차단 🛡️',
+        blocksDesc: '다른 플레이어의 해외원조(+2코인)를 막습니다.',
+        tip: '초반에 빠르게 자금을 확보하세요. 해외원조 차단도 강력합니다!',
     },
     Contessa: {
         action: null,

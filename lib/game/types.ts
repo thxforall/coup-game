@@ -8,7 +8,7 @@ export type Character = 'Duke' | 'Contessa' | 'Captain' | 'Assassin' | 'Ambassad
 
 export type ActionType =
   | 'income'       // 소득: 코인 +1 (막기 불가)
-  | 'foreignAid'   // 외국 원조: 코인 +2 (공작이 막을 수 있음)
+  | 'foreignAid'   // 해외원조: 코인 +2 (공작이 막을 수 있음)
   | 'coup'         // 쿠데타: 코인 7개, 상대 카드 제거 (막기 불가)
   | 'tax'          // 세금징수: 코인 +3 (공작 능력, 도전 가능)
   | 'assassinate'  // 암살: 코인 3개, 상대 카드 제거 (암살자 능력, 백작부인 막기, 도전 가능)
@@ -69,6 +69,7 @@ export interface GameState {
   structuredLog?: LogEntry[];
   winnerId?: string;
   gameMode?: GameMode;
+  kickedPlayerIds?: string[]; // 추방된 플레이어 ID 목록 (재입장 차단)
   createdAt?: number; // 방 생성 시간 (Unix ms) - cleanup용 서버 내부 메타데이터
   updatedAt?: number; // 마지막 활동 시간 (Unix ms) - cleanup용 서버 내부 메타데이터
 }
@@ -142,7 +143,7 @@ export const CHARACTER_NAMES: Record<Character, string> = {
 // 액션 한국어 이름
 export const ACTION_NAMES: Record<ActionType, string> = {
   income: '소득',
-  foreignAid: '외국 원조',
+  foreignAid: '해외원조',
   coup: '쿠데타',
   tax: '세금징수',
   assassinate: '암살',

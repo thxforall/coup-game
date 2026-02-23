@@ -236,7 +236,7 @@ export function processAction(
       const others = getAlivePlayers(s).filter((p) => p.id !== actorId);
       const responses: Record<string, ResponseType | 'pending'> = {};
       others.forEach((p) => { responses[p.id] = 'pending'; });
-      s = addLog(s, `${actor.name}이(가) 외국 원조를 요청했습니다`);
+      s = addLog(s, `${actor.name}이(가) 해외원조를 요청했습니다`);
       return {
         ...s,
         phase: 'awaiting_response',
@@ -593,7 +593,7 @@ function executeAction(state: GameState): GameState {
       const updatedPlayers = s.players.map((p) =>
         p.id === actorId ? { ...p, coins: p.coins + 2 } : p
       );
-      s = addLog({ ...s, players: updatedPlayers }, `${actor.name}이(가) 외국 원조를 받았습니다 (+2 코인)`);
+      s = addLog({ ...s, players: updatedPlayers }, `${actor.name}이(가) 해외원조를 받았습니다 (+2 코인)`);
       return nextTurn(s);
     }
 

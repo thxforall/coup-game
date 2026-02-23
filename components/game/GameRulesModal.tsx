@@ -77,7 +77,7 @@ export default function GameRulesModal({ onClose }: Props) {
                                 <span>+1 코인 <span className="text-text-muted">(막기/도전 불가)</span></span>
                             </div>
                             <div className="flex items-start gap-2">
-                                <span className="text-gold font-bold shrink-0 w-16">외국 원조</span>
+                                <span className="text-gold font-bold shrink-0 w-16">해외원조</span>
                                 <span>+2 코인 <span className="text-text-muted">(공작이 막을 수 있음)</span></span>
                             </div>
                             <div className="flex items-start gap-2">
@@ -93,7 +93,7 @@ export default function GameRulesModal({ onClose }: Props) {
                         <div className="space-y-2.5 text-xs">
                             <div>
                                 <span className={`font-bold ${CHAR_COLORS.Duke}`}>공작 (Duke)</span>
-                                <p className="text-text-secondary mt-0.5">세금징수 +3코인 / 외국 원조 차단</p>
+                                <p className="text-text-secondary mt-0.5">세금징수 +3코인 / 해외원조 차단</p>
                             </div>
                             <div>
                                 <span className={`font-bold ${CHAR_COLORS.Assassin}`}>암살자 (Assassin)</span>

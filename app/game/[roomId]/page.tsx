@@ -1,20 +1,21 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { Skull, Home, AlertTriangle } from 'lucide-react';
 import { subscribeToRoom, getRoom, setupPresence, subscribeToPresence, PresenceMap } from '@/lib/firebase.client';
 import { FilteredGameState } from '@/lib/game/types';
 import WaitingRoom from '@/components/game/WaitingRoom';
 import GameBoard from '@/components/game/GameBoard';
-import { getOrCreatePlayerId as getPlayerId, setActiveRoom } from '@/lib/storage';
+import { getOrCreatePlayerId as getPlayerId, setActiveRoom, clearActiveRoom } from '@/lib/storage';
 
 export default function GamePage() {
     const params = useParams();
-    const router = useRouter();
     const roomId = (params.roomId as string).toUpperCase();
     const [state, setState] = useState<FilteredGameState | null>(null);
     const [playerId, setPlayerId] = useState('');
     const [loading, setLoading] = useState(true);
+    const [notFound, setNotFound] = useState(false);
     const [presence, setPresence] = useState<PresenceMap>({});
     const playerIdRef = useRef('');
 
@@ -47,7 +48,9 @@ export default function GamePage() {
                 // views가 아직 없을 수 있으므로 state에서도 시도
                 getRoom(roomId).then((fallback) => {
                     if (!fallback) {
-                        router.push('/');
+                        setNotFound(true);
+                        setLoading(false);
+                        clearActiveRoom();
                         return;
                     }
                     setState(fallback.state);
@@ -67,7 +70,8 @@ export default function GamePage() {
                 const stillInRoom = newState.players.some((p) => p.id === currentPid);
                 if (!stillInRoom && currentPid) {
                     alert('방에서 추방되었습니다');
-                    router.push('/');
+                    clearActiveRoom();
+                    window.location.href = '/';
                     return;
                 }
             }
@@ -76,7 +80,7 @@ export default function GamePage() {
         });
 
         return () => unsubscribe();
-    }, [roomId, playerId, router]);
+    }, [roomId, playerId]);
 
     const sendAction = useCallback(
         async (action: object) => {
@@ -124,12 +128,52 @@ export default function GamePage() {
         });
     }, [roomId, playerId]);
 
+    // 방을 찾을 수 없는 경우
+    if (notFound) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-bg-dark px-4">
+                <div className="glass-panel p-8 text-center max-w-sm w-full animate-slide-up">
+                    <div className="flex justify-center mb-4">
+                        <AlertTriangle className="w-16 h-16 text-gold" />
+                    </div>
+
+                    <h1 className="text-2xl font-black mb-2 text-text-primary">방을 찾을 수 없습니다</h1>
+                    <p className="text-text-secondary text-sm mb-2">
+                        입력하신 방 코드로 게임을 찾을 수 없습니다.
+                    </p>
+                    <p className="text-text-muted text-xs mb-1">입력한 코드</p>
+                    <p className="font-mono text-xl font-black text-gold tracking-widest mb-6">
+                        {roomId}
+                    </p>
+
+                    <div className="text-left text-xs text-text-muted mb-6 space-y-1 bg-bg-surface rounded-lg p-3 border border-border-subtle">
+                        <p>• 방 코드가 정확한지 확인해주세요</p>
+                        <p>• 방이 이미 종료되었을 수 있습니다</p>
+                        <p>• 대소문자는 자동으로 변환됩니다</p>
+                    </div>
+
+                    <a
+                        href="/"
+                        className="btn-gold w-full py-3 flex items-center justify-center gap-2 text-base"
+                    >
+                        <Home size={18} />
+                        로비로 돌아가기
+                    </a>
+                </div>
+            </div>
+        );
+    }
+
+    // 로딩 중
     if (loading || !state) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-950">
+            <div className="min-h-screen flex items-center justify-center bg-bg-dark">
                 <div className="text-center">
-                    <div className="text-4xl mb-4 animate-bounce">🃏</div>
-                    <p className="text-slate-400">연결 중...</p>
+                    <div className="flex justify-center mb-4">
+                        <Skull className="w-10 h-10 text-gold animate-pulse" />
+                    </div>
+                    <p className="text-text-muted text-sm">연결 중...</p>
+                    <p className="text-text-muted text-xs mt-1 font-mono tracking-wider">{roomId}</p>
                 </div>
             </div>
         );

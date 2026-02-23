@@ -1,5 +1,7 @@
 'use client';
 
+import { memo } from 'react';
+
 interface Props {
   message: string;
   leaving?: boolean;
@@ -9,7 +11,7 @@ interface Props {
  * ChatBubble - 플레이어 이름 위에 뜨는 말풍선
  * 부모 컨테이너는 relative position이어야 한다.
  */
-export default function ChatBubble({ message, leaving }: Props) {
+function ChatBubble({ message, leaving }: Props) {
   return (
     <div
       className={[
@@ -36,3 +38,5 @@ export default function ChatBubble({ message, leaving }: Props) {
     </div>
   );
 }
+
+export default memo(ChatBubble);

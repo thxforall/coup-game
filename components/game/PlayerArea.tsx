@@ -9,6 +9,7 @@ import {
     Repeat,
     Shield,
     Coins,
+    X,
 } from 'lucide-react';
 import { FilteredPlayer, Character, CHARACTER_NAMES } from '@/lib/game/types';
 import CardInfoModal from './CardInfoModal';
@@ -106,13 +107,13 @@ function CoinBadge({ coins }: CoinBadgeProps) {
 function FaceDownCard() {
     return (
         <div
-            className="w-10 h-14 sm:w-[80px] sm:h-[112px] rounded-lg flex flex-col items-center justify-center gap-1 shadow-md flex-shrink-0"
+            className="w-12 h-[68px] sm:w-[80px] sm:h-[112px] rounded-lg flex flex-col items-center justify-center gap-1 shadow-md flex-shrink-0"
             style={{
                 background: 'linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%)',
                 border: '1px solid #3A3A3A',
             }}
         >
-            <Shield size={22} strokeWidth={1.5} className="text-slate-400" />
+            <Shield size={20} strokeWidth={1.5} className="text-slate-400" />
             <span
                 className="text-[9px] font-bold tracking-widest"
                 style={{ color: '#5A5A5A' }}
@@ -135,7 +136,7 @@ function RevealedCard({ character, onClick }: RevealedCardProps) {
     return (
         <button
             onClick={onClick}
-            className="w-10 h-14 sm:w-[80px] sm:h-[112px] rounded-lg overflow-hidden relative flex-shrink-0 shadow-md cursor-pointer active:scale-95 transition-transform"
+            className="w-12 h-[68px] sm:w-[80px] sm:h-[112px] rounded-lg overflow-hidden relative flex-shrink-0 shadow-md cursor-pointer active:scale-95 transition-transform"
         >
             <Image
                 src={`/cards/${character.toLowerCase()}.jpg`}
@@ -161,59 +162,222 @@ function RevealedCard({ character, onClick }: RevealedCardProps) {
 }
 
 // ----------------------------------------------------------------
+// Mobile compact chip sub-components
+// ----------------------------------------------------------------
+
+interface CardStatusDotsProps {
+    cards: FilteredPlayer['cards'];
+}
+
+/** Small colored dots indicating card status for compact mobile view */
+function CardStatusDots({ cards }: CardStatusDotsProps) {
+    return (
+        <div className="flex gap-0.5">
+            {cards.map((card, i) => {
+                const isRevealed = card.revealed;
+                return (
+                    <div
+                        key={i}
+                        className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isRevealed ? 'bg-red-500' : 'bg-gray-400'}`}
+                        title={isRevealed ? '탈락' : '살아있음'}
+                    />
+                );
+            })}
+        </div>
+    );
+}
+
+// ----------------------------------------------------------------
 // Main component
 // ----------------------------------------------------------------
 
 function PlayerArea({ player, isCurrentTurn, online }: Props) {
     const [selectedCard, setSelectedCard] = useState<Character | null>(null);
+    const [showDetail, setShowDetail] = useState(false);
 
     const playerIndex = player.id
         ? player.id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
         : 0;
 
+    const avatarColor = PLAYER_AVATAR_COLORS[playerIndex % PLAYER_AVATAR_COLORS.length];
+    const initial = player.name.charAt(0).toUpperCase();
+
     return (
         <>
-            <div className="relative flex-shrink-0">
-            <div
-                className={`
-                bg-bg-card border border-border-subtle rounded-xl p-1 sm:p-3
-                transition-all duration-200 min-w-0 w-[84px] sm:w-auto sm:min-w-[140px]
+            {/* ---- Desktop view (sm+): unchanged full card layout ---- */}
+            <div className="relative flex-shrink-0 hidden sm:block">
+                <div
+                    className={`
+                bg-bg-card border border-border-subtle rounded-xl p-2 sm:p-3
+                transition-all duration-200 min-w-0 sm:min-w-[140px]
                 ${!player.isAlive ? 'opacity-50' : ''}
                 ${isCurrentTurn ? 'ring-2 ring-gold shadow-lg' : ''}
             `}
-                style={isCurrentTurn ? { boxShadow: '0 0 16px rgba(241, 196, 15, 0.2)' } : undefined}
+                    style={isCurrentTurn ? { boxShadow: '0 0 16px rgba(241, 196, 15, 0.2)' } : undefined}
+                >
+                    {/* Header: badge + coin */}
+                    <div className="flex items-center justify-between mb-1.5 gap-1">
+                        <PlayerBadge
+                            name={player.name}
+                            playerIndex={playerIndex}
+                            isCurrentTurn={isCurrentTurn}
+                            online={online}
+                        />
+                        {player.isAlive ? (
+                            <CoinBadge coins={player.coins} />
+                        ) : (
+                            <span className="text-[11px] text-text-muted font-medium">탈락</span>
+                        )}
+                    </div>
+
+                    {/* Cards */}
+                    <div className="flex gap-1 sm:gap-2 justify-center">
+                        {player.cards.map((card, i) =>
+                            card.revealed && card.character ? (
+                                <RevealedCard
+                                    key={i}
+                                    character={card.character}
+                                    onClick={() => setSelectedCard(card.character!)}
+                                />
+                            ) : (
+                                <FaceDownCard key={i} />
+                            )
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* ---- Mobile compact chip (below sm): tap to expand ---- */}
+            <button
+                type="button"
+                onClick={() => setShowDetail(true)}
+                className={`
+                    sm:hidden flex-shrink-0 flex flex-col items-center gap-1
+                    bg-bg-card border border-border-subtle rounded-lg p-1.5
+                    transition-all duration-200 active:scale-95
+                    w-[72px]
+                    ${!player.isAlive ? 'opacity-50' : ''}
+                    ${isCurrentTurn ? 'ring-2 ring-gold shadow-[0_0_8px_rgba(241,196,15,0.25)]' : ''}
+                `}
+                aria-label={`${player.name} 상세 보기`}
             >
-                {/* Header: badge + coin */}
-                <div className="flex items-center justify-between mb-2 gap-1">
-                    <PlayerBadge
-                        name={player.name}
-                        playerIndex={playerIndex}
-                        isCurrentTurn={isCurrentTurn}
-                        online={online}
+                {/* Avatar row: avatar + online dot */}
+                <div className="relative">
+                    <div
+                        className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm"
+                        style={{ backgroundColor: avatarColor }}
+                    >
+                        {initial}
+                    </div>
+                    {/* Online status dot (bottom-right of avatar) */}
+                    <div
+                        className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-bg-card ${online ? 'bg-emerald-500' : 'bg-gray-500'}`}
                     />
-                    {player.isAlive ? (
-                        <CoinBadge coins={player.coins} />
-                    ) : (
-                        <span className="text-[11px] text-text-muted font-medium">탈락</span>
-                    )}
                 </div>
 
-                {/* Cards */}
-                <div className="flex gap-1 sm:gap-2 justify-center">
-                    {player.cards.map((card, i) =>
-                        card.revealed && card.character ? (
-                            <RevealedCard
-                                key={i}
-                                character={card.character}
-                                onClick={() => setSelectedCard(card.character!)}
-                            />
-                        ) : (
-                            <FaceDownCard key={i} />
-                        )
-                    )}
+                {/* Name (truncated to ~4 chars width) */}
+                <span
+                    className={`text-[10px] font-semibold leading-tight truncate w-full text-center ${!player.isAlive ? 'line-through text-text-muted' : 'text-text-primary'}`}
+                    style={{ maxWidth: '64px' }}
+                >
+                    {player.name}
+                </span>
+
+                {/* Coin badge */}
+                {player.isAlive ? (
+                    <div
+                        className="flex items-center gap-0.5 px-1 py-0.5 rounded-full border text-[9px] font-bold"
+                        style={{
+                            borderColor: '#F1C40F',
+                            color: '#F1C40F',
+                            backgroundColor: 'rgba(241, 196, 15, 0.1)',
+                        }}
+                    >
+                        <Coins size={8} strokeWidth={2.5} />
+                        <span>{player.coins}</span>
+                    </div>
+                ) : (
+                    <span className="text-[9px] text-text-muted font-medium">탈락</span>
+                )}
+
+                {/* Card status dots */}
+                <CardStatusDots cards={player.cards} />
+            </button>
+
+            {/* ---- Mobile detail popover (fixed overlay) ---- */}
+            {showDetail && (
+                <div
+                    className="sm:hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+                    onClick={() => setShowDetail(false)}
+                >
+                    {/* Dim backdrop */}
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+
+                    {/* Detail card */}
+                    <div
+                        className="relative z-10 bg-bg-card border border-border-subtle rounded-xl p-4 w-full max-w-[240px] animate-slide-up shadow-xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Close button */}
+                        <button
+                            type="button"
+                            onClick={() => setShowDetail(false)}
+                            className="absolute top-2 right-2 p-1 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-surface transition-colors"
+                            aria-label="닫기"
+                        >
+                            <X size={14} />
+                        </button>
+
+                        {/* Player header */}
+                        <div className="flex items-center gap-2 mb-3">
+                            <div
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-sm flex-shrink-0"
+                                style={{ backgroundColor: avatarColor }}
+                            >
+                                {initial}
+                            </div>
+                            <div className="min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-sm font-bold text-text-primary truncate">
+                                        {isCurrentTurn && <span className="text-gold mr-1">&#9658;</span>}
+                                        {player.name}
+                                    </span>
+                                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${online ? 'bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.6)]' : 'bg-gray-500'}`} />
+                                </div>
+                                {player.isAlive ? (
+                                    <div
+                                        className="flex items-center gap-1 mt-0.5"
+                                        style={{ color: '#F1C40F' }}
+                                    >
+                                        <Coins size={10} strokeWidth={2.5} />
+                                        <span className="text-xs font-bold">{player.coins} 코인</span>
+                                    </div>
+                                ) : (
+                                    <span className="text-xs text-text-muted font-medium mt-0.5 block">탈락</span>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Full card display */}
+                        <div className="flex gap-2 justify-center">
+                            {player.cards.map((card, i) =>
+                                card.revealed && card.character ? (
+                                    <RevealedCard
+                                        key={i}
+                                        character={card.character}
+                                        onClick={() => {
+                                            setShowDetail(false);
+                                            setSelectedCard(card.character!);
+                                        }}
+                                    />
+                                ) : (
+                                    <FaceDownCard key={i} />
+                                )
+                            )}
+                        </div>
+                    </div>
                 </div>
-            </div>
-            </div>
+            )}
 
             {/* Card info modal */}
             {selectedCard && (

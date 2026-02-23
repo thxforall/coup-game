@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
     const newState = {
       ...state,
       players: state.players.filter((p) => p.id !== targetId),
+      kickedPlayerIds: [...(state.kickedPlayerIds ?? []), targetId],
       log: [...state.log, `${targetPlayer.name}이(가) 추방되었습니다`],
     };
 

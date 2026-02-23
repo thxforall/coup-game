@@ -27,7 +27,7 @@ const ACTION_CONTEXT: Record<ActionType, ActionContext> = {
         claimedRole: null,
         effect: '국고에서 코인 2개를 가져옵니다.',
         blockInfo: '🛡️ 공작을 가진 플레이어가 막을 수 있습니다.',
-        challengeInfo: '외국 원조는 역할 주장이 아니므로 도전할 수 없고, 블록만 가능합니다.',
+        challengeInfo: '해외원조는 역할 주장이 아니므로 도전할 수 없고, 블록만 가능합니다.',
         passInfo: '패스하면 코인 2개를 획득합니다.',
     },
     coup: {
@@ -72,9 +72,9 @@ function getBlockContext(actionType: ActionType, blockerChar: Character): { effe
     const charName = CHARACTER_NAMES[blockerChar];
     const blockContextMap: Record<string, { effect: string; challengeInfo: string; passInfo: string }> = {
         Duke: {
-            effect: `공작(${charName})으로 외국 원조를 차단합니다.`,
+            effect: `공작(${charName})으로 해외원조를 차단합니다.`,
             challengeInfo: `도전 성공 시: 블로커가 공작이 아니면 블록이 무효화되고 블로커가 카드를 잃습니다.\n도전 실패 시: 블로커가 진짜 공작이면 도전자가 카드를 잃습니다.`,
-            passInfo: '패스하면 외국 원조가 차단되어 코인을 받지 못합니다.',
+            passInfo: '패스하면 해외원조가 차단되어 코인을 받지 못합니다.',
         },
         Contessa: {
             effect: `백작부인(${charName})으로 암살을 차단합니다.`,
