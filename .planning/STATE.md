@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-24 - Completed quick-044 (게임보드 배경이미지 잔여 코드 제거)
+- Last activity: 2026-02-24 - Completed quick-045 (README.md v0.5.0 업데이트)
 
 ### Quick Tasks Completed
 
@@ -50,11 +50,12 @@
 | 042 | 방 나가기 모달 + 게임 도중 카드 공개 (leave API + inline/modal confirm UI) | 2026-02-24 | 81048b1 | [042-leave-room-modal-reveal-cards-on-midgame](./quick/042-leave-room-modal-reveal-cards-on-midgame/) |
 | 043 | 준비완료 버튼 초록색으로 변경 | 2026-02-24 | a53be15 | [043-ready-button-green-color](./quick/043-ready-button-green-color/) |
 | 044 | 게임보드 배경이미지 잔여 코드(bg-overlay) 제거 | 2026-02-24 | 19d38d8 | [044-remove-background-image-feature](./quick/044-remove-background-image-feature/) |
+| 045 | README.md v0.5.0 업데이트 (기능/구조/릴리스 노트) | 2026-02-24 | 463b929 | [045-update-readme-md](./quick/045-update-readme-md/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-24T16:45:00Z
-- Stopped at: Completed quick-042 (방 나가기 모달 + 게임 도중 카드 공개)
+- Last session: 2026-02-24T16:56:00Z
+- Stopped at: Completed quick-045 (README.md v0.5.0 업데이트)
 - Resume file: None
