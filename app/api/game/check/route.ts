@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   const { state } = room;
   const isPlayer = state.players.some((p) => p.id === playerId);
 
-  if (!isPlayer || state.phase === 'game_over') {
+  if (!isPlayer) {
     return NextResponse.json({ active: false, phase: state.phase });
   }
 
