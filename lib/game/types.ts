@@ -47,6 +47,7 @@ export interface PendingAction {
   blockerCharacter?: Character;                            // 블로커가 주장하는 캐릭터
   losingPlayerId?: string;                                 // 카드를 잃어야 하는 플레이어 ID
   exchangeCards?: Character[];                             // 대사가 뽑은 카드 2장
+  responseDeadline?: number;                               // 응답 제한시간 (Unix timestamp ms)
 }
 
 export interface GameState {
@@ -99,6 +100,7 @@ export interface FilteredPendingAction {
   blockerCharacter?: Character;
   losingPlayerId?: string;
   exchangeCards?: Character[]; // 본인 exchange일 때만 포함
+  responseDeadline?: number;   // 응답 제한시간 (Unix timestamp ms)
 }
 
 export interface FilteredGameState {

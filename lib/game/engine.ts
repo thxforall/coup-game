@@ -182,7 +182,7 @@ export function processAction(
       return {
         ...s,
         phase: 'awaiting_response',
-        pendingAction: { type, actorId, responses },
+        pendingAction: { type, actorId, responses, responseDeadline: Date.now() + 30000 },
       };
     }
 
@@ -214,7 +214,7 @@ export function processAction(
       return {
         ...s,
         phase: 'awaiting_response',
-        pendingAction: { type, actorId, targetId, responses },
+        pendingAction: { type, actorId, targetId, responses, responseDeadline: Date.now() + 30000 },
       };
     }
 
@@ -270,6 +270,7 @@ export function processResponse(
         responses: blockResponses,
         blockerId: responderId,
         blockerCharacter: blockCharacter,
+        responseDeadline: Date.now() + 30000,
       },
     };
   }
