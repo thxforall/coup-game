@@ -3,6 +3,7 @@
 import { memo, useState, useEffect, useCallback, useRef } from 'react';
 import { TriangleAlert, Zap, Shield, Check, Info } from 'lucide-react';
 import { FilteredGameState, Card, Character, CHARACTER_NAMES, BLOCK_CHARACTERS, ACTION_NAMES, ActionType } from '@/lib/game/types';
+import BottomSheet from '@/components/ui/BottomSheet';
 
 // ============================================================
 // 액션별 상세 컨텍스트 정보
@@ -171,271 +172,267 @@ function ResponseModal({ state, playerId, myCards, onAction }: Props) {
     const timerBarColor = isCritical ? '#EF4444' : isUrgent ? '#F59E0B' : '#10B981';
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end justify-center z-50 p-4">
-            <div className="w-full max-w-[480px] mb-2 animate-slide-up">
-                {/* 타이머 바 */}
+        // closeOnBackdrop=false: 반드시 응답해야 함
+        <BottomSheet closeOnBackdrop={false} mobileMaxHeight="90vh">
+            {/* 타이머 바 (시트 최상단 sticky) */}
+            <div
+                className="sticky top-0 z-10 w-full h-1 overflow-hidden"
+                style={{ backgroundColor: 'var(--border-subtle)' }}
+            >
                 <div
-                    className="w-full h-1 rounded-full mb-2 overflow-hidden"
-                    style={{ backgroundColor: 'var(--border-subtle)' }}
-                >
+                    className="h-full rounded-full transition-all duration-100"
+                    style={{ width: `${progress * 100}%`, backgroundColor: timerBarColor }}
+                />
+            </div>
+
+            {/* 모달 컨텐츠 */}
+            <div>
+                {/* 상단 섹션: 경고 아이콘 + 타이머 + 제목 + 부제목 */}
+                <div className="flex flex-col items-center text-center px-4 sm:px-6 pt-6 pb-4">
+                    {/* 경고 아이콘 원형 배경 */}
                     <div
-                        className="h-full rounded-full transition-all duration-100"
-                        style={{ width: `${progress * 100}%`, backgroundColor: timerBarColor }}
-                    />
+                        className="flex items-center justify-center w-12 h-12 rounded-full mb-3"
+                        style={{
+                            backgroundColor: 'rgba(212, 175, 55, 0.12)',
+                            border: '1.5px solid rgba(212, 175, 55, 0.35)',
+                        }}
+                    >
+                        <TriangleAlert size={22} style={{ color: 'var(--gold, #D4AF37)' }} />
+                    </div>
+
+                    {/* 타이머 숫자 */}
+                    <div className="flex items-baseline gap-1 mb-3">
+                        <span
+                            className={`font-sora font-black text-3xl tabular-nums ${isCritical ? 'animate-pulse' : ''}`}
+                            style={{ color: timerBarColor }}
+                        >
+                            {remainingSeconds}
+                        </span>
+                        <span className="font-sora text-text-secondary text-sm">초</span>
+                    </div>
+
+                    {/* 타이틀 / 서브타이틀 */}
+                    {isBlockPhase ? (
+                        <>
+                            <p className="font-sora font-black text-lg text-text-primary leading-snug">
+                                {CHARACTER_NAMES[pending.blockerCharacter!]}으로 막았습니다!
+                            </p>
+                            <p className="font-sora text-text-secondary text-sm mt-1">
+                                {blocker?.name}이(가) 블록했습니다 — 도전하거나 허용하세요
+                            </p>
+                        </>
+                    ) : (
+                        <>
+                            <p className="font-sora font-black text-lg text-text-primary leading-snug">
+                                {ACTION_NAMES[pending.type]}
+                            </p>
+                            <p className="font-sora text-text-secondary text-sm mt-1">
+                                {actor?.name}이(가) 선언했습니다
+                                {target ? ` — 대상: ${target.name}` : ' — 도전하거나 막으세요'}
+                            </p>
+                        </>
+                    )}
                 </div>
 
-                {/* 모달 패널 */}
-                <div
-                    className="rounded-xl border border-border-subtle overflow-y-auto max-h-[80vh]"
-                    style={{ backgroundColor: '#1A1A1A' }}
-                >
-                    {/* 상단 섹션: 경고 아이콘 + 타이머 + 제목 + 부제목 */}
-                    <div className="flex flex-col items-center text-center px-4 sm:px-6 pt-6 pb-4">
-                        {/* 경고 아이콘 원형 배경 */}
-                        <div
-                            className="flex items-center justify-center w-12 h-12 rounded-full mb-3"
-                            style={{
-                                backgroundColor: 'rgba(212, 175, 55, 0.12)',
-                                border: '1.5px solid rgba(212, 175, 55, 0.35)',
-                            }}
-                        >
-                            <TriangleAlert size={22} style={{ color: 'var(--gold, #D4AF37)' }} />
-                        </div>
-
-                        {/* 타이머 숫자 */}
-                        <div className="flex items-baseline gap-1 mb-3">
-                            <span
-                                className={`font-sora font-black text-3xl tabular-nums ${isCritical ? 'animate-pulse' : ''}`}
-                                style={{ color: timerBarColor }}
+                {/* 내 카드 상태 */}
+                <div className="px-4 sm:px-6 pb-3">
+                    <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
+                        {myCards.map((card, i) => (
+                            <div
+                                key={i}
+                                className={`flex items-center gap-2 rounded-lg px-3 py-2 ${card.revealed ? 'opacity-40' : ''}`}
+                                style={{
+                                    backgroundColor: 'var(--bg-surface, #242424)',
+                                    border: `1px solid ${card.revealed ? 'var(--border-subtle, #333)' : 'var(--border-subtle, #444)'}`,
+                                }}
                             >
-                                {remainingSeconds}
-                            </span>
-                            <span className="font-sora text-text-secondary text-sm">초</span>
-                        </div>
-
-                        {/* 타이틀 / 서브타이틀 */}
-                        {isBlockPhase ? (
-                            <>
-                                <p className="font-sora font-black text-lg text-text-primary leading-snug">
-                                    {CHARACTER_NAMES[pending.blockerCharacter!]}으로 막았습니다!
-                                </p>
-                                <p className="font-sora text-text-secondary text-sm mt-1">
-                                    {blocker?.name}이(가) 블록했습니다 — 도전하거나 허용하세요
-                                </p>
-                            </>
-                        ) : (
-                            <>
-                                <p className="font-sora font-black text-lg text-text-primary leading-snug">
-                                    {ACTION_NAMES[pending.type]}
-                                </p>
-                                <p className="font-sora text-text-secondary text-sm mt-1">
-                                    {actor?.name}이(가) 선언했습니다
-                                    {target ? ` — 대상: ${target.name}` : ' — 도전하거나 막으세요'}
-                                </p>
-                            </>
-                        )}
-                    </div>
-
-                    {/* 내 카드 상태 */}
-                    <div className="px-4 sm:px-6 pb-3">
-                        <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
-                            {myCards.map((card, i) => (
+                                {/* 카드 이미지 미니 */}
                                 <div
-                                    key={i}
-                                    className={`flex items-center gap-2 rounded-lg px-3 py-2 ${card.revealed ? 'opacity-40' : ''}`}
-                                    style={{
-                                        backgroundColor: 'var(--bg-surface, #242424)',
-                                        border: `1px solid ${card.revealed ? 'var(--border-subtle, #333)' : 'var(--border-subtle, #444)'}`,
-                                    }}
+                                    className={`relative w-8 h-11 rounded overflow-hidden shrink-0 ${card.revealed ? 'grayscale' : ''}`}
                                 >
-                                    {/* 카드 이미지 미니 */}
-                                    <div
-                                        className={`relative w-8 h-11 rounded overflow-hidden shrink-0 ${card.revealed ? 'grayscale' : ''}`}
-                                    >
-                                        <img
-                                            src={`/cards/${card.character.toLowerCase()}.jpg`}
-                                            alt={CHARACTER_NAMES[card.character]}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className={`text-[11px] font-semibold ${card.revealed ? 'text-text-secondary line-through' : 'text-text-primary'}`}>
-                                            {CHARACTER_NAMES[card.character]}
-                                        </span>
-                                        {card.revealed ? (
-                                            <span className="text-[10px] text-red-400">제거됨</span>
-                                        ) : (
-                                            <span className="text-[10px] text-emerald-400">생존</span>
-                                        )}
-                                    </div>
+                                    <img
+                                        src={`/cards/${card.character.toLowerCase()}.jpg`}
+                                        alt={CHARACTER_NAMES[card.character]}
+                                        className="w-full h-full object-cover"
+                                    />
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* 액션 설명 섹션 */}
-                    <div className="px-4 sm:px-6 pb-4">
-                        <div
-                            className="rounded-lg overflow-hidden"
-                            style={{ backgroundColor: 'var(--bg-surface, #242424)', border: '1px solid var(--border-subtle, #333)' }}
-                        >
-                            {/* 요약 정보 (항상 표시) */}
-                            <div className="p-3 space-y-1.5">
-                                {/* 주장하는 역할 */}
-                                {!isBlockPhase && actionCtx.claimedRole && (
-                                    <div className="flex items-start gap-2">
-                                        <span className="text-[11px] text-text-secondary shrink-0 w-14">역할 주장</span>
-                                        <span className="text-[12px] text-text-primary font-semibold">{actionCtx.claimedRole}</span>
-                                    </div>
-                                )}
-                                {/* 효과 */}
-                                <div className="flex items-start gap-2">
-                                    <span className="text-[11px] text-text-secondary shrink-0 w-14">효과</span>
-                                    <span className="text-[12px] text-text-primary">
-                                        {isBlockPhase && blockCtx ? blockCtx.effect : actionCtx.effect}
+                                <div className="flex flex-col">
+                                    <span className={`text-[11px] font-semibold ${card.revealed ? 'text-text-secondary line-through' : 'text-text-primary'}`}>
+                                        {CHARACTER_NAMES[card.character]}
                                     </span>
+                                    {card.revealed ? (
+                                        <span className="text-[10px] text-red-400">제거됨</span>
+                                    ) : (
+                                        <span className="text-[10px] text-emerald-400">생존</span>
+                                    )}
                                 </div>
-                                {/* 블록 가능 여부 (액션 단계만) */}
-                                {!isBlockPhase && actionCtx.blockInfo && (
-                                    <div className="flex items-start gap-2">
-                                        <span className="text-[11px] text-text-secondary shrink-0 w-14">방어</span>
-                                        <span className="text-[12px] text-text-primary">{actionCtx.blockInfo}</span>
-                                    </div>
-                                )}
                             </div>
+                        ))}
+                    </div>
+                </div>
 
-                            {/* 상세 보기 토글 */}
-                            <button
-                                onClick={() => setShowDetail(!showDetail)}
-                                className="w-full flex items-center justify-center gap-1 py-2 text-text-secondary hover:text-text-primary transition-colors"
-                                style={{ borderTop: '1px solid var(--border-subtle, #333)' }}
-                            >
-                                <Info size={12} />
-                                <span className="text-[11px]">{showDetail ? '간략히 보기' : '도전/패스하면?'}</span>
-                            </button>
-
-                            {/* 상세 정보 (펼치기) */}
-                            {showDetail && (
-                                <div
-                                    className="p-3 space-y-2"
-                                    style={{ borderTop: '1px solid var(--border-subtle, #333)' }}
-                                >
-                                    <div>
-                                        <span className="text-[11px] font-semibold block mb-1" style={{ color: 'var(--red-light, #E74C3C)' }}>⚡ 도전 시</span>
-                                        <p className="text-[11px] text-text-secondary whitespace-pre-line leading-relaxed">
-                                            {isBlockPhase && blockCtx ? blockCtx.challengeInfo : actionCtx.challengeInfo}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <span className="text-[11px] font-semibold block mb-1 text-text-secondary">✋ 패스 시</span>
-                                        <p className="text-[11px] text-text-secondary whitespace-pre-line leading-relaxed">
-                                            {isBlockPhase && blockCtx ? blockCtx.passInfo : actionCtx.passInfo}
-                                        </p>
-                                    </div>
+                {/* 액션 설명 섹션 */}
+                <div className="px-4 sm:px-6 pb-4">
+                    <div
+                        className="rounded-lg overflow-hidden"
+                        style={{ backgroundColor: 'var(--bg-surface, #242424)', border: '1px solid var(--border-subtle, #333)' }}
+                    >
+                        {/* 요약 정보 (항상 표시) */}
+                        <div className="p-3 space-y-1.5">
+                            {/* 주장하는 역할 */}
+                            {!isBlockPhase && actionCtx.claimedRole && (
+                                <div className="flex items-start gap-2">
+                                    <span className="text-[11px] text-text-secondary shrink-0 w-14">역할 주장</span>
+                                    <span className="text-[12px] text-text-primary font-semibold">{actionCtx.claimedRole}</span>
+                                </div>
+                            )}
+                            {/* 효과 */}
+                            <div className="flex items-start gap-2">
+                                <span className="text-[11px] text-text-secondary shrink-0 w-14">효과</span>
+                                <span className="text-[12px] text-text-primary">
+                                    {isBlockPhase && blockCtx ? blockCtx.effect : actionCtx.effect}
+                                </span>
+                            </div>
+                            {/* 블록 가능 여부 (액션 단계만) */}
+                            {!isBlockPhase && actionCtx.blockInfo && (
+                                <div className="flex items-start gap-2">
+                                    <span className="text-[11px] text-text-secondary shrink-0 w-14">방어</span>
+                                    <span className="text-[12px] text-text-primary">{actionCtx.blockInfo}</span>
                                 </div>
                             )}
                         </div>
-                    </div>
 
-                    {/* 버튼 섹션 */}
-                    <div className="flex flex-col gap-2 px-4 sm:px-6 pb-6">
-                        {/* 암살 도전 위험 경고 배너 */}
-                        {!isBlockPhase && pending.type === 'assassinate' && (
+                        {/* 상세 보기 토글 */}
+                        <button
+                            onClick={() => setShowDetail(!showDetail)}
+                            className="w-full flex items-center justify-center gap-1 py-2 text-text-secondary hover:text-text-primary transition-colors"
+                            style={{ borderTop: '1px solid var(--border-subtle, #333)' }}
+                        >
+                            <Info size={12} />
+                            <span className="text-[11px]">{showDetail ? '간략히 보기' : '도전/패스하면?'}</span>
+                        </button>
+
+                        {/* 상세 정보 (펼치기) */}
+                        {showDetail && (
                             <div
-                                className="flex items-center gap-2 rounded-lg px-3 py-2.5"
-                                style={{
-                                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
-                                    border: '1px solid rgba(231, 76, 60, 0.3)',
-                                }}
+                                className="p-3 space-y-2"
+                                style={{ borderTop: '1px solid var(--border-subtle, #333)' }}
                             >
-                                <TriangleAlert size={14} className="shrink-0 text-red-400" />
-                                <span className="text-[11px] text-red-400">
-                                    도전 실패 시 도전자 + 암살 대상 모두 카드를 잃습니다!{' '}
-                                    <span className="font-bold">(2명 피해)</span>
-                                </span>
+                                <div>
+                                    <span className="text-[11px] font-semibold block mb-1" style={{ color: 'var(--red-light, #E74C3C)' }}>⚡ 도전 시</span>
+                                    <p className="text-[11px] text-text-secondary whitespace-pre-line leading-relaxed">
+                                        {isBlockPhase && blockCtx ? blockCtx.challengeInfo : actionCtx.challengeInfo}
+                                    </p>
+                                </div>
+                                <div>
+                                    <span className="text-[11px] font-semibold block mb-1 text-text-secondary">✋ 패스 시</span>
+                                    <p className="text-[11px] text-text-secondary whitespace-pre-line leading-relaxed">
+                                        {isBlockPhase && blockCtx ? blockCtx.passInfo : actionCtx.passInfo}
+                                    </p>
+                                </div>
                             </div>
                         )}
-
-                        {/* 도전 버튼 */}
-                        <button
-                            className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-sora font-semibold text-xs sm:text-sm transition-opacity disabled:opacity-50"
-                            style={{
-                                backgroundColor: 'rgba(231, 76, 60, 0.15)',
-                                border: '1px solid var(--red-light, #E74C3C)',
-                                color: 'var(--red-light, #E74C3C)',
-                            }}
-                            onClick={() => handleResponse('challenge')}
-                            disabled={loading}
-                        >
-                            <Zap size={16} />
-                            {isBlockPhase
-                                ? '블록에 도전! (거짓말이라고 생각해요)'
-                                : pending.type === 'assassinate'
-                                    ? '도전! (암살자가 아니라고 생각해요)'
-                                    : '도전! (거짓말이라고 생각해요)'
-                            }
-                        </button>
-
-                        {/* 블록 버튼들 (직접 액션 단계, 비대상자) */}
-                        {!isBlockPhase && blockableChars.length > 0 && pending.targetId !== playerId && pending.actorId !== playerId && (
-                            <>
-                                {blockableChars.map((char) => (
-                                    <button
-                                        key={char}
-                                        className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-sora font-semibold text-xs sm:text-sm text-text-primary transition-opacity disabled:opacity-50"
-                                        style={{
-                                            backgroundColor: 'var(--bg-surface)',
-                                            border: '1px solid var(--border-subtle)',
-                                        }}
-                                        onClick={() => handleResponse('block', char)}
-                                        disabled={loading}
-                                    >
-                                        <Shield size={16} />
-                                        {CHARACTER_NAMES[char]}으로 막기
-                                    </button>
-                                ))}
-                            </>
-                        )}
-
-                        {/* 블록 버튼들 (직접 액션 단계, 대상자) */}
-                        {!isBlockPhase && blockableChars.length > 0 && pending.targetId === playerId && (
-                            <>
-                                {blockableChars.map((char) => (
-                                    <button
-                                        key={char}
-                                        className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-sora font-semibold text-xs sm:text-sm transition-opacity disabled:opacity-50"
-                                        style={{
-                                            backgroundColor: 'var(--bg-surface)',
-                                            border: '1px solid rgba(212, 175, 55, 0.4)',
-                                            color: 'var(--gold, #D4AF37)',
-                                        }}
-                                        onClick={() => handleResponse('block', char)}
-                                        disabled={loading}
-                                    >
-                                        <Shield size={16} />
-                                        {CHARACTER_NAMES[char]}으로 막기! (나를 향한 공격)
-                                    </button>
-                                ))}
-                            </>
-                        )}
-
-                        {/* 패스 / 허용 버튼 */}
-                        <button
-                            className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-sora text-xs sm:text-sm text-text-secondary transition-opacity disabled:opacity-50"
-                            style={{
-                                backgroundColor: 'var(--bg-surface)',
-                                border: '1px solid var(--border-subtle)',
-                            }}
-                            onClick={() => handleResponse('pass')}
-                            disabled={loading}
-                        >
-                            <Check size={16} />
-                            패스 (허용)
-                        </button>
                     </div>
                 </div>
+
+                {/* 버튼 섹션 */}
+                <div className="flex flex-col gap-2 px-4 sm:px-6 pb-6">
+                    {/* 암살 도전 위험 경고 배너 */}
+                    {!isBlockPhase && pending.type === 'assassinate' && (
+                        <div
+                            className="flex items-center gap-2 rounded-lg px-3 py-2.5"
+                            style={{
+                                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                                border: '1px solid rgba(231, 76, 60, 0.3)',
+                            }}
+                        >
+                            <TriangleAlert size={14} className="shrink-0 text-red-400" />
+                            <span className="text-[11px] text-red-400">
+                                도전 실패 시 도전자 + 암살 대상 모두 카드를 잃습니다!{' '}
+                                <span className="font-bold">(2명 피해)</span>
+                            </span>
+                        </div>
+                    )}
+
+                    {/* 도전 버튼 */}
+                    <button
+                        className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-sora font-semibold text-xs sm:text-sm transition-opacity disabled:opacity-50"
+                        style={{
+                            backgroundColor: 'rgba(231, 76, 60, 0.15)',
+                            border: '1px solid var(--red-light, #E74C3C)',
+                            color: 'var(--red-light, #E74C3C)',
+                        }}
+                        onClick={() => handleResponse('challenge')}
+                        disabled={loading}
+                    >
+                        <Zap size={16} />
+                        {isBlockPhase
+                            ? '블록에 도전! (거짓말이라고 생각해요)'
+                            : pending.type === 'assassinate'
+                                ? '도전! (암살자가 아니라고 생각해요)'
+                                : '도전! (거짓말이라고 생각해요)'
+                        }
+                    </button>
+
+                    {/* 블록 버튼들 (직접 액션 단계, 비대상자) */}
+                    {!isBlockPhase && blockableChars.length > 0 && pending.targetId !== playerId && pending.actorId !== playerId && (
+                        <>
+                            {blockableChars.map((char) => (
+                                <button
+                                    key={char}
+                                    className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-sora font-semibold text-xs sm:text-sm text-text-primary transition-opacity disabled:opacity-50"
+                                    style={{
+                                        backgroundColor: 'var(--bg-surface)',
+                                        border: '1px solid var(--border-subtle)',
+                                    }}
+                                    onClick={() => handleResponse('block', char)}
+                                    disabled={loading}
+                                >
+                                    <Shield size={16} />
+                                    {CHARACTER_NAMES[char]}으로 막기
+                                </button>
+                            ))}
+                        </>
+                    )}
+
+                    {/* 블록 버튼들 (직접 액션 단계, 대상자) */}
+                    {!isBlockPhase && blockableChars.length > 0 && pending.targetId === playerId && (
+                        <>
+                            {blockableChars.map((char) => (
+                                <button
+                                    key={char}
+                                    className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-sora font-semibold text-xs sm:text-sm transition-opacity disabled:opacity-50"
+                                    style={{
+                                        backgroundColor: 'var(--bg-surface)',
+                                        border: '1px solid rgba(212, 175, 55, 0.4)',
+                                        color: 'var(--gold, #D4AF37)',
+                                    }}
+                                    onClick={() => handleResponse('block', char)}
+                                    disabled={loading}
+                                >
+                                    <Shield size={16} />
+                                    {CHARACTER_NAMES[char]}으로 막기! (나를 향한 공격)
+                                </button>
+                            ))}
+                        </>
+                    )}
+
+                    {/* 패스 / 허용 버튼 */}
+                    <button
+                        className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-sora text-xs sm:text-sm text-text-secondary transition-opacity disabled:opacity-50"
+                        style={{
+                            backgroundColor: 'var(--bg-surface)',
+                            border: '1px solid var(--border-subtle)',
+                        }}
+                        onClick={() => handleResponse('pass')}
+                        disabled={loading}
+                    >
+                        <Check size={16} />
+                        패스 (허용)
+                    </button>
+                </div>
             </div>
-        </div>
+        </BottomSheet>
     );
 }
 

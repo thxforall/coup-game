@@ -381,7 +381,6 @@ function PlayerArea({ player, isCurrentTurn, online }: Props) {
                                         character={card.character}
                                         cardSize={{ width: 88, height: 124 }}
                                         onClick={() => {
-                                            setShowDetail(false);
                                             setSelectedCard(card.character!);
                                         }}
                                     />

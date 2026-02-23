@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { Character, CHARACTER_NAMES } from '@/lib/game/types';
+import BottomSheet from '@/components/ui/BottomSheet';
 
 const CARD_IMAGES: Record<Character, string> = {
     Duke: '/cards/duke.jpg',
@@ -91,10 +92,9 @@ export default function CardInfoModal({ character, onClose }: Props) {
     const borderColor = CHAR_BORDER_COLOR[character];
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" onClick={onClose}>
+        <BottomSheet onClose={onClose} mobileMaxHeight="88vh">
             <div
-                className={`glass-panel w-full max-w-sm p-0 animate-slide-up overflow-y-auto max-h-[90vh] sm:max-h-[85vh] border rounded-t-2xl sm:rounded-xl ${borderColor}`}
-                onClick={(e) => e.stopPropagation()}
+                className={`border-t-4 ${borderColor.replace('border-', 'border-t-')}`}
             >
                 {/* 헤더: 이미지 + 이름 */}
                 <div className="relative h-36 sm:h-48 w-full flex-shrink-0">
@@ -156,12 +156,12 @@ export default function CardInfoModal({ character, onClose }: Props) {
                 <div className="p-3 pt-0">
                     <button
                         onClick={onClose}
-                        className="w-full py-2 text-slate-500 hover:text-slate-300 text-sm transition-colors"
+                        className="w-full py-2.5 text-slate-500 hover:text-slate-300 text-sm transition-colors"
                     >
                         닫기
                     </button>
                 </div>
             </div>
-        </div>
+        </BottomSheet>
     );
 }

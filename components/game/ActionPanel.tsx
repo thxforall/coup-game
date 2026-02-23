@@ -233,33 +233,51 @@ function ActionPanel({ state, playerId, onAction }: Props) {
 
             {/* 액션 버튼 — Row 1: 소득 / 해외원조 / 쿠데타 */}
             {row1.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className={mustCoup ? 'flex justify-center' : 'grid grid-cols-2 sm:grid-cols-3 gap-2'}>
                     {row1.map((a) => {
                         const canAfford = a.cost ? me.coins >= a.cost : true;
                         const disabled = !canAfford || loading;
                         const Icon = a.icon;
                         const isCoup = a.variant === 'coup';
 
+                        // mustCoup 시 쿠데타만 표시
+                        if (mustCoup && !isCoup) return null;
+
+                        const isMustCoupHighlight = mustCoup && isCoup;
+
                         return (
                             <button
                                 key={a.type}
                                 onClick={() => handleActionButtonClick(a.type, !!a.needsTarget)}
                                 disabled={disabled}
-                                className={`flex flex-col items-start p-1.5 sm:p-3 rounded-xl border transition-all text-left disabled:opacity-40 ${
-                                    disabled ? 'cursor-not-allowed' : 'active:scale-95'
-                                } ${VARIANT_STYLES[a.variant]}`}
-                                style={isCoup ? { backgroundColor: 'var(--gold)' } : undefined}
+                                className={`border transition-all disabled:opacity-40 active:scale-95 ${isMustCoupHighlight
+                                        ? 'w-full flex flex-row items-center justify-center gap-3 py-5 px-8 rounded-2xl'
+                                        : 'flex flex-col items-start p-1.5 sm:p-3 rounded-xl text-left'
+                                    } ${disabled ? 'cursor-not-allowed' : ''} ${VARIANT_STYLES[a.variant]}`}
+                                style={{
+                                    ...(isCoup ? { backgroundColor: 'var(--gold)' } : {}),
+                                    ...(isMustCoupHighlight ? {
+                                        boxShadow: '0 0 0 2px var(--gold), 0 0 24px rgba(212,175,55,0.5)',
+                                    } : {}),
+                                }}
                             >
-                                <div className="flex items-center gap-2 mb-1 w-full">
-                                    <Icon
-                                        className={`w-4 h-4 sm:w-5 sm:h-5 shrink-0 ${VARIANT_ICON_COLORS[a.variant]}`}
-                                    />
+                                <Icon
+                                    className={`shrink-0 ${VARIANT_ICON_COLORS[a.variant]} ${isMustCoupHighlight ? 'w-7 h-7' : 'w-4 h-4 sm:w-5 sm:h-5'
+                                        }`}
+                                />
+                                <div className={isMustCoupHighlight ? 'flex flex-col items-start' : 'flex items-center gap-2 mb-1 w-full mt-1'}>
                                     <span
-                                        className={`font-bold text-xs sm:text-sm ${isCoup ? 'text-bg-dark' : 'text-text-primary'}`}
+                                        className={`font-black ${isMustCoupHighlight
+                                                ? 'text-lg text-bg-dark'
+                                                : `text-xs sm:text-sm ${isCoup ? 'text-bg-dark' : 'text-text-primary'}`
+                                            }`}
                                     >
                                         {a.label}
                                     </span>
-                                    {a.cost && (
+                                    {isMustCoupHighlight && (
+                                        <span className="text-[11px] text-bg-dark/70 font-medium">{a.desc}</span>
+                                    )}
+                                    {a.cost && !isMustCoupHighlight && (
                                         <span
                                             className="ml-auto text-xs font-semibold px-1.5 py-0.5 rounded-full shrink-0"
                                             style={{
@@ -272,11 +290,14 @@ function ActionPanel({ state, playerId, onAction }: Props) {
                                         </span>
                                     )}
                                 </div>
-                                <span
-                                    className={`text-[10px] leading-tight line-clamp-2 ${isCoup ? 'text-bg-dark/70' : 'text-text-muted'}`}
-                                >
-                                    {a.desc}
-                                </span>
+                                {!isMustCoupHighlight && (
+                                    <span
+                                        className={`text-[10px] leading-tight line-clamp-2 ${isCoup ? 'text-bg-dark/70' : 'text-text-muted'
+                                            }`}
+                                    >
+                                        {a.desc}
+                                    </span>
+                                )}
                             </button>
                         );
                     })}
@@ -297,9 +318,8 @@ function ActionPanel({ state, playerId, onAction }: Props) {
                                 key={a.type}
                                 onClick={() => handleActionButtonClick(a.type, !!a.needsTarget)}
                                 disabled={disabled}
-                                className={`flex flex-col items-start p-1.5 sm:p-3 rounded-xl border transition-all text-left disabled:opacity-40 ${
-                                    disabled ? 'cursor-not-allowed' : 'active:scale-95'
-                                } ${VARIANT_STYLES[a.variant]}`}
+                                className={`flex flex-col items-start p-1.5 sm:p-3 rounded-xl border transition-all text-left disabled:opacity-40 ${disabled ? 'cursor-not-allowed' : 'active:scale-95'
+                                    } ${VARIANT_STYLES[a.variant]}`}
                             >
                                 <div className="flex items-center gap-1.5 mb-1 w-full">
                                     <Icon
@@ -331,12 +351,17 @@ function ActionPanel({ state, playerId, onAction }: Props) {
             )}
 
             {mustCoup && (
-                <p
-                    className="text-center text-xs font-semibold"
-                    style={{ color: 'var(--gold)' }}
+                <div
+                    className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-bold"
+                    style={{
+                        backgroundColor: 'rgba(212,175,55,0.12)',
+                        border: '1px solid rgba(212,175,55,0.4)',
+                        color: 'var(--gold)',
+                    }}
                 >
+                    <span>⚡</span>
                     코인 10개 이상 — 반드시 쿠데타를 해야 합니다
-                </p>
+                </div>
             )}
         </div>
     );
