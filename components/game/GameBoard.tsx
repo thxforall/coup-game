@@ -101,6 +101,7 @@ function WaitingResponseIndicator({ state, playerId }: { state: FilteredGameStat
 const ResponseModal = dynamic(() => import('./ResponseModal'), { ssr: false });
 const CardSelectModal = dynamic(() => import('./CardSelectModal'), { ssr: false });
 const ExchangeModal = dynamic(() => import('./ExchangeModal'), { ssr: false });
+const SettingsModal = dynamic(() => import('./SettingsModal'), { ssr: false });
 
 interface Props {
     state: FilteredGameState;
@@ -112,6 +113,7 @@ interface Props {
 
 export default function GameBoard({ state, playerId, roomId, onAction, onRestart }: Props) {
     const [showMobileLog, setShowMobileLog] = useState(false);
+    const [showSettings, setShowSettings] = useState(false);
     const mobileLogRef = useRef<HTMLDivElement>(null);
 
     // Close mobile log when tapping outside
@@ -281,7 +283,15 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                     winnerId={state.winnerId}
                     players={state.players}
                 />
-                <div className="glass-panel p-8 text-center max-w-sm w-full animate-slide-up">
+                <div className="glass-panel p-8 text-center max-w-sm w-full animate-slide-up relative">
+                    {/* 설정 버튼 (우측 상단) */}
+                    <button
+                        className="absolute top-3 right-3 p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-surface transition-colors"
+                        aria-label="설정"
+                        onClick={() => setShowSettings(true)}
+                    >
+                        <Settings className="w-4 h-4" />
+                    </button>
                     <div className="flex justify-center mb-4">
                         {iWon ? (
                             <Trophy className="w-16 h-16 text-gold" />
@@ -316,6 +326,15 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                         </a>
                     </div>
                 </div>
+                {showSettings && (
+                    <SettingsModal
+                        state={state}
+                        playerId={playerId}
+                        roomId={roomId}
+                        onClose={() => setShowSettings(false)}
+                        onRestart={onRestart ?? (async () => {})}
+                    />
+                )}
             </div>
         );
     }
@@ -370,6 +389,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                     <button
                         className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-surface transition-colors"
                         aria-label="설정"
+                        onClick={() => setShowSettings(true)}
                     >
                         <Settings className="w-5 h-5" />
                     </button>
@@ -511,6 +531,17 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                     player={me}
                     exchangeCards={state.pendingAction.exchangeCards}
                     onSelect={(keptIndices) => onAction({ type: 'exchange_select', keptIndices })}
+                />
+            )}
+
+            {/* 모달: 설정 */}
+            {showSettings && (
+                <SettingsModal
+                    state={state}
+                    playerId={playerId}
+                    roomId={roomId}
+                    onClose={() => setShowSettings(false)}
+                    onRestart={onRestart ?? (async () => {})}
                 />
             )}
         </div>
