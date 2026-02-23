@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-24 - Completed quick-045 (README.md v0.5.0 업데이트)
+- Last activity: 2026-02-24 - Completed quick-048 (갈취 대상 코인 수 반영)
 
 ### Quick Tasks Completed
 
@@ -52,6 +52,7 @@
 | 044 | 게임보드 배경이미지 잔여 코드(bg-overlay) 제거 | 2026-02-24 | 19d38d8 | [044-remove-background-image-feature](./quick/044-remove-background-image-feature/) |
 | 045 | README.md v0.5.0 업데이트 (기능/구조/릴리스 노트) | 2026-02-24 | 463b929 | [045-update-readme-md](./quick/045-update-readme-md/) |
 | 047 | 게임 로그+채팅 로그 mergedStructured timestamp 기반 정렬 수정 (채팅 하단 집중 버그 수정) | 2026-02-24 | 131875e | [047-game-log-scroll-bottom-chat-priority-fix](./quick/047-game-log-scroll-bottom-chat-priority-fix/) |
+| 048 | 갈취 대상 코인 수 반영 — 1코인 대상 안내 표시 + 확인 메시지 실제 금액 | 2026-02-24 | 656c929 | [048-steal-show-target-coin-count](./quick/048-steal-show-target-coin-count/) |
 
 ### Blockers/Concerns
 - None currently
