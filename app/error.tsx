@@ -10,7 +10,7 @@ export default function GlobalError({
     reset: () => void;
 }) {
     return (
-        <div className="min-h-screen flex items-center justify-center bg-bg-dark px-4">
+        <div className="min-h-screen flex items-center justify-center px-4">
             <div className="glass-panel p-8 text-center max-w-sm w-full animate-slide-up">
                 <div className="flex justify-center mb-4">
                     <div className="relative">

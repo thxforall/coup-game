@@ -131,7 +131,7 @@ export default function GamePage() {
     // 방을 찾을 수 없는 경우
     if (notFound) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-bg-dark px-4">
+            <div className="min-h-screen flex items-center justify-center  px-4">
                 <div className="glass-panel p-8 text-center max-w-sm w-full animate-slide-up">
                     <div className="flex justify-center mb-4">
                         <AlertTriangle className="w-16 h-16 text-gold" />
@@ -167,7 +167,7 @@ export default function GamePage() {
     // 로딩 중
     if (loading || !state) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-bg-dark">
+            <div className="min-h-screen flex items-center justify-center ">
                 <div className="text-center">
                     <div className="flex justify-center mb-4">
                         <Skull className="w-10 h-10 text-gold animate-pulse" />

@@ -139,7 +139,7 @@ export default function LobbyPage() {
 
     if (checkingRoom) {
         return (
-            <main className="min-h-screen flex items-center justify-center bg-bg-dark">
+            <main className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <Skull size={48} className="text-gold mb-4 mx-auto animate-pulse" />
                     <p className="text-text-muted text-sm font-mono">게임 확인 중...</p>
@@ -149,7 +149,7 @@ export default function LobbyPage() {
     }
 
     return (
-        <main className="min-h-screen flex flex-col items-center px-4 py-12 bg-bg-dark relative overflow-x-hidden overflow-y-auto">
+        <main className="min-h-screen flex flex-col items-center px-4 py-12 relative overflow-x-hidden overflow-y-auto">
             {/* Header controls */}
             <div className="absolute top-4 right-4 flex items-center gap-2">
                 <BgmPlayer />
@@ -292,11 +292,10 @@ export default function LobbyPage() {
                                                 <span className="text-sm font-semibold text-text-primary truncate">
                                                     {room.hostName}
                                                 </span>
-                                                <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0 ${
-                                                    room.gameMode === 'guess'
+                                                <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0 ${room.gameMode === 'guess'
                                                         ? 'bg-violet-500/20 text-violet-300'
                                                         : 'bg-gold/20 text-gold'
-                                                }`}>
+                                                    }`}>
                                                     {room.gameMode === 'guess' ? 'Guess' : 'Standard'}
                                                 </span>
                                             </div>
@@ -475,7 +474,7 @@ export default function LobbyPage() {
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 text-text-muted hover:text-gold transition-colors font-mono text-[10px] uppercase tracking-[0.2em]"
                 >
-                    <Github size={14} />
+                    <img src="/profile/platypus.png" alt="thxforall" className="w-5 h-5 rounded-full border border-border-subtle" />
                     <span>thxforall</span>
                 </a>
             </footer>

@@ -311,7 +311,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
         const iWon = state.winnerId === playerId;
         const isHost = state.players[0]?.id === playerId;
         return (
-            <div className="min-h-screen flex items-center justify-center bg-bg-dark px-4">
+            <div className="min-h-screen flex items-center justify-center px-4">
                 <GameToast
                     log={state.log}
                     playerId={playerId}
@@ -381,7 +381,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
     }
 
     return (
-        <div className="h-screen bg-bg-dark flex flex-col overflow-hidden relative">
+        <div className="h-screen flex flex-col overflow-hidden relative">
 
             {/* 토스트 알림 */}
             <GameToast

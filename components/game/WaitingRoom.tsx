@@ -4,9 +4,11 @@ import { FilteredGameState } from '@/lib/game/types';
 import { PresenceMap } from '@/lib/firebase.client';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Skull, Copy, Check, Crown, Play, CheckCircle2, Circle, X, BookOpen } from 'lucide-react';
+import { Skull, Copy, Check, Crown, Play, CheckCircle2, Circle, X, BookOpen, Home } from 'lucide-react';
+import { clearActiveRoom } from '@/lib/storage';
 
 const GameRulesModal = dynamic(() => import('./GameRulesModal'), { ssr: false });
+import BgmPlayer from './BgmPlayer';
 
 interface Props {
     state: FilteredGameState;
@@ -47,7 +49,24 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center px-4 py-10 bg-bg-dark">
+        <div className="min-h-screen flex flex-col items-center justify-center px-4 py-10 relative">
+            {/* Header controls left */}
+            <div className="absolute top-4 left-4 flex items-center gap-2">
+                <button
+                    className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-surface transition-colors flex items-center gap-2 text-sm"
+                    onClick={() => { clearActiveRoom(); window.location.href = '/'; }}
+                    aria-label="로비로 이동"
+                >
+                    <Home size={18} />
+                    <span className="hidden sm:inline">로비로</span>
+                </button>
+            </div>
+
+            {/* Header controls right */}
+            <div className="absolute top-4 right-4 flex items-center gap-2">
+                <BgmPlayer />
+            </div>
+
             <div className="glass-panel w-full max-w-lg p-5 sm:p-8 animate-slide-up">
                 {/* Logo */}
                 <div className="flex flex-col items-center mb-8">
@@ -103,9 +122,8 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
                                 </div>
 
                                 {/* Presence dot */}
-                                <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
-                                    presence?.[p.id]?.online ? 'bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.6)]' : 'bg-gray-500'
-                                }`} />
+                                <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${presence?.[p.id]?.online ? 'bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.6)]' : 'bg-gray-500'
+                                    }`} />
 
                                 <span className="font-semibold text-text-primary flex-1 truncate">{p.name}</span>
 
@@ -154,21 +172,46 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
 
                 {/* Start / waiting / ready */}
                 {isHost ? (
-                    <button
-                        className="btn-gold w-full py-3 flex items-center justify-center gap-2 text-base"
-                        onClick={onStart}
-                        disabled={state.players.length < 2 || !allNonHostReady}
-                    >
-                        <Play size={18} />
-                        {startButtonLabel()}
-                    </button>
+                    <div className="flex gap-2">
+                        <button
+                            className="btn-gold flex-1 py-3 flex items-center justify-center gap-2 text-base transition-all"
+                            onClick={onStart}
+                            disabled={state.players.length < 2 || !allNonHostReady}
+                        >
+                            <Play size={18} />
+                            {startButtonLabel()}
+                        </button>
+                        <button
+                            className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-500 hover:bg-red-500/20 transition-all flex items-center justify-center gap-2"
+                            onClick={async () => {
+                                if (window.confirm('방을 정말 없애시겠습니까? 모든 플레이어가 튕겨 나갑니다.')) {
+                                    try {
+                                        const res = await fetch('/api/game/delete', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ roomId, playerId }),
+                                        });
+                                        if (res.ok) {
+                                            clearActiveRoom();
+                                            window.location.href = '/';
+                                        }
+                                    } catch (e) {
+                                        console.error(e);
+                                        alert('방 삭제에 실패했습니다.');
+                                    }
+                                }
+                            }}
+                            title="방 없애기"
+                        >
+                            <X size={18} />
+                        </button>
+                    </div>
                 ) : (
                     <button
-                        className={`w-full py-3 flex items-center justify-center gap-2 text-base transition-colors ${
-                            isReady
-                                ? 'btn-gold'
-                                : 'btn-ghost border border-border-subtle'
-                        }`}
+                        className={`w-full py-3 flex items-center justify-center gap-2 text-base transition-colors ${isReady
+                            ? 'btn-gold'
+                            : 'btn-ghost border border-border-subtle'
+                            }`}
                         onClick={onReady}
                     >
                         {isReady ? (
