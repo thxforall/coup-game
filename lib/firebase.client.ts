@@ -5,7 +5,7 @@
  */
 
 import { initializeApp, getApps } from 'firebase/app';
-import { getDatabase, ref, onValue, onDisconnect, set, get, serverTimestamp } from 'firebase/database';
+import { getDatabase, ref, onValue, onChildAdded, onDisconnect, set, get, update, serverTimestamp, query, orderByChild, startAt, endAt } from 'firebase/database';
 import { FilteredGameState } from './game/types';
 
 const firebaseConfig = {
@@ -136,7 +136,7 @@ export function subscribeToPresence(
 // Quick Chat
 // ============================================================
 
-export const CHAT_MESSAGES = ['드루와', '공작 업', 'ㅠㅠ', '넌 뒤졌다', '봐줘', '👍'] as const;
+export const CHAT_MESSAGES = ['드루와', '공작 업', 'ㅠㅠ', '넌 뒤졌다', '봐줘', '👍', '빨리해'] as const;
 
 export interface ChatMessage {
   playerId: string;
@@ -149,16 +149,52 @@ export function sendChatMessage(roomId: string, playerId: string, messageId: num
   const key = `${playerId}_${Date.now()}`;
   const chatRef = ref(db, `game_rooms/${roomId}/chat/${key}`);
   set(chatRef, { playerId, messageId, timestamp: Date.now() });
+  // 오래된 메시지 정리 (백그라운드, 60초 이상 경과)
+  cleanupOldChatMessages(roomId);
 }
 
+/**
+ * 60초 이상 지난 채팅 메시지 삭제 (Firebase 데이터 비대화 방지).
+ * 쓰로틀링: 30초에 1회만 실행.
+ */
+let lastCleanupTs = 0;
+function cleanupOldChatMessages(roomId: string): void {
+  const now = Date.now();
+  if (now - lastCleanupTs < 30_000) return;
+  lastCleanupTs = now;
+
+  const db = getDb();
+  const chatRef = ref(db, `game_rooms/${roomId}/chat`);
+  const cutoff = now - 60_000;
+  const q = query(chatRef, orderByChild('timestamp'), endAt(cutoff));
+  get(q).then((snap) => {
+    if (!snap.exists()) return;
+    const updates: Record<string, null> = {};
+    snap.forEach((child) => {
+      updates[child.key!] = null;
+    });
+    // 한 번에 일괄 삭제
+    update(ref(db, `game_rooms/${roomId}/chat`), updates);
+  }).catch(() => { /* 무시 */ });
+}
+
+/**
+ * 새 채팅 메시지가 추가될 때마다 콜백 호출.
+ * onChildAdded + startAt으로 구독 시점 이후 메시지만 수신.
+ */
 export function subscribeToChatMessages(
   roomId: string,
-  callback: (messages: Record<string, ChatMessage>) => void
+  callback: (msg: ChatMessage, key: string) => void
 ): () => void {
   const db = getDb();
   const chatRef = ref(db, `game_rooms/${roomId}/chat`);
-  const unsub = onValue(chatRef, (snap) => {
-    callback(snap.exists() ? (snap.val() as Record<string, ChatMessage>) : {});
+  // 구독 시작 시점 이후 메시지만 수신 (과거 메시지 중복 방지)
+  const subscribeTs = Date.now();
+  const q = query(chatRef, orderByChild('timestamp'), startAt(subscribeTs));
+  const unsub = onChildAdded(q, (snap) => {
+    if (!snap.exists()) return;
+    const msg = snap.val() as ChatMessage;
+    callback(msg, snap.key ?? '');
   });
   return unsub;
 }

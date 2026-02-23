@@ -157,45 +157,58 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
 
     useGameAudio(state, playerId);
 
-    // 퀵챗 구독
+    // 말풍선 표시 헬퍼 (구독 + 낙관적 UI에서 공통 사용)
+    const showChatBubble = useCallback((senderPlayerId: string, message: string) => {
+        // 기존 타이머 취소
+        const existingTimer = chatTimersRef.current.get(senderPlayerId);
+        if (existingTimer) clearTimeout(existingTimer);
+
+        // 말풍선 추가
+        setChatBubbles((prev) => {
+            const next = new Map(prev);
+            next.set(senderPlayerId, { message, leaving: false });
+            return next;
+        });
+
+        // 3초 후 leaving=true
+        const leaveTimer = setTimeout(() => {
+            setChatBubbles((prev) => {
+                const next = new Map(prev);
+                const existing = next.get(senderPlayerId);
+                if (existing) next.set(senderPlayerId, { ...existing, leaving: true });
+                return next;
+            });
+            // 0.5초 후 제거 (애니메이션 완료)
+            setTimeout(() => {
+                setChatBubbles((prev) => {
+                    const next = new Map(prev);
+                    next.delete(senderPlayerId);
+                    return next;
+                });
+                chatTimersRef.current.delete(senderPlayerId);
+            }, 500);
+        }, 3000);
+
+        chatTimersRef.current.set(senderPlayerId, leaveTimer);
+    }, []);
+
+    // 낙관적 UI: 내 채팅 즉시 표시
+    const handleChatSend = useCallback((messageId: number) => {
+        const message = CHAT_MESSAGES[messageId] ?? '';
+        if (!message) return;
+        showChatBubble(playerId, message);
+    }, [playerId, showChatBubble]);
+
+    // 퀵챗 구독 (상대 메시지만 - 내 메시지는 낙관적 UI로 이미 표시됨)
     useEffect(() => {
         const unsub = subscribeToChatMessages(roomId, (msg) => {
+            // 내 메시지는 낙관적 UI로 이미 표시했으므로 무시
+            if (msg.playerId === playerId) return;
+
             const message = CHAT_MESSAGES[msg.messageId] ?? '';
             if (!message) return;
 
-            const { playerId: senderPlayerId } = msg;
-
-            // 기존 타이머 취소
-            const existingTimer = chatTimersRef.current.get(senderPlayerId);
-            if (existingTimer) clearTimeout(existingTimer);
-
-            // 말풍선 추가
-            setChatBubbles((prev) => {
-                const next = new Map(prev);
-                next.set(senderPlayerId, { message, leaving: false });
-                return next;
-            });
-
-            // 3초 후 leaving=true
-            const leaveTimer = setTimeout(() => {
-                setChatBubbles((prev) => {
-                    const next = new Map(prev);
-                    const existing = next.get(senderPlayerId);
-                    if (existing) next.set(senderPlayerId, { ...existing, leaving: true });
-                    return next;
-                });
-                // 0.5초 후 제거 (애니메이션 완료)
-                setTimeout(() => {
-                    setChatBubbles((prev) => {
-                        const next = new Map(prev);
-                        next.delete(senderPlayerId);
-                        return next;
-                    });
-                    chatTimersRef.current.delete(senderPlayerId);
-                }, 500);
-            }, 3000);
-
-            chatTimersRef.current.set(senderPlayerId, leaveTimer);
+            showChatBubble(msg.playerId, message);
         });
         const timers = chatTimersRef.current;
         return () => {
@@ -203,7 +216,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             timers.forEach((t) => clearTimeout(t));
             timers.clear();
         };
-    }, [roomId]);
+    }, [roomId, playerId, showChatBubble]);
 
     const mustLoseCard = useMemo(
         () =>
@@ -570,6 +583,8 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                             roomId={roomId}
                             playerId={playerId}
                             disabled={!me.isAlive}
+                            turnId={state.currentTurnId}
+                            onSend={handleChatSend}
                         />
                     </div>
                     <div className="p-2 sm:p-4">
