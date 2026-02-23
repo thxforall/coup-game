@@ -498,7 +498,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             {showMobileLog && (
                 <div className="lg:hidden relative z-30" ref={mobileLogRef}>
                     <div className="absolute inset-x-0 top-0 max-h-[50vh] overflow-y-auto bg-bg-dark/95 p-3">
-                        <EventLog log={state.log} structuredLog={state.structuredLog} chatLogs={chatLogs} />
+                        <EventLog log={state.log} structuredLog={state.structuredLog} />
                     </div>
                 </div>
             )}

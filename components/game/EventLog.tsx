@@ -1,12 +1,19 @@
 'use client';
 
 import { memo, useEffect, useRef } from 'react';
-import { ScrollText, Swords, ShieldAlert, ShieldCheck, Zap, Crown, Crosshair, Anchor, Repeat, Shield, Skull, Trophy } from 'lucide-react';
+import { ScrollText, Swords, ShieldAlert, ShieldCheck, Zap, Crosshair, Repeat, Skull, Trophy, MessageCircle } from 'lucide-react';
 import { LogEntry, LogEntryType } from '@/lib/game/types';
+
+interface ChatLogItem {
+    playerName: string;
+    message: string;
+    timestamp: number;
+}
 
 interface Props {
     log: string[];
     structuredLog?: LogEntry[];
+    chatLogs?: ChatLogItem[];
 }
 
 /**
@@ -43,6 +50,7 @@ const LOG_TYPE_CONFIG: Record<LogEntryType, { color: string; icon?: React.Elemen
     turn_start: { color: 'text-gold', icon: Zap },
 };
 
+
 function StructuredLogEntry({ entry, isLatest }: { entry: LogEntry; isLatest: boolean }) {
     const config = LOG_TYPE_CONFIG[entry.type] ?? { color: 'text-text-muted' };
     const color = isLatest ? 'text-gold' : config.color;
@@ -65,14 +73,78 @@ function StructuredLogEntry({ entry, isLatest }: { entry: LogEntry; isLatest: bo
     );
 }
 
-function EventLog({ log, structuredLog }: Props) {
+function ChatLogEntry({ item, isLatest }: { item: ChatLogItem; isLatest: boolean }) {
+    return (
+        <div
+            className={`flex items-start gap-2 rounded-md px-2 py-1 transition-colors duration-200 ${
+                isLatest ? 'bg-cyan-400/10' : 'hover:bg-bg-surface'
+            }`}
+        >
+            <span className="flex-shrink-0 mt-px text-cyan-400">
+                <MessageCircle size={10} strokeWidth={2.5} />
+            </span>
+            <span className={`font-mono text-[10px] leading-relaxed ${isLatest ? 'text-gold' : 'text-cyan-400'}`}>
+                {item.playerName}: {item.message}
+            </span>
+        </div>
+    );
+}
+
+function EventLog({ log, structuredLog, chatLogs = [] }: Props) {
     const bottomRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [log, structuredLog]);
+    }, [log, structuredLog, chatLogs]);
 
     const useStructured = structuredLog && structuredLog.length > 0;
+
+    // Build merged entries for structured log mode
+    type StructuredMerged =
+        | { kind: 'game'; entry: LogEntry; sortKey: number }
+        | { kind: 'chat'; item: ChatLogItem; sortKey: number };
+
+    const mergedStructured: StructuredMerged[] | null = useStructured
+        ? (() => {
+              const gameEntries: StructuredMerged[] = structuredLog.map((entry, i) => ({
+                  kind: 'game',
+                  entry,
+                  sortKey: i,
+              }));
+              const minChat = chatLogs.length > 0 ? Math.min(...chatLogs.map((c) => c.timestamp)) : 0;
+              const maxGame = gameEntries.length;
+              const chatEntries: StructuredMerged[] = chatLogs.map((item) => ({
+                  kind: 'chat',
+                  item,
+                  sortKey: maxGame + (item.timestamp - minChat) / 1e13,
+              }));
+              return [...gameEntries, ...chatEntries].sort((a, b) => a.sortKey - b.sortKey);
+          })()
+        : null;
+
+    // Build merged entries for plain log mode
+    type PlainMerged =
+        | { kind: 'game'; text: string; index: number; sortKey: number }
+        | { kind: 'chat'; item: ChatLogItem; sortKey: number };
+
+    const mergedPlain: PlainMerged[] | null = !useStructured
+        ? (() => {
+              const gameEntries: PlainMerged[] = log.map((text, i) => ({
+                  kind: 'game',
+                  text,
+                  index: i,
+                  sortKey: i,
+              }));
+              const minChat = chatLogs.length > 0 ? Math.min(...chatLogs.map((c) => c.timestamp)) : 0;
+              const maxGame = gameEntries.length;
+              const chatEntries: PlainMerged[] = chatLogs.map((item) => ({
+                  kind: 'chat',
+                  item,
+                  sortKey: maxGame + (item.timestamp - minChat) / 1e13,
+              }));
+              return [...gameEntries, ...chatEntries].sort((a, b) => a.sortKey - b.sortKey);
+          })()
+        : null;
 
     return (
         <div className="h-full bg-bg-card rounded-xl overflow-y-auto">
@@ -86,20 +158,33 @@ function EventLog({ log, structuredLog }: Props) {
 
             {/* Log entries */}
             <div className="px-3 py-2 space-y-0.5">
-                {useStructured
-                    ? structuredLog.map((entry, i) => (
-                          <StructuredLogEntry
-                              key={i}
-                              entry={entry}
-                              isLatest={i === structuredLog.length - 1}
-                          />
-                      ))
-                    : log.map((entry, i) => {
-                          const isLatest = i === log.length - 1;
-                          const color = isLatest ? 'text-gold' : getLogColor(entry);
+                {mergedStructured
+                    ? mergedStructured.map((item, i) => {
+                          const isLatest = i === mergedStructured.length - 1;
+                          if (item.kind === 'chat') {
+                              return (
+                                  <ChatLogEntry key={`chat-${i}`} item={item.item} isLatest={isLatest} />
+                              );
+                          }
+                          return (
+                              <StructuredLogEntry
+                                  key={`game-${i}`}
+                                  entry={item.entry}
+                                  isLatest={isLatest}
+                              />
+                          );
+                      })
+                    : mergedPlain!.map((item, i) => {
+                          const isLatest = i === mergedPlain!.length - 1;
+                          if (item.kind === 'chat') {
+                              return (
+                                  <ChatLogEntry key={`chat-${i}`} item={item.item} isLatest={isLatest} />
+                              );
+                          }
+                          const color = isLatest ? 'text-gold' : getLogColor(item.text);
                           return (
                               <div
-                                  key={i}
+                                  key={`game-${item.index}`}
                                   className={`flex items-start gap-2 rounded-md px-2 py-1 transition-colors duration-200 ${
                                       isLatest ? 'bg-gold/10' : 'hover:bg-bg-surface'
                                   }`}
@@ -108,7 +193,7 @@ function EventLog({ log, structuredLog }: Props) {
                                       &bull;
                                   </span>
                                   <span className={`font-mono text-[10px] leading-relaxed ${color}`}>
-                                      {entry}
+                                      {item.text}
                                   </span>
                               </div>
                           );

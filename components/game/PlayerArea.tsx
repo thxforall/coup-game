@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { FilteredPlayer, Character, CHARACTER_NAMES } from '@/lib/game/types';
 import CardInfoModal from './CardInfoModal';
-import ChatBubble from './ChatBubble';
 
 // ----------------------------------------------------------------
 // Types & constants
@@ -22,7 +21,6 @@ interface Props {
     player: FilteredPlayer;
     isCurrentTurn: boolean;
     online?: boolean;
-    chatBubble?: { message: string; leaving: boolean };
 }
 
 const PLAYER_AVATAR_COLORS = [
@@ -166,7 +164,7 @@ function RevealedCard({ character, onClick }: RevealedCardProps) {
 // Main component
 // ----------------------------------------------------------------
 
-function PlayerArea({ player, isCurrentTurn, online, chatBubble }: Props) {
+function PlayerArea({ player, isCurrentTurn, online }: Props) {
     const [selectedCard, setSelectedCard] = useState<Character | null>(null);
 
     const playerIndex = player.id
@@ -176,12 +174,6 @@ function PlayerArea({ player, isCurrentTurn, online, chatBubble }: Props) {
     return (
         <>
             <div className="relative flex-shrink-0">
-                {/* 말풍선 */}
-                {chatBubble && (
-                    <div className="absolute -top-9 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
-                        <ChatBubble message={chatBubble.message} leaving={chatBubble.leaving} />
-                    </div>
-                )}
             <div
                 className={`
                 bg-bg-card border border-border-subtle rounded-xl p-1 sm:p-3
