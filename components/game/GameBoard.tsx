@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { Skull, Settings, Trophy } from 'lucide-react';
+import { Skull, Settings, Trophy, ScrollText } from 'lucide-react';
 import { FilteredGameState, Card, Player, ACTION_NAMES } from '@/lib/game/types';
 import { useGameAudio } from '@/lib/useGameAudio';
 import PlayerArea from './PlayerArea';
@@ -109,6 +109,22 @@ interface Props {
 }
 
 export default function GameBoard({ state, playerId, onAction }: Props) {
+    const [showMobileLog, setShowMobileLog] = useState(false);
+    const mobileLogRef = useRef<HTMLDivElement>(null);
+
+    // Close mobile log when tapping outside
+    const handleOutsideClick = useCallback((e: MouseEvent) => {
+        if (mobileLogRef.current && !mobileLogRef.current.contains(e.target as Node)) {
+            setShowMobileLog(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (showMobileLog) {
+            document.addEventListener('mousedown', handleOutsideClick);
+            return () => document.removeEventListener('mousedown', handleOutsideClick);
+        }
+    }, [showMobileLog, handleOutsideClick]);
     const me = useMemo(
         () => state.players.find((p) => p.id === playerId),
         [state.players, playerId]
@@ -149,7 +165,9 @@ export default function GameBoard({ state, playerId, onAction }: Props) {
             (state.phase === 'awaiting_response' || state.phase === 'awaiting_block_response') &&
             me?.isAlive &&
             state.pendingAction?.responses?.[playerId] === 'pending' &&
-            state.pendingAction?.actorId !== playerId,
+            // awaiting_response: actor는 자기 액션에 응답 불가
+            // awaiting_block_response: actor도 블록에 도전 가능
+            (state.phase === 'awaiting_block_response' || state.pendingAction?.actorId !== playerId),
         [state.phase, me?.isAlive, state.pendingAction?.responses, state.pendingAction?.actorId, playerId]
     );
 
@@ -214,28 +232,41 @@ export default function GameBoard({ state, playerId, onAction }: Props) {
                 </div>
 
                 {/* 중앙: 턴 정보 */}
-                <div className="flex items-center gap-3 text-sm">
-                    <span className="text-text-muted">현재 턴:</span>
+                <div className="flex items-center gap-1.5 sm:gap-3 text-sm">
+                    <span className="text-text-muted hidden sm:inline">현재 턴:</span>
                     <span
                         className={`font-bold transition-colors duration-300 ${
                             isMyTurn ? 'text-gold' : 'text-text-primary'
                         }`}
                     >
-                        {isMyTurn ? '나' : currentPlayer?.name}
+                        {isMyTurn ? '내 턴' : currentPlayer?.name}
                     </span>
                 </div>
 
-                {/* 우: 설정 아이콘 */}
-                <button
-                    className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-surface transition-colors"
-                    aria-label="설정"
-                >
-                    <Settings className="w-5 h-5" />
-                </button>
+                {/* 우: 로그 토글(모바일) + 설정 아이콘 */}
+                <div className="flex items-center gap-1">
+                    <button
+                        className={`lg:hidden p-2 rounded-lg transition-colors ${
+                            showMobileLog
+                                ? 'text-gold bg-gold/10'
+                                : 'text-text-muted hover:text-text-primary hover:bg-bg-surface'
+                        }`}
+                        aria-label="게임 로그"
+                        onClick={() => setShowMobileLog((v) => !v)}
+                    >
+                        <ScrollText className="w-5 h-5" />
+                    </button>
+                    <button
+                        className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-surface transition-colors"
+                        aria-label="설정"
+                    >
+                        <Settings className="w-5 h-5" />
+                    </button>
+                </div>
             </header>
 
             {/* 상대방 플레이어 행 (가로) */}
-            <div className="flex-shrink-0 flex flex-row flex-wrap items-start gap-3 px-4 py-3 border-b border-border-subtle">
+            <div className="flex-shrink-0 flex flex-row items-start gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 border-b border-border-subtle overflow-x-auto scrollbar-hide">
                 {others.map((player) => (
                     <PlayerArea
                         key={player.id}
@@ -245,15 +276,24 @@ export default function GameBoard({ state, playerId, onAction }: Props) {
                 ))}
             </div>
 
-            {/* 중앙 영역: EventLog(좌, 320px) + TurnArea(우) */}
-            <div className="flex-1 flex flex-row min-h-0 overflow-hidden">
-                {/* 게임 로그 — 고정 너비 w-80 (320px) */}
-                <div className="w-80 flex-shrink-0 border-r border-border-subtle p-3 overflow-hidden">
+            {/* 모바일 로그 패널 (오버레이) */}
+            {showMobileLog && (
+                <div className="lg:hidden relative z-30" ref={mobileLogRef}>
+                    <div className="absolute inset-x-0 top-0 max-h-[50vh] overflow-y-auto bg-bg-dark/95 border-b border-border-subtle p-3">
+                        <EventLog log={state.log} />
+                    </div>
+                </div>
+            )}
+
+            {/* 중앙 영역: EventLog(좌, 320px desktop) + TurnArea(우) */}
+            <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
+                {/* 게임 로그 — 데스크톱에서만 표시 */}
+                <div className="hidden lg:block w-80 flex-shrink-0 border-r border-border-subtle p-3 overflow-hidden">
                     <EventLog log={state.log} />
                 </div>
 
                 {/* 턴 영역 */}
-                <div className="flex-1 flex flex-col p-4 overflow-y-auto">
+                <div className="flex-1 flex flex-col p-3 sm:p-4 overflow-y-auto">
                     {/* 내 턴 레이블 */}
                     {isMyTurn && state.phase === 'action' && (
                         <div className="mb-3">
@@ -293,7 +333,7 @@ export default function GameBoard({ state, playerId, onAction }: Props) {
 
             {/* 내 플레이어 영역 (하단) */}
             {me && (
-                <div className="flex-shrink-0 border-t border-border-subtle p-4 bg-bg-card">
+                <div className="flex-shrink-0 border-t border-border-subtle p-3 sm:p-4 bg-bg-card">
                     <MyPlayerArea player={me as Player} />
                 </div>
             )}
