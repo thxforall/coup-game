@@ -173,13 +173,18 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
         addChatLog(playerId, message);
     }, [playerId, addChatLog]);
 
+    // 낙관적 UI: 내 자유 텍스트 즉시 표시
+    const handleChatTextSend = useCallback((text: string) => {
+        addChatLog(playerId, text);
+    }, [playerId, addChatLog]);
+
     // 퀵챗 구독 (상대 메시지만 - 내 메시지는 낙관적 UI로 이미 표시됨)
     useEffect(() => {
         const unsub = subscribeToChatMessages(roomId, (msg) => {
             // 내 메시지는 낙관적 UI로 이미 표시했으므로 무시
             if (msg.playerId === playerId) return;
 
-            const message = CHAT_MESSAGES[msg.messageId] ?? '';
+            const message = msg.messageId === -1 ? (msg.text ?? '') : (CHAT_MESSAGES[msg.messageId] ?? '');
             if (!message) return;
 
             addChatLog(msg.playerId, message);
@@ -617,6 +622,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                             disabled={!me.isAlive}
                             turnId={state.currentTurnId}
                             onSend={handleChatSend}
+                            onSendText={handleChatTextSend}
                         />
                     </div>
                     <div className="p-2 sm:p-4">
