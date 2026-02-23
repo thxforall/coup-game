@@ -58,15 +58,20 @@ export function initGame(players: { id: string; name: string }[], gameMode?: str
   const firstPlayerIndex = Math.floor(Math.random() * gamePlayers.length);
   const firstPlayer = gamePlayers[firstPlayerIndex];
 
+  const now = Date.now();
+  const startMsg = mode === 'guess' ? '게임이 시작되었습니다! (추측 모드)' : '게임이 시작되었습니다!';
+  const turnMsg = `--- ${firstPlayer.name}의 턴 ---`;
+
   return {
     players: gamePlayers,
     currentTurnId: firstPlayer.id,
     phase: 'action',
     deck,
     pendingAction: null,
-    log: [
-      mode === 'guess' ? '게임이 시작되었습니다! (추측 모드)' : '게임이 시작되었습니다!',
-      `--- ${firstPlayer.name}의 턴 ---`,
+    log: [startMsg, turnMsg],
+    structuredLog: [
+      { type: 'game_start', message: startMsg, timestamp: now },
+      { type: 'turn_start', message: turnMsg, actorId: firstPlayer.id, timestamp: now + 1 },
     ],
     gameMode: mode,
   };

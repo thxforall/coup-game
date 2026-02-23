@@ -121,6 +121,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
     const [showSettings, setShowSettings] = useState(false);
     const [showRules, setShowRules] = useState(false);
     const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+    const [showGameOverLog, setShowGameOverLog] = useState(false);
     const mobileLogRef = useRef<HTMLDivElement>(null);
 
     // 퀵챗 로그 상태: 최근 50개 보관
@@ -379,15 +380,43 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                         </button>
                     </div>
                 </div>
-                {/* 게임 로그 영역 */}
-                <div className="glass-panel mt-4 max-w-sm w-full max-h-60 overflow-y-auto">
-                    <EventLog
-                        log={state.log}
-                        structuredLog={state.structuredLog}
-                        chatLogs={chatLogs}
-                        players={state.players}
-                    />
-                </div>
+                {/* 게임 로그 토글 버튼 */}
+                <button
+                    className="mt-4 flex items-center gap-2 text-sm text-text-muted hover:text-text-primary transition-colors"
+                    onClick={() => setShowGameOverLog((v) => !v)}
+                >
+                    <ScrollText size={16} />
+                    {showGameOverLog ? '게임 로그 닫기' : '게임 로그 보기'}
+                </button>
+                {showGameOverLog && (
+                    <div
+                        className="mt-2 max-w-sm w-full rounded-lg border border-border-default flex flex-col"
+                        style={{
+                            ['--bg-card' as string]: '#000000',
+                            ['--bg-surface' as string]: '#1a1a1a',
+                            ['--text-muted' as string]: '#cccccc',
+                            ['--text-secondary' as string]: '#dddddd',
+                        }}
+                    >
+                        {/* 고정 헤더 */}
+                        <div className="flex items-center gap-2 px-4 py-3 border-b border-border-subtle/50 bg-black rounded-t-lg shrink-0">
+                            <ScrollText className="w-4 h-4 text-text-secondary flex-shrink-0" />
+                            <span className="font-sora text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                                게임 로그
+                            </span>
+                        </div>
+                        {/* 스크롤 가능한 로그 본문 */}
+                        <div className="max-h-60 overflow-y-auto">
+                            <EventLog
+                                log={state.log}
+                                structuredLog={state.structuredLog}
+                                chatLogs={chatLogs}
+                                players={state.players}
+                                hideHeader
+                            />
+                        </div>
+                    </div>
+                )}
                 {showSettings && (
                     <SettingsModal
                         state={state}
