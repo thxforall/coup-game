@@ -100,7 +100,8 @@ function nextTurn(state: GameState): GameState {
   const alive = getAlivePlayers(state);
   const idx = alive.findIndex((p) => p.id === state.currentTurnId);
   const next = alive[(idx + 1) % alive.length];
-  return { ...state, currentTurnId: next.id, phase: 'action', pendingAction: null };
+  const s = addLog(state, `--- ${next.name}의 턴 ---`, { type: 'turn_start', actorId: next.id });
+  return { ...s, currentTurnId: next.id, phase: 'action', pendingAction: null };
 }
 
 // 특정 플레이어가 캐릭터 카드(비공개)를 보유 중인지 확인

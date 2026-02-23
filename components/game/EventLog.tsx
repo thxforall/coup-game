@@ -20,6 +20,7 @@ export function getLogColor(entry: string): string {
     if (entry.includes('도전 실패')) return 'text-contessa';
     if (entry.includes('막습니다') || entry.includes('블록')) return 'text-captain';
     if (entry.includes('도전')) return 'text-gold-dark';
+    if (entry.includes('의 턴 ---')) return 'text-gold';
     return 'text-text-muted';
 }
 
@@ -39,18 +40,20 @@ const LOG_TYPE_CONFIG: Record<LogEntryType, { color: string; icon?: React.Elemen
     game_over: { color: 'text-gold', icon: Trophy },
     guess_success: { color: 'text-ambassador', icon: Zap },
     guess_fail: { color: 'text-contessa', icon: Zap },
+    turn_start: { color: 'text-gold', icon: Zap },
 };
 
 function StructuredLogEntry({ entry, isLatest }: { entry: LogEntry; isLatest: boolean }) {
     const config = LOG_TYPE_CONFIG[entry.type] ?? { color: 'text-text-muted' };
     const color = isLatest ? 'text-gold' : config.color;
     const Icon = config.icon;
+    const isTurnStart = entry.type === 'turn_start';
 
     return (
         <div
             className={`flex items-start gap-2 rounded-md px-2 py-1 transition-colors duration-200 ${
-                isLatest ? 'bg-gold/10' : 'hover:bg-bg-surface'
-            }`}
+                isTurnStart ? 'border-t border-border-subtle/40 mt-1 pt-1.5' : ''
+            } ${isLatest ? 'bg-gold/10' : 'hover:bg-bg-surface'}`}
         >
             <span className={`flex-shrink-0 mt-px ${color}`}>
                 {Icon ? <Icon size={10} strokeWidth={2.5} /> : <span className="font-mono text-[10px]">&bull;</span>}

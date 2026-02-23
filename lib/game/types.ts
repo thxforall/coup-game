@@ -174,7 +174,8 @@ export type LogEntryType =
   | 'block_challenge_success' | 'block_challenge_fail'
   | 'lose_influence' | 'player_eliminated'
   | 'exchange_complete' | 'game_over'
-  | 'guess_success' | 'guess_fail';
+  | 'guess_success' | 'guess_fail'
+  | 'turn_start';
 
 export interface LogEntry {
   type: LogEntryType;
