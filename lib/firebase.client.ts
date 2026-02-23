@@ -4,10 +4,8 @@
  * 브라우저에서만 사용: 실시간 구독 + 초기 로드
  */
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { initializeApp, getApps } = require('firebase/app');
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { getDatabase, ref, onValue, get } = require('firebase/database');
+import { initializeApp, getApps } from 'firebase/app';
+import { getDatabase, ref, onValue, get } from 'firebase/database';
 import { FilteredGameState } from './game/types';
 
 const firebaseConfig = {
@@ -45,26 +43,47 @@ export function subscribeToRoom(
 ): () => void {
   // views/{playerId} 경로 구독
   const viewRef = ref(getDb(), `game_rooms/${roomId}/views/${playerId}`);
-  const unsubView = onValue(viewRef, (snapshot: { exists: () => boolean; val: () => FilteredGameState }) => {
-    if (snapshot.exists()) {
-      callback(snapshot.val());
+  const unsubView = onValue(
+    viewRef,
+    (snapshot) => {
+      if (snapshot.exists()) {
+        callback(snapshot.val() as FilteredGameState);
+      }
+    },
+    (error) => {
+      console.error('[Firebase] view subscription error:', error);
     }
-  });
+  );
 
   // fallback: views가 아직 없을 수 있으므로 state도 구독 (waiting 단계)
+  // 게임이 시작되면 (phase !== 'waiting') state 구독을 자동 해제
   const stateRef = ref(getDb(), `game_rooms/${roomId}/state`);
-  const unsubState = onValue(stateRef, (snapshot: { exists: () => boolean; val: () => FilteredGameState }) => {
-    if (snapshot.exists()) {
-      const val = snapshot.val();
-      // views가 쓰여지면 state 구독은 무시 (views가 우선)
-      if (val.phase === 'waiting') {
-        callback(val);
+  let stateUnsubbed = false;
+
+  const unsubState = onValue(
+    stateRef,
+    (snapshot) => {
+      if (snapshot.exists()) {
+        const val = snapshot.val() as FilteredGameState;
+        if (val.phase === 'waiting') {
+          // 게임 시작 전에는 state를 사용 (views가 아직 없음)
+          callback(val);
+        } else {
+          // 게임 시작 후 state 구독 해제 (views가 우선)
+          if (!stateUnsubbed) {
+            stateUnsubbed = true;
+            unsubState();
+          }
+        }
       }
+    },
+    (error) => {
+      console.error('[Firebase] state subscription error:', error);
     }
-  });
+  );
 
   return () => {
     unsubView();
-    unsubState();
+    if (!stateUnsubbed) unsubState();
   };
 }
