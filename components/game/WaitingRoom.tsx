@@ -209,7 +209,7 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
                 ) : (
                     <button
                         className={`w-full py-3 flex items-center justify-center gap-2 text-base transition-colors ${isReady
-                            ? 'btn-gold'
+                            ? 'bg-green-600 hover:bg-green-700 text-white btn font-bold shadow-lg'
                             : 'btn-ghost border border-border-subtle'
                             }`}
                         onClick={onReady}
