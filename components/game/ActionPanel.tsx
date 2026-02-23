@@ -145,7 +145,7 @@ function ActionPanel({ state, playerId, onAction }: Props) {
         // Keep pendingActionType so TargetSelectModal reappears if ConfirmModal is cancelled
     };
 
-    const getConfirmInfo = (type: ActionType, target?: { name: string }) => {
+    const getConfirmInfo = (type: ActionType, target?: { name: string; coins?: number }) => {
         switch (type) {
             case 'income':
                 return { title: '소득 확인', message: '소득을 선택하시겠습니까? (코인 +1)', label: '소득 받기', color: 'var(--gold)', icon: Coins };
@@ -155,8 +155,10 @@ function ActionPanel({ state, playerId, onAction }: Props) {
                 return { title: '세금징수 확인', message: '세금징수를 선택하시겠습니까? (코인 +3, 도전 가능)', label: '세금 징수하기', color: 'var(--gold)', icon: Crown };
             case 'exchange':
                 return { title: '교환 확인', message: '카드 교환을 선택하시겠습니까? (도전 가능)', label: '카드 교환하기', color: 'var(--gold)', icon: Repeat };
-            case 'steal':
-                return { title: '갈취 확인', message: `${target?.name}에게서 코인을 갈취하시겠습니까?`, label: `${target?.name ?? ''} 갈취하기`, color: 'var(--gold)', icon: Anchor };
+            case 'steal': {
+                const stealAmount = target?.coins != null ? Math.min(target.coins, 2) : 2;
+                return { title: '갈취 확인', message: `${target?.name}에게서 코인 ${stealAmount}개를 갈취하시겠습니까?`, label: `${target?.name ?? ''} 갈취하기`, color: 'var(--gold)', icon: Anchor };
+            }
             case 'assassinate':
                 return { title: '암살 확인', message: `정말 ${target?.name}을(를) 암살하시겠습니까? (3코인 소모)`, label: `${target?.name ?? ''} 암살하기`, color: 'var(--gold)', icon: Crosshair };
             case 'coup':

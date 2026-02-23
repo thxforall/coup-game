@@ -104,6 +104,7 @@ function TargetSelectModal({ actionDef, aliveOthers, isGuessMode, loading, onSel
                         {aliveOthers.map((p) => {
                             const isSelected = selectedTargetId === p.id;
                             const isStealNoCoins = actionDef.type === 'steal' && p.coins === 0;
+                            const stealAmount = actionDef.type === 'steal' ? Math.min(p.coins, 2) : 0;
                             const playerColor = getPlayerColor(p.id);
                             return (
                                 <button
@@ -147,6 +148,9 @@ function TargetSelectModal({ actionDef, aliveOthers, isGuessMode, loading, onSel
                                     </span>
                                     {isStealNoCoins && (
                                         <span className="text-[10px] text-text-muted">코인 없음</span>
+                                    )}
+                                    {actionDef.type === 'steal' && stealAmount === 1 && (
+                                        <span className="text-[10px] text-text-muted">(1개만 갈취)</span>
                                     )}
                                 </button>
                             );
