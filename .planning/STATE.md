@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-23 - Completed quick-016 (Game Win / Lobby / Restart Fixes)
+- Last activity: 2026-02-23 - Completed quick-017 (실시간 퀵챗 이모티콘/텍스트 버튼 6개)
 
 ### Quick Tasks Completed
 
@@ -24,11 +24,12 @@
 | 014 | 방장 권한 추방 + 인원 레디 확인 | 2026-02-23 | 4cde906 | [014-방장-권한-추방-인원-레디-확인](./quick/014-방장-권한-추방-인원-레디-확인/) |
 | 015 | Galaxy S21 (360px) 소형 모바일 반응형 수정 | 2026-02-23 | 5e15e69 | [015-galaxy-s21-small-mobile-responsive-fix](./quick/015-galaxy-s21-small-mobile-responsive-fix/) |
 | 016 | Game Win / Lobby / Restart Fixes (game_over guard + waiting room restart + lobby button) | 2026-02-23 | c427ecd | [016-game-win-lobby-restart-fixes](./quick/016-game-win-lobby-restart-fixes/) |
+| 017 | 실시간 퀵챗 이모티콘/텍스트 버튼 6개 (Firebase RTDB 직접 구독 + 말풍선 3초 소멸) | 2026-02-23 | 93de992 | [017-realtime-chat-emoji-textbox-6](./quick/017-realtime-chat-emoji-textbox-6/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-23T14:10:35Z
-- Stopped at: Completed quick-016 (Game Win / Lobby / Restart Fixes)
+- Last session: 2026-02-23T14:25:00Z
+- Stopped at: Completed quick-017 (실시간 퀵챗 이모티콘/텍스트 버튼 6개)
 - Resume file: None
