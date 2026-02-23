@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-23 - Completed quick-015 (Galaxy S21 소형 모바일 반응형 수정)
+- Last activity: 2026-02-23 - Completed quick-016 (Game Win / Lobby / Restart Fixes)
 
 ### Quick Tasks Completed
 
@@ -23,11 +23,12 @@
 | 012 | 나무위키 용어 전면 통일: 강탈→갈취, 세금→세금징수, 쿠→쿠데타 | 2026-02-23 | a174c03 | [012-korean-terminology-namu-wiki-update](./quick/012-korean-terminology-namu-wiki-update/) |
 | 014 | 방장 권한 추방 + 인원 레디 확인 | 2026-02-23 | 4cde906 | [014-방장-권한-추방-인원-레디-확인](./quick/014-방장-권한-추방-인원-레디-확인/) |
 | 015 | Galaxy S21 (360px) 소형 모바일 반응형 수정 | 2026-02-23 | 5e15e69 | [015-galaxy-s21-small-mobile-responsive-fix](./quick/015-galaxy-s21-small-mobile-responsive-fix/) |
+| 016 | Game Win / Lobby / Restart Fixes (game_over guard + waiting room restart + lobby button) | 2026-02-23 | c427ecd | [016-game-win-lobby-restart-fixes](./quick/016-game-win-lobby-restart-fixes/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-23T14:06:41Z
-- Stopped at: Completed quick-015 (Galaxy S21 소형 모바일 반응형 수정)
+- Last session: 2026-02-23T14:10:35Z
+- Stopped at: Completed quick-016 (Game Win / Lobby / Restart Fixes)
 - Resume file: None
