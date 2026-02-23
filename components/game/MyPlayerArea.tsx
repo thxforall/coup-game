@@ -4,6 +4,7 @@ import { memo, useState } from 'react';
 import Image from 'next/image';
 import { Player, Character, CHARACTER_NAMES } from '@/lib/game/types';
 import CardInfoModal from './CardInfoModal';
+import { getPlayerColor } from '@/lib/game/player-colors';
 
 // ── constants ──────────────────────────────────────────────────────────────
 
@@ -28,18 +29,19 @@ const CHAR_BORDER_COLOR: Record<Character, string> = {
 
 interface PlayerBadgeProps {
     name: string;
+    playerColor: string;
 }
 
-function PlayerBadge({ name }: PlayerBadgeProps) {
+function PlayerBadge({ name, playerColor }: PlayerBadgeProps) {
     const initial = name.charAt(0).toUpperCase();
     return (
         <div className="flex items-center gap-2">
-            {/* Circular avatar with gold background and gold border */}
+            {/* Circular avatar with player-assigned color */}
             <div
                 className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
                 style={{
-                    backgroundColor: 'var(--gold)',
-                    border: '2px solid var(--gold-light)',
+                    backgroundColor: playerColor,
+                    border: `2px solid ${playerColor}80`,
                     color: '#0D0D0D',
                 }}
             >
@@ -91,7 +93,7 @@ function CharacterCard({ character, revealed, onClick }: CharacterCardProps) {
             onClick={onClick}
             disabled={revealed}
             className={[
-                'relative overflow-hidden rounded-lg transition-transform w-[60px] h-[86px] sm:w-[120px] sm:h-[170px]',
+                'relative overflow-hidden rounded-lg transition-transform w-[72px] h-[104px] sm:w-[120px] sm:h-[170px]',
                 revealed
                     ? 'opacity-40 grayscale cursor-default'
                     : 'cursor-pointer hover:scale-105 active:scale-95',
@@ -147,6 +149,7 @@ interface Props {
 
 function MyPlayerArea({ player }: Props) {
     const [selectedCard, setSelectedCard] = useState<Character | null>(null);
+    const playerColor = getPlayerColor(player.id);
 
     function handleCardClick(character: Character, revealed: boolean) {
         if (!revealed) {
@@ -157,16 +160,17 @@ function MyPlayerArea({ player }: Props) {
     return (
         <>
             <div
-                className="p-2.5 sm:p-4 rounded-2xl"
+                className="p-2 sm:p-4 rounded-2xl"
                 style={{
                     backgroundColor: 'var(--bg-card)',
-                    border: '1px solid var(--border-subtle)',
+                    border: `1.5px solid ${playerColor}40`,
+                    boxShadow: `0 0 12px ${playerColor}1A`,
                 }}
             >
                 {/* Header row: PlayerBadge + label + CoinBadge */}
                 <div className="flex items-center justify-between mb-2 sm:mb-4 flex-wrap gap-1">
                     <div className="flex items-center gap-2 sm:gap-3">
-                        <PlayerBadge name={player.name} />
+                        <PlayerBadge name={player.name} playerColor={playerColor} />
                         <span
                             className="font-mono text-xs uppercase tracking-widest hidden sm:inline"
                             style={{ color: 'var(--text-muted)' }}
@@ -178,7 +182,7 @@ function MyPlayerArea({ player }: Props) {
                 </div>
 
                 {/* Card row */}
-                <div className="flex gap-2 sm:gap-3 justify-center">
+                <div className="flex gap-3 sm:gap-4 justify-center">
                     {player.cards.map((card, i) => (
                         <CharacterCard
                             key={i}
