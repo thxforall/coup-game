@@ -2,8 +2,9 @@
 
 import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { Skull, Settings, Trophy, ScrollText } from 'lucide-react';
+import { Skull, Settings, Trophy, ScrollText, RotateCcw } from 'lucide-react';
 import { FilteredGameState, Card, Player, ACTION_NAMES } from '@/lib/game/types';
+import { clearActiveRoom } from '@/lib/storage';
 import { useGameAudio } from '@/lib/useGameAudio';
 import PlayerArea from './PlayerArea';
 import MyPlayerArea from './MyPlayerArea';
@@ -106,9 +107,10 @@ interface Props {
     playerId: string;
     roomId: string;
     onAction: (action: object) => Promise<void>;
+    onRestart?: () => Promise<void>;
 }
 
-export default function GameBoard({ state, playerId, onAction }: Props) {
+export default function GameBoard({ state, playerId, roomId, onAction, onRestart }: Props) {
     const [showMobileLog, setShowMobileLog] = useState(false);
     const mobileLogRef = useRef<HTMLDivElement>(null);
 
@@ -171,6 +173,76 @@ export default function GameBoard({ state, playerId, onAction }: Props) {
         [state.phase, me?.isAlive, state.pendingAction?.responses, state.pendingAction?.actorId, playerId]
     );
 
+    // 서버 사이드 타임아웃 폴링: deadline 초과 시 /api/game/timeout 호출
+    const timeoutRequestedRef = useRef(false);
+    const timeoutDeadlineRef = useRef<number | undefined>(undefined);
+
+    useEffect(() => {
+        const isAwaitingPhase =
+            state.phase === 'awaiting_response' || state.phase === 'awaiting_block_response';
+        const deadline = state.pendingAction?.responseDeadline;
+
+        // phase나 deadline이 변경되면 플래그 리셋
+        if (deadline !== timeoutDeadlineRef.current) {
+            timeoutRequestedRef.current = false;
+            timeoutDeadlineRef.current = deadline;
+        }
+
+        if (!isAwaitingPhase || !deadline || timeoutRequestedRef.current) return;
+
+        const now = Date.now();
+        const delay = deadline - now + 1000; // deadline 1초 후 요청 (클라이언트 auto-pass 여유)
+
+        if (delay <= 0) {
+            // 이미 deadline 초과
+            timeoutRequestedRef.current = true;
+            fetch('/api/game/timeout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ roomId }),
+            }).catch(() => {
+                // 실패 시 2초 후 1회 재시도
+                timeoutRequestedRef.current = false;
+                setTimeout(() => {
+                    if (!timeoutRequestedRef.current) {
+                        timeoutRequestedRef.current = true;
+                        fetch('/api/game/timeout', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ roomId }),
+                        }).catch(() => {});
+                    }
+                }, 2000);
+            });
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            if (timeoutRequestedRef.current) return;
+            timeoutRequestedRef.current = true;
+            fetch('/api/game/timeout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ roomId }),
+            }).catch(() => {
+                // 실패 시 2초 후 1회 재시도
+                timeoutRequestedRef.current = false;
+                setTimeout(() => {
+                    if (!timeoutRequestedRef.current) {
+                        timeoutRequestedRef.current = true;
+                        fetch('/api/game/timeout', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ roomId }),
+                        }).catch(() => {});
+                    }
+                }, 2000);
+            });
+        }, delay);
+
+        return () => clearTimeout(timer);
+    }, [state.phase, state.pendingAction?.responseDeadline, roomId]);
+
     // 게임 오버 화면
     if (state.phase === 'game_over') {
         const winner = state.players.find((p) => p.id === state.winnerId);
@@ -201,9 +273,24 @@ export default function GameBoard({ state, playerId, onAction }: Props) {
                             ? '당신이 최후의 생존자입니다!'
                             : `${winner?.name}이(가) 승리했습니다`}
                     </p>
-                    <a href="/" className="btn-primary mt-6 inline-block px-8 py-3">
-                        로비로 돌아가기
-                    </a>
+                    <div className="mt-6 flex flex-col gap-3">
+                        {state.players[0]?.id === playerId && onRestart && (
+                            <button
+                                className="btn-gold w-full py-3 flex items-center justify-center gap-2 text-base"
+                                onClick={onRestart}
+                            >
+                                <RotateCcw size={18} />
+                                다시 시작
+                            </button>
+                        )}
+                        <a
+                            href="/"
+                            className="btn-primary inline-block px-8 py-3 text-center"
+                            onClick={() => clearActiveRoom()}
+                        >
+                            로비로 돌아가기
+                        </a>
+                    </div>
                 </div>
             </div>
         );
