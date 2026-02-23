@@ -90,7 +90,7 @@ interface CoinBadgeProps {
 function CoinBadge({ coins }: CoinBadgeProps) {
     return (
         <div
-            className="flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-bold"
+            className="flex items-center gap-1 px-1.5 py-0.5 rounded-full border text-xs font-bold"
             style={{
                 borderColor: '#F1C40F',
                 color: '#F1C40F',
@@ -175,8 +175,8 @@ function PlayerArea({ player, isCurrentTurn, online }: Props) {
         <>
             <div
                 className={`
-                bg-bg-card border border-border-subtle rounded-xl p-1.5 sm:p-3
-                transition-all duration-200 min-w-0 w-[96px] sm:w-auto sm:min-w-[140px] flex-shrink-0
+                bg-bg-card border border-border-subtle rounded-xl p-1 sm:p-3
+                transition-all duration-200 min-w-0 w-[84px] sm:w-auto sm:min-w-[140px] flex-shrink-0
                 ${!player.isAlive ? 'opacity-50' : ''}
                 ${isCurrentTurn ? 'ring-2 ring-gold shadow-lg' : ''}
             `}

@@ -91,7 +91,7 @@ function CharacterCard({ character, revealed, onClick }: CharacterCardProps) {
             onClick={onClick}
             disabled={revealed}
             className={[
-                'relative overflow-hidden rounded-lg transition-transform w-[68px] h-[97px] sm:w-[120px] sm:h-[170px]',
+                'relative overflow-hidden rounded-lg transition-transform w-[60px] h-[86px] sm:w-[120px] sm:h-[170px]',
                 revealed
                     ? 'opacity-40 grayscale cursor-default'
                     : 'cursor-pointer hover:scale-105 active:scale-95',
@@ -168,7 +168,7 @@ function MyPlayerArea({ player }: Props) {
                     <div className="flex items-center gap-2 sm:gap-3">
                         <PlayerBadge name={player.name} />
                         <span
-                            className="font-mono text-xs uppercase tracking-widest"
+                            className="font-mono text-xs uppercase tracking-widest hidden sm:inline"
                             style={{ color: 'var(--text-muted)' }}
                         >
                             내 영향력

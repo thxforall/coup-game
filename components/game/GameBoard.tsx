@@ -353,11 +353,11 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             />
 
             {/* 헤더 (h-14 = 56px) */}
-            <header className="h-14 flex-shrink-0 flex items-center justify-between px-4 border-b border-border-subtle bg-bg-card">
+            <header className="h-14 flex-shrink-0 flex items-center justify-between px-2 sm:px-4 border-b border-border-subtle bg-bg-card">
                 {/* 좌: 로고 */}
                 <div className="flex items-center gap-2">
                     <Skull className="w-5 h-5 text-gold" />
-                    <span className="font-sora font-bold text-gold tracking-wide text-lg">
+                    <span className="font-sora font-bold text-gold tracking-wide text-base sm:text-lg">
                         COUP
                     </span>
                 </div>
@@ -397,7 +397,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             </header>
 
             {/* 상대방 플레이어 행 (가로) */}
-            <div className="flex-shrink-0 flex flex-row items-start gap-1.5 sm:gap-3 px-2 sm:px-4 py-1.5 sm:py-3 border-b border-border-subtle overflow-x-auto scrollbar-hide">
+            <div className="flex-shrink-0 flex flex-row items-start gap-1 sm:gap-1.5 px-2 sm:px-4 py-1.5 sm:py-3 border-b border-border-subtle overflow-x-auto scrollbar-hide">
                 {others.map((player) => (
                     <PlayerArea
                         key={player.id}
@@ -409,7 +409,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             </div>
 
             {/* 모바일 컴팩트 로그 (항상 보임, 최근 3개) */}
-            <div className="lg:hidden flex-shrink-0 bg-bg-card/80 border-b border-border-subtle px-3 py-2">
+            <div className="lg:hidden flex-shrink-0 bg-bg-card/80 border-b border-border-subtle px-2 sm:px-3 py-2">
                 <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0 space-y-0.5">
                         {state.log.slice(-3).map((entry, i) => {
@@ -451,7 +451,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                 </div>
 
                 {/* 턴 영역 */}
-                <div className="flex-1 flex flex-col p-3 sm:p-4 overflow-y-auto">
+                <div className="flex-1 flex flex-col p-2 sm:p-4 overflow-y-auto">
                     {/* 내 턴 레이블 */}
                     {isMyTurn && state.phase === 'action' && (
                         <div className="mb-3">
