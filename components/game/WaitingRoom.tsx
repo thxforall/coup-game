@@ -3,7 +3,10 @@
 import { FilteredGameState } from '@/lib/game/types';
 import { PresenceMap } from '@/lib/firebase.client';
 import { useState } from 'react';
-import { Skull, Copy, Check, Crown, Play, CheckCircle2, Circle, X } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { Skull, Copy, Check, Crown, Play, CheckCircle2, Circle, X, BookOpen } from 'lucide-react';
+
+const GameRulesModal = dynamic(() => import('./GameRulesModal'), { ssr: false });
 
 interface Props {
     state: FilteredGameState;
@@ -17,6 +20,7 @@ interface Props {
 
 export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, onReady, presence }: Props) {
     const [copied, setCopied] = useState(false);
+    const [showRules, setShowRules] = useState(false);
     const isHost = state.players[0]?.id === playerId;
 
     const currentPlayer = state.players.find((p) => p.id === playerId);
@@ -180,7 +184,19 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
                         )}
                     </button>
                 )}
+
+                {/* 게임 규칙 버튼 */}
+                <button
+                    className="btn-ghost w-full py-2.5 flex items-center justify-center gap-2 text-sm border border-border-subtle mt-3"
+                    onClick={() => setShowRules(true)}
+                >
+                    <BookOpen size={16} />
+                    게임 규칙
+                </button>
             </div>
+
+            {/* 게임 규칙 모달 */}
+            {showRules && <GameRulesModal onClose={() => setShowRules(false)} />}
         </div>
     );
 }
