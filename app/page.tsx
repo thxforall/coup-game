@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Skull, Play, Crown, Crosshair, Anchor, Repeat, Shield } from 'lucide-react';
-import { getOrCreatePlayerId, getPlayerStorage, setPlayerStorage } from '@/lib/storage';
+import { getOrCreatePlayerId, getPlayerStorage, setPlayerStorage, getActiveRoom, clearActiveRoom } from '@/lib/storage';
 
 const CHARACTERS = [
     { name: '공작', icon: Crown, color: 'var(--duke-color)' },
@@ -20,6 +20,32 @@ export default function LobbyPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [tab, setTab] = useState<'create' | 'join'>('create');
+    const [gameMode, setGameMode] = useState<'standard' | 'guess'>('standard');
+    const [checkingRoom, setCheckingRoom] = useState(true);
+
+    // 재접속: activeRoom이 있으면 유효성 확인 후 리다이렉트
+    useEffect(() => {
+        const activeRoom = getActiveRoom();
+        if (!activeRoom) {
+            setCheckingRoom(false);
+            return;
+        }
+        const playerId = getOrCreatePlayerId();
+        fetch(`/api/game/check?roomId=${activeRoom}&playerId=${playerId}`)
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.active) {
+                    router.push(`/game/${activeRoom}`);
+                } else {
+                    clearActiveRoom();
+                    setCheckingRoom(false);
+                }
+            })
+            .catch(() => {
+                clearActiveRoom();
+                setCheckingRoom(false);
+            });
+    }, [router]);
 
     useEffect(() => {
         const saved = getPlayerStorage('coup_player_name');
@@ -39,7 +65,7 @@ export default function LobbyPage() {
         const res = await fetch('/api/game/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ playerName: playerName.trim(), playerId }),
+            body: JSON.stringify({ playerName: playerName.trim(), playerId, gameMode }),
         });
         const data = await res.json();
         setLoading(false);
@@ -63,6 +89,17 @@ export default function LobbyPage() {
         if (!res.ok) return setError(data.error);
         router.push(`/game/${joinCode.trim().toUpperCase()}`);
     };
+
+    if (checkingRoom) {
+        return (
+            <main className="min-h-screen flex items-center justify-center bg-bg-dark">
+                <div className="text-center">
+                    <Skull size={48} className="text-gold mb-4 mx-auto animate-pulse" />
+                    <p className="text-text-muted text-sm font-mono">게임 확인 중...</p>
+                </div>
+            </main>
+        );
+    }
 
     return (
         <main className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-bg-dark">
@@ -105,6 +142,39 @@ export default function LobbyPage() {
                         </button>
                     ))}
                 </div>
+
+                {/* Game mode selector (create only) */}
+                {tab === 'create' && (
+                    <div className="mb-5">
+                        <label className="block text-xs text-text-muted mb-2 font-mono uppercase tracking-widest">
+                            게임 모드
+                        </label>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setGameMode('standard')}
+                                className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-semibold border transition-all text-left ${
+                                    gameMode === 'standard'
+                                        ? 'border-gold bg-gold/10 text-text-primary'
+                                        : 'border-border-subtle bg-bg-surface text-text-muted hover:border-gold/50'
+                                }`}
+                            >
+                                <div className="font-bold">Standard</div>
+                                <div className="text-[10px] text-text-muted mt-0.5">기본 쿠데타 룰</div>
+                            </button>
+                            <button
+                                onClick={() => setGameMode('guess')}
+                                className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-semibold border transition-all text-left ${
+                                    gameMode === 'guess'
+                                        ? 'border-gold bg-gold/10 text-text-primary'
+                                        : 'border-border-subtle bg-bg-surface text-text-muted hover:border-gold/50'
+                                }`}
+                            >
+                                <div className="font-bold">Guess</div>
+                                <div className="text-[10px] text-text-muted mt-0.5">쿠데타 시 카드 추측</div>
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* Join code input */}
                 {tab === 'join' && (

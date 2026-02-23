@@ -39,7 +39,7 @@ interface CharacterInfo {
 
 const CHARACTER_INFO: Record<Character, CharacterInfo> = {
     Duke: {
-        action: '세금 💰',
+        action: '세금징수 💰',
         actionDesc: '국고에서 코인 3개를 가져옵니다.',
         actionCost: null,
         blocks: '외국 원조 차단 🛡️',
@@ -55,12 +55,12 @@ const CHARACTER_INFO: Record<Character, CharacterInfo> = {
         tip: '고유 액션은 없지만, 암살 방어가 매우 강력합니다. 생존의 핵심!',
     },
     Captain: {
-        action: '강탈 ⚔️',
+        action: '갈취 ⚔️',
         actionDesc: '대상 플레이어의 코인 2개를 빼앗습니다.',
         actionCost: null,
-        blocks: '강탈 차단 🛡️',
-        blocksDesc: '다른 사령관의 강탈로부터 자신을 보호합니다.',
-        tip: '공격과 방어 모두 가능한 만능 캐릭터! 상대의 쿠를 늦추세요.',
+        blocks: '갈취 차단 🛡️',
+        blocksDesc: '다른 사령관의 갈취로부터 자신을 보호합니다.',
+        tip: '공격과 방어 모두 가능한 만능 캐릭터! 상대의 쿠데타를 늦추세요.',
     },
     Assassin: {
         action: '암살 🗡️',
@@ -74,8 +74,8 @@ const CHARACTER_INFO: Record<Character, CharacterInfo> = {
         action: '교환 🔄',
         actionDesc: '덱에서 카드 2장을 보고, 원하는 카드를 선택해 교체합니다.',
         actionCost: null,
-        blocks: '강탈 차단 🛡️',
-        blocksDesc: '사령관의 강탈로부터 자신을 보호합니다.',
+        blocks: '갈취 차단 🛡️',
+        blocksDesc: '사령관의 갈취로부터 자신을 보호합니다.',
         tip: '카드 교환으로 상황에 맞는 캐릭터를 얻으세요. 전략의 핵심!',
     },
 };

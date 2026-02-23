@@ -41,7 +41,7 @@ const ACTION_BUTTONS: {
     },
     {
         type: 'coup',
-        label: '쿠',
+        label: '쿠데타',
         icon: Zap,
         desc: '코인 7개, 상대 카드 무조건 제거',
         cost: 7,
@@ -51,7 +51,7 @@ const ACTION_BUTTONS: {
     },
     {
         type: 'tax',
-        label: '세금',
+        label: '세금징수',
         icon: Crown,
         desc: '코인 +3 (공작, 도전 가능)',
         claimedChar: 'Duke',
@@ -71,9 +71,9 @@ const ACTION_BUTTONS: {
     },
     {
         type: 'steal',
-        label: '강탈',
+        label: '갈취',
         icon: Anchor,
-        desc: '상대 코인 2개 탈취 (사령관)',
+        desc: '상대 코인 2개 갈취 (사령관)',
         needsTarget: true,
         claimedChar: 'Captain',
         variant: 'captain',
@@ -108,17 +108,35 @@ const VARIANT_ICON_COLORS: Record<ButtonVariant, string> = {
     coup: 'text-bg-dark',
 };
 
+const ALL_CHARACTERS: Character[] = ['Duke', 'Contessa', 'Captain', 'Assassin', 'Ambassador'];
+
+const GUESS_CHAR_ICONS: Record<Character, React.ElementType> = {
+    Duke: Crown,
+    Contessa: Shield,
+    Captain: Anchor,
+    Assassin: Crosshair,
+    Ambassador: Repeat,
+};
+
 function ActionPanel({ state, playerId, onAction }: Props) {
     const [targetId, setTargetId] = useState('');
     const [loading, setLoading] = useState(false);
+    const [guessChar, setGuessChar] = useState<Character | null>(null);
     const me = state.players.find((p) => p.id === playerId)!;
     const aliveOthers = state.players.filter((p) => p.isAlive && p.id !== playerId);
     const mustCoup = me.coins >= 10;
+    const isGuessMode = state.gameMode === 'guess';
 
     const handleAction = async (type: ActionType, needsTarget: boolean) => {
         if (needsTarget && !targetId) return;
+        if (type === 'coup' && isGuessMode && !guessChar) return;
         setLoading(true);
-        await onAction({ type, targetId: needsTarget ? targetId : undefined });
+        await onAction({
+            type,
+            targetId: needsTarget ? targetId : undefined,
+            ...(type === 'coup' && isGuessMode && guessChar ? { guessedCharacter: guessChar } : {}),
+        });
+        setGuessChar(null);
         setLoading(false);
     };
 
@@ -136,7 +154,7 @@ function ActionPanel({ state, playerId, onAction }: Props) {
             {aliveOthers.length > 0 && (
                 <div>
                     <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
-                        대상 선택 (강탈·암살·쿠에 필요)
+                        대상 선택 (갈취·암살·쿠데타에 필요)
                     </p>
                     <div className="flex flex-wrap gap-2">
                         {aliveOthers.map((p) => (
@@ -164,13 +182,43 @@ function ActionPanel({ state, playerId, onAction }: Props) {
                 </div>
             )}
 
-            {/* 액션 버튼 — Row 1: 소득 / 외국 원조 / 쿠 */}
+            {/* Guess 모드: 캐릭터 추측 선택 */}
+            {isGuessMode && targetId && me.coins >= 7 && (
+                <div>
+                    <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
+                        쿠데타 추측 캐릭터 선택
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                        {ALL_CHARACTERS.map((ch) => {
+                            const Icon = GUESS_CHAR_ICONS[ch];
+                            const selected = guessChar === ch;
+                            return (
+                                <button
+                                    key={ch}
+                                    onClick={() => setGuessChar(selected ? null : ch)}
+                                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                                        selected
+                                            ? 'border-gold bg-gold/15 text-text-primary'
+                                            : 'bg-bg-surface border-border-subtle text-text-secondary hover:border-gold/50'
+                                    }`}
+                                >
+                                    <Icon size={13} />
+                                    {CHARACTER_NAMES[ch]}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
+            {/* 액션 버튼 — Row 1: 소득 / 외국 원조 / 쿠데타 */}
             {row1.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {row1.map((a) => {
                         const canAfford = a.cost ? me.coins >= a.cost : true;
                         const hasTarget = a.needsTarget ? !!targetId : true;
-                        const disabled = !canAfford || !hasTarget || loading;
+                        const needsGuess = a.type === 'coup' && isGuessMode && !guessChar;
+                        const disabled = !canAfford || !hasTarget || needsGuess || loading;
                         const Icon = a.icon;
                         const isCoup = a.variant === 'coup';
 
@@ -217,7 +265,7 @@ function ActionPanel({ state, playerId, onAction }: Props) {
                 </div>
             )}
 
-            {/* 액션 버튼 — Row 2: 세금 / 암살 / 강탈 / 교환 */}
+            {/* 액션 버튼 — Row 2: 세금징수 / 암살 / 갈취 / 교환 */}
             {row2.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {row2.map((a) => {
@@ -269,7 +317,7 @@ function ActionPanel({ state, playerId, onAction }: Props) {
                     className="text-center text-xs font-semibold"
                     style={{ color: 'var(--gold)' }}
                 >
-                    코인 10개 이상 — 반드시 쿠를 해야 합니다
+                    코인 10개 이상 — 반드시 쿠데타를 해야 합니다
                 </p>
             )}
         </div>

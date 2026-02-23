@@ -55,8 +55,8 @@ const ACTION_CONTEXT: Record<ActionType, ActionContext> = {
         claimedRole: '⚔️ 사령관 (Captain)',
         effect: '대상 플레이어의 코인 2개를 빼앗습니다.',
         blockInfo: '🛡️ 대상이 사령관 또는 대사를 주장하면 막을 수 있습니다.',
-        challengeInfo: '도전 성공 시: 사령관이 아니면 행동이 취소됩니다.\n도전 실패 시: 도전자가 카드를 잃고 강탈이 진행됩니다.',
-        passInfo: '패스하면 코인 2개가 강탈됩니다.',
+        challengeInfo: '도전 성공 시: 사령관이 아니면 행동이 취소됩니다.\n도전 실패 시: 도전자가 카드를 잃고 갈취가 진행됩니다.',
+        passInfo: '패스하면 코인 2개가 갈취됩니다.',
     },
     exchange: {
         claimedRole: '🕊️ 대사 (Ambassador)',
@@ -82,14 +82,14 @@ function getBlockContext(actionType: ActionType, blockerChar: Character): { effe
             passInfo: '패스하면 암살이 차단됩니다. (3코인은 돌아오지 않습니다)',
         },
         Captain: {
-            effect: `사령관(${charName})으로 강탈을 차단합니다.`,
-            challengeInfo: `도전 성공 시: 블로커가 사령관이 아니면 블록이 무효화되고 강탈이 진행됩니다.\n도전 실패 시: 도전자가 카드를 잃고 강탈은 차단됩니다.`,
-            passInfo: '패스하면 강탈이 차단됩니다.',
+            effect: `사령관(${charName})으로 갈취를 차단합니다.`,
+            challengeInfo: `도전 성공 시: 블로커가 사령관이 아니면 블록이 무효화되고 갈취가 진행됩니다.\n도전 실패 시: 도전자가 카드를 잃고 갈취는 차단됩니다.`,
+            passInfo: '패스하면 갈취가 차단됩니다.',
         },
         Ambassador: {
-            effect: `대사(${charName})로 강탈을 차단합니다.`,
-            challengeInfo: `도전 성공 시: 블로커가 대사가 아니면 블록이 무효화되고 강탈이 진행됩니다.\n도전 실패 시: 도전자가 카드를 잃고 강탈은 차단됩니다.`,
-            passInfo: '패스하면 강탈이 차단됩니다.',
+            effect: `대사(${charName})로 갈취를 차단합니다.`,
+            challengeInfo: `도전 성공 시: 블로커가 대사가 아니면 블록이 무효화되고 갈취가 진행됩니다.\n도전 실패 시: 도전자가 카드를 잃고 갈취는 차단됩니다.`,
+            passInfo: '패스하면 갈취가 차단됩니다.',
         },
         Assassin: {
             effect: '',
@@ -234,6 +234,43 @@ function ResponseModal({ state, playerId, myCards, onAction }: Props) {
                                 </p>
                             </>
                         )}
+                    </div>
+
+                    {/* 내 카드 상태 */}
+                    <div className="px-6 pb-3">
+                        <div className="flex items-center justify-center gap-3">
+                            {myCards.map((card, i) => (
+                                <div
+                                    key={i}
+                                    className={`flex items-center gap-2 rounded-lg px-3 py-2 ${card.revealed ? 'opacity-40' : ''}`}
+                                    style={{
+                                        backgroundColor: 'var(--bg-surface, #242424)',
+                                        border: `1px solid ${card.revealed ? 'var(--border-subtle, #333)' : 'var(--border-subtle, #444)'}`,
+                                    }}
+                                >
+                                    {/* 카드 이미지 미니 */}
+                                    <div
+                                        className={`relative w-8 h-11 rounded overflow-hidden shrink-0 ${card.revealed ? 'grayscale' : ''}`}
+                                    >
+                                        <img
+                                            src={`/cards/${card.character.toLowerCase()}.jpg`}
+                                            alt={CHARACTER_NAMES[card.character]}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className={`text-[11px] font-semibold ${card.revealed ? 'text-text-secondary line-through' : 'text-text-primary'}`}>
+                                            {CHARACTER_NAMES[card.character]}
+                                        </span>
+                                        {card.revealed ? (
+                                            <span className="text-[10px] text-red-400">제거됨</span>
+                                        ) : (
+                                            <span className="text-[10px] text-emerald-400">생존</span>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
                     {/* 액션 설명 섹션 */}

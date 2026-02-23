@@ -58,7 +58,7 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, presence
                 {state.gameMode && state.gameMode !== 'standard' && (
                     <div className="flex justify-center mb-4">
                         <span className="text-xs font-mono px-3 py-1 rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-400">
-                            Guess 모드 — 쿠 시 카드 추측
+                            Guess 모드 — 쿠데타 시 카드 추측
                         </span>
                     </div>
                 )}

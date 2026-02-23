@@ -9,10 +9,10 @@ export type Character = 'Duke' | 'Contessa' | 'Captain' | 'Assassin' | 'Ambassad
 export type ActionType =
   | 'income'       // 소득: 코인 +1 (막기 불가)
   | 'foreignAid'   // 외국 원조: 코인 +2 (공작이 막을 수 있음)
-  | 'coup'         // 쿠: 코인 7개, 상대 카드 제거 (막기 불가)
-  | 'tax'          // 세금: 코인 +3 (공작 능력, 도전 가능)
+  | 'coup'         // 쿠데타: 코인 7개, 상대 카드 제거 (막기 불가)
+  | 'tax'          // 세금징수: 코인 +3 (공작 능력, 도전 가능)
   | 'assassinate'  // 암살: 코인 3개, 상대 카드 제거 (암살자 능력, 백작부인 막기, 도전 가능)
-  | 'steal'        // 강탈: 상대 코인 2개 탈취 (사령관 능력, 대사/사령관 막기, 도전 가능)
+  | 'steal'        // 갈취: 상대 코인 2개 탈취 (사령관 능력, 대사/사령관 막기, 도전 가능)
   | 'exchange';    // 교환: 덱에서 카드 교체 (대사 능력, 도전 가능)
 
 export type ResponseType = 'challenge' | 'block' | 'pass';
@@ -48,14 +48,14 @@ export interface ChallengeLoseContext {
 export interface PendingAction {
   type: ActionType;
   actorId: string;
-  targetId?: string;                                        // 대상이 있는 액션 (쿠, 암살, 강탈)
+  targetId?: string;                                        // 대상이 있는 액션 (쿠데타, 암살, 갈취)
   responses: Record<string, ResponseType | 'pending'>;          // 플레이어별 응답 ('pending' = 미응답)
   blockerId?: string;                                      // 블로커 플레이어 ID
   blockerCharacter?: Character;                            // 블로커가 주장하는 캐릭터
   losingPlayerId?: string;                                 // 카드를 잃어야 하는 플레이어 ID
   exchangeCards?: Character[];                             // 대사가 뽑은 카드 2장
   responseDeadline?: number;                               // 응답 제한시간 (Unix timestamp ms)
-  guessedCharacter?: Character;                            // guess 모드: 쿠 시 추측 캐릭터
+  guessedCharacter?: Character;                            // guess 모드: 쿠데타 시 추측 캐릭터
   challengeLoseContext?: ChallengeLoseContext;              // 도전으로 인한 카드 잃기 컨텍스트
 }
 
@@ -112,7 +112,7 @@ export interface FilteredPendingAction {
   losingPlayerId?: string;
   exchangeCards?: Character[]; // 본인 exchange일 때만 포함
   responseDeadline?: number;   // 응답 제한시간 (Unix timestamp ms)
-  guessedCharacter?: Character; // guess 모드: 쿠 시 추측 캐릭터
+  guessedCharacter?: Character; // guess 모드: 쿠데타 시 추측 캐릭터
   challengeLoseContext?: ChallengeLoseContext; // 도전으로 인한 카드 잃기 컨텍스트
 }
 
@@ -141,10 +141,10 @@ export const CHARACTER_NAMES: Record<Character, string> = {
 export const ACTION_NAMES: Record<ActionType, string> = {
   income: '소득',
   foreignAid: '외국 원조',
-  coup: '쿠',
-  tax: '세금',
+  coup: '쿠데타',
+  tax: '세금징수',
   assassinate: '암살',
-  steal: '강탈',
+  steal: '갈취',
   exchange: '교환',
 };
 
