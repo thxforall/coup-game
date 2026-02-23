@@ -73,5 +73,6 @@ export function filterStateForPlayer(
     log: state.log,
     ...(state.winnerId !== undefined && { winnerId: state.winnerId }),
     ...(state.gameMode && { gameMode: state.gameMode }),
+    ...(state.structuredLog && { structuredLog: state.structuredLog }),
   };
 }

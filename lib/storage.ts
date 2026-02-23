@@ -32,3 +32,22 @@ export function getOrCreatePlayerId(): string {
   }
   return id;
 }
+
+// ============================================================
+// Active Room (재접속 지원)
+// ============================================================
+
+export function getActiveRoom(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('coup_active_room');
+}
+
+export function setActiveRoom(roomId: string): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem('coup_active_room', roomId);
+}
+
+export function clearActiveRoom(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem('coup_active_room');
+}

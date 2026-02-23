@@ -5,7 +5,7 @@
  */
 
 import { initializeApp, getApps } from 'firebase/app';
-import { getDatabase, ref, onValue, get } from 'firebase/database';
+import { getDatabase, ref, onValue, onDisconnect, set, get, serverTimestamp } from 'firebase/database';
 import { FilteredGameState } from './game/types';
 
 const firebaseConfig = {
@@ -86,4 +86,48 @@ export function subscribeToRoom(
     unsubView();
     if (!stateUnsubbed) unsubState();
   };
+}
+
+// ============================================================
+// Presence (접속 상태)
+// ============================================================
+
+export type PresenceMap = Record<string, { online: boolean; lastSeen: number }>;
+
+export function setupPresence(roomId: string, playerId: string): () => void {
+  const db = getDb();
+  const presenceRef = ref(db, `game_rooms/${roomId}/presence/${playerId}`);
+  const connectedRef = ref(db, '.info/connected');
+
+  const unsub = onValue(connectedRef, (snap) => {
+    if (snap.val() === true) {
+      // 연결 시 online 설정
+      set(presenceRef, { online: true, lastSeen: Date.now() });
+      // 연결 끊길 때 offline 설정
+      onDisconnect(presenceRef).set({ online: false, lastSeen: Date.now() });
+    }
+  });
+
+  return () => {
+    unsub();
+    set(presenceRef, { online: false, lastSeen: Date.now() });
+  };
+}
+
+export function subscribeToPresence(
+  roomId: string,
+  callback: (presence: PresenceMap) => void
+): () => void {
+  const db = getDb();
+  const presenceRef = ref(db, `game_rooms/${roomId}/presence`);
+
+  const unsub = onValue(presenceRef, (snap) => {
+    if (snap.exists()) {
+      callback(snap.val() as PresenceMap);
+    } else {
+      callback({});
+    }
+  });
+
+  return unsub;
 }

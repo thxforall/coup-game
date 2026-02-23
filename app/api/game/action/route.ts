@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       case 'income': case 'foreignAid': case 'coup':
       case 'tax': case 'assassinate': case 'steal': case 'exchange': {
         if (state.currentTurnId !== playerId) return NextResponse.json({ error: '당신의 턴이 아닙니다' }, { status: 403 });
-        state = processAction(state, playerId, { type: action.type as ActionType, targetId: action.targetId });
+        state = processAction(state, playerId, { type: action.type as ActionType, targetId: action.targetId, guessedCharacter: action.guessedCharacter });
         break;
       }
       case 'respond': {

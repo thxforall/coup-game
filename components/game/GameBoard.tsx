@@ -12,6 +12,7 @@ import MyPlayerArea from './MyPlayerArea';
 import ActionPanel from './ActionPanel';
 import EventLog, { getLogColor } from './EventLog';
 import GameToast from './GameToast';
+import BgmPlayer from './BgmPlayer';
 
 // 응답 대기 표시 컴포넌트
 function WaitingResponseIndicator({ state, playerId }: { state: FilteredGameState; playerId: string }) {
@@ -71,9 +72,8 @@ function WaitingResponseIndicator({ state, playerId }: { state: FilteredGameStat
                     return (
                         <div key={pid} className="flex items-center gap-1.5">
                             <div
-                                className={`w-2.5 h-2.5 rounded-full ${
-                                    isPending ? 'bg-amber-400 animate-pulse' : 'bg-emerald-500'
-                                }`}
+                                className={`w-2.5 h-2.5 rounded-full ${isPending ? 'bg-amber-400 animate-pulse' : 'bg-emerald-500'
+                                    }`}
                             />
                             <span className={`text-xs ${isPending ? 'text-amber-300' : 'text-emerald-400'}`}>
                                 {player.name}
@@ -83,13 +83,12 @@ function WaitingResponseIndicator({ state, playerId }: { state: FilteredGameStat
                     );
                 })}
                 <span
-                    className={`text-xs font-bold tabular-nums ${
-                        isCritical
-                            ? 'text-red-400 animate-pulse'
-                            : isUrgent
+                    className={`text-xs font-bold tabular-nums ${isCritical
+                        ? 'text-red-400 animate-pulse'
+                        : isUrgent
                             ? 'text-amber-400'
                             : 'text-text-muted'
-                    }`}
+                        }`}
                 >
                     {remainingSeconds}s
                 </span>
@@ -238,7 +237,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ roomId }),
-                        }).catch(() => {});
+                        }).catch(() => { });
                     }
                 }, 2000);
             });
@@ -262,7 +261,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ roomId }),
-                        }).catch(() => {});
+                        }).catch(() => { });
                     }
                 }, 2000);
             });
@@ -334,7 +333,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                         playerId={playerId}
                         roomId={roomId}
                         onClose={() => setShowSettings(false)}
-                        onRestart={onRestart ?? (async () => {})}
+                        onRestart={onRestart ?? (async () => { })}
                     />
                 )}
             </div>
@@ -367,22 +366,21 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                 <div className="flex items-center gap-1.5 sm:gap-3 text-sm">
                     <span className="text-text-muted hidden sm:inline">현재 턴:</span>
                     <span
-                        className={`font-bold transition-colors duration-300 ${
-                            isMyTurn ? 'text-gold' : 'text-text-primary'
-                        }`}
+                        className={`font-bold transition-colors duration-300 ${isMyTurn ? 'text-gold' : 'text-text-primary'
+                            }`}
                     >
                         {isMyTurn ? '내 턴' : currentPlayer?.name}
                     </span>
                 </div>
 
-                {/* 우: 로그 토글(모바일) + 설정 아이콘 */}
-                <div className="flex items-center gap-1">
+                {/* 우: BGM + 로그 토글(모바일) + 설정 아이콘 */}
+                <div className="flex items-center gap-0.5">
+                    <BgmPlayer />
                     <button
-                        className={`lg:hidden p-2 rounded-lg transition-colors ${
-                            showMobileLog
-                                ? 'text-gold bg-gold/10'
-                                : 'text-text-muted hover:text-text-primary hover:bg-bg-surface'
-                        }`}
+                        className={`lg:hidden p-2 rounded-lg transition-colors ${showMobileLog
+                            ? 'text-gold bg-gold/10'
+                            : 'text-text-muted hover:text-text-primary hover:bg-bg-surface'
+                            }`}
                         aria-label="게임 로그"
                         onClick={() => setShowMobileLog((v) => !v)}
                     >
@@ -484,12 +482,12 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                     {/* 대기 메시지: 다른 플레이어가 카드 선택 중 */}
                     {state.phase === 'lose_influence' &&
                         state.pendingAction?.losingPlayerId !== playerId && (
-                        <div className="flex-1 flex items-center justify-center">
-                            <p className="text-text-muted text-sm animate-pulse">
-                                {state.players.find((p) => p.id === state.pendingAction?.losingPlayerId)?.name}이(가) 잃을 카드를 선택하고 있습니다...
-                            </p>
-                        </div>
-                    )}
+                            <div className="flex-1 flex items-center justify-center">
+                                <p className="text-text-muted text-sm animate-pulse">
+                                    {state.players.find((p) => p.id === state.pendingAction?.losingPlayerId)?.name}이(가) 잃을 카드를 선택하고 있습니다...
+                                </p>
+                            </div>
+                        )}
 
                     {/* 응답 대기 중 — 타이머 + 플레이어 응답 상태 표시 */}
                     {(state.phase === 'awaiting_response' ||
@@ -544,7 +542,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                     playerId={playerId}
                     roomId={roomId}
                     onClose={() => setShowSettings(false)}
-                    onRestart={onRestart ?? (async () => {})}
+                    onRestart={onRestart ?? (async () => { })}
                 />
             )}
         </div>

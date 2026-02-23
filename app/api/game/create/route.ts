@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRoom } from '@/lib/firebase';
-import { GameState, Player } from '@/lib/game/types';
+import { GameMode, GameState, Player } from '@/lib/game/types';
 
 function generateRoomId(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -12,7 +12,7 @@ function generateRoomId(): string {
 }
 
 export async function POST(req: NextRequest) {
-  const { playerName, playerId } = await req.json();
+  const { playerName, playerId, gameMode } = await req.json();
   if (!playerName || !playerId) {
     return NextResponse.json({ error: '이름과 플레이어 ID가 필요합니다' }, { status: 400 });
   }
@@ -24,6 +24,8 @@ export async function POST(req: NextRequest) {
     cards: [], isAlive: true, isReady: false,
   };
 
+  const mode: GameMode = gameMode === 'guess' ? 'guess' : 'standard';
+
   const initialState: GameState = {
     players: [initialPlayer],
     currentTurnId: playerId,
@@ -31,6 +33,7 @@ export async function POST(req: NextRequest) {
     deck: [],
     pendingAction: null,
     log: [`${playerName}이(가) 방을 만들었습니다`],
+    gameMode: mode,
   };
 
   try {
