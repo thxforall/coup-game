@@ -105,6 +105,7 @@ const CardSelectModal = dynamic(() => import('./CardSelectModal'), { ssr: false 
 const ExchangeModal = dynamic(() => import('./ExchangeModal'), { ssr: false });
 const SettingsModal = dynamic(() => import('./SettingsModal'), { ssr: false });
 const GameRulesModal = dynamic(() => import('./GameRulesModal'), { ssr: false });
+const ConfirmModal = dynamic(() => import('./ConfirmModal'), { ssr: false });
 
 interface Props {
     state: FilteredGameState;
@@ -119,6 +120,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
     const [showMobileLog, setShowMobileLog] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
     const [showRules, setShowRules] = useState(false);
+    const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
     const mobileLogRef = useRef<HTMLDivElement>(null);
 
     // 퀵챗 로그 상태: 최근 50개 보관
@@ -361,7 +363,17 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                         )}
                         <button
                             className="btn-primary inline-block px-8 py-3 text-center w-full"
-                            onClick={() => { clearActiveRoom(); window.location.href = '/'; }}
+                            onClick={async () => {
+                                try {
+                                    await fetch('/api/game/leave', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ roomId, playerId }),
+                                    });
+                                } catch {}
+                                clearActiveRoom();
+                                window.location.href = '/';
+                            }}
                         >
                             방 나가기
                         </button>
@@ -381,7 +393,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
     }
 
     return (
-        <div className="h-screen flex flex-col overflow-hidden relative">
+        <div className="h-screen flex flex-col overflow-hidden relative bg-bg-dark">
 
             {/* 토스트 알림 */}
             <GameToast
@@ -444,12 +456,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                     <button
                         className="p-2 rounded-lg text-text-muted hover:text-red-500 hover:bg-red-500/10 transition-colors"
                         aria-label="방 나가기"
-                        onClick={() => {
-                            if (window.confirm('방에서 나가시겠습니까?')) {
-                                clearActiveRoom();
-                                window.location.href = '/';
-                            }
-                        }}
+                        onClick={() => setShowLeaveConfirm(true)}
                     >
                         <LogOut className="w-5 h-5" />
                     </button>
@@ -704,6 +711,29 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
 
             {/* 모달: 게임 규칙 */}
             {showRules && <GameRulesModal onClose={() => setShowRules(false)} />}
+
+            {/* 모달: 방 나가기 확인 */}
+            {showLeaveConfirm && (
+                <ConfirmModal
+                    title="방 나가기"
+                    message="방에서 나가시겠습니까?"
+                    confirmLabel="나가기"
+                    confirmColor="var(--red, #ef4444)"
+                    confirmIcon={LogOut}
+                    onConfirm={async () => {
+                        try {
+                            await fetch('/api/game/leave', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ roomId, playerId }),
+                            });
+                        } catch {}
+                        clearActiveRoom();
+                        window.location.href = '/';
+                    }}
+                    onCancel={() => setShowLeaveConfirm(false)}
+                />
+            )}
         </div>
     );
 }
