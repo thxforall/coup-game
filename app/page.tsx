@@ -3,16 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Skull, Play, Crown, Crosshair, Anchor, Repeat, Shield } from 'lucide-react';
-
-function getOrCreatePlayerId(): string {
-    if (typeof window === 'undefined') return '';
-    let id = localStorage.getItem('coup_player_id');
-    if (!id) {
-        id = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-        localStorage.setItem('coup_player_id', id);
-    }
-    return id;
-}
+import { getOrCreatePlayerId, getPlayerStorage, setPlayerStorage } from '@/lib/storage';
 
 const CHARACTERS = [
     { name: '공작', icon: Crown, color: 'var(--duke-color)' },
@@ -31,13 +22,13 @@ export default function LobbyPage() {
     const [tab, setTab] = useState<'create' | 'join'>('create');
 
     useEffect(() => {
-        const saved = localStorage.getItem('coup_player_name');
+        const saved = getPlayerStorage('coup_player_name');
         if (saved) setPlayerName(saved);
     }, []);
 
     const saveName = (name: string) => {
         setPlayerName(name);
-        localStorage.setItem('coup_player_name', name);
+        setPlayerStorage('coup_player_name', name);
     };
 
     const handleCreate = async () => {

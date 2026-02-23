@@ -6,16 +6,7 @@ import { subscribeToRoom, getRoom } from '@/lib/firebase.client';
 import { FilteredGameState } from '@/lib/game/types';
 import WaitingRoom from '@/components/game/WaitingRoom';
 import GameBoard from '@/components/game/GameBoard';
-
-function getPlayerId(): string {
-    if (typeof window === 'undefined') return '';
-    let id = localStorage.getItem('coup_player_id');
-    if (!id) {
-        id = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-        localStorage.setItem('coup_player_id', id);
-    }
-    return id;
-}
+import { getOrCreatePlayerId as getPlayerId } from '@/lib/storage';
 
 export default function GamePage() {
     const params = useParams();
