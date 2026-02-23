@@ -11,6 +11,7 @@ import PlayerArea from './PlayerArea';
 import MyPlayerArea from './MyPlayerArea';
 import ActionPanel from './ActionPanel';
 import EventLog, { getLogColor } from './EventLog';
+import { getPlayerColor } from '@/lib/game/player-colors';
 import GameToast from './GameToast';
 import BgmPlayer from './BgmPlayer';
 import QuickChat from './QuickChat';
@@ -121,7 +122,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
     const mobileLogRef = useRef<HTMLDivElement>(null);
 
     // 퀵챗 로그 상태: 최근 50개 보관
-    const [chatLogs, setChatLogs] = useState<{ playerName: string; message: string; timestamp: number }[]>([]);
+    const [chatLogs, setChatLogs] = useState<{ playerName: string; message: string; timestamp: number; playerId: string }[]>([]);
 
     // Close mobile log when tapping outside
     const handleOutsideClick = useCallback((e: MouseEvent) => {
@@ -159,7 +160,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
     const addChatLog = useCallback((senderPlayerId: string, message: string) => {
         const playerName = state.players.find((p) => p.id === senderPlayerId)?.name ?? senderPlayerId;
         setChatLogs((prev) => {
-            const next = [...prev, { playerName, message, timestamp: Date.now() }];
+            const next = [...prev, { playerName, message, timestamp: Date.now(), playerId: senderPlayerId }];
             // 최대 50개 유지
             return next.length > 50 ? next.slice(next.length - 50) : next;
         });
@@ -454,6 +455,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                             const chatParts = chatLogs.map((c) => ({
                                 type: 'chat' as const,
                                 playerName: c.playerName,
+                                playerId: c.playerId,
                                 text: c.message,
                                 timestamp: gameParts.length + c.timestamp / 1e13,
                             }));
@@ -464,11 +466,15 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                             return merged.map((item, i) => {
                                 const isLatest = i === total - 1;
                                 if (item.type === 'chat') {
+                                    const playerColor = 'playerId' in item ? getPlayerColor(item.playerId) : undefined;
                                     return (
                                         <div key={`chat-${i}`} className="flex items-center gap-1.5 truncate">
-                                            <span className="text-cyan-400 text-[10px] flex-shrink-0">💬</span>
-                                            <span className={`font-mono text-[11px] truncate ${isLatest ? 'text-gold' : 'text-cyan-400/80'}`}>
-                                                {item.playerName}: {item.text}
+                                            <span className="text-[10px] flex-shrink-0" style={playerColor ? { color: playerColor } : undefined}>💬</span>
+                                            <span className="font-mono text-[11px] truncate">
+                                                <span style={isLatest ? { color: '#F1C40F' } : playerColor ? { color: playerColor } : undefined}>
+                                                    {item.playerName}
+                                                </span>
+                                                <span className={isLatest ? 'text-gold' : 'text-text-muted'}>: {item.text}</span>
                                             </span>
                                         </div>
                                     );

@@ -3,11 +3,13 @@
 import { memo, useEffect, useRef } from 'react';
 import { ScrollText, Swords, ShieldAlert, ShieldCheck, Zap, Crosshair, Repeat, Skull, Trophy, MessageCircle } from 'lucide-react';
 import { LogEntry, LogEntryType } from '@/lib/game/types';
+import { getPlayerColor } from '@/lib/game/player-colors';
 
 interface ChatLogItem {
     playerName: string;
     message: string;
     timestamp: number;
+    playerId?: string;
 }
 
 interface Props {
@@ -59,8 +61,8 @@ function StructuredLogEntry({ entry, isLatest }: { entry: LogEntry; isLatest: bo
 
     return (
         <div
-            className={`flex items-start gap-2 rounded-md px-2 py-1 transition-colors duration-200 ${
-                isTurnStart ? 'border-t border-border-subtle/40 mt-1 pt-1.5' : ''
+            className={`flex items-start gap-2 px-2 py-1 transition-colors duration-200 ${
+                isTurnStart ? 'border-t border-border-subtle/40 mt-1 pt-1.5' : 'rounded-md'
             } ${isLatest ? 'bg-gold/10' : 'hover:bg-bg-surface'}`}
         >
             <span className={`flex-shrink-0 mt-px ${color}`}>
@@ -74,17 +76,19 @@ function StructuredLogEntry({ entry, isLatest }: { entry: LogEntry; isLatest: bo
 }
 
 function ChatLogEntry({ item, isLatest }: { item: ChatLogItem; isLatest: boolean }) {
+    const playerColor = item.playerId ? getPlayerColor(item.playerId) : '#22d3ee'; // fallback cyan-400
     return (
         <div
             className={`flex items-start gap-2 rounded-md px-2 py-1 transition-colors duration-200 ${
                 isLatest ? 'bg-cyan-400/10' : 'hover:bg-bg-surface'
             }`}
         >
-            <span className="flex-shrink-0 mt-px text-cyan-400">
+            <span className="flex-shrink-0 mt-px" style={{ color: playerColor }}>
                 <MessageCircle size={10} strokeWidth={2.5} />
             </span>
-            <span className={`font-mono text-[10px] leading-relaxed ${isLatest ? 'text-gold' : 'text-cyan-400'}`}>
-                {item.playerName}: {item.message}
+            <span className="font-mono text-[10px] leading-relaxed">
+                <span style={{ color: playerColor }}>{item.playerName}</span>
+                <span className={isLatest ? 'text-gold' : 'text-text-muted'}>: {item.message}</span>
             </span>
         </div>
     );
