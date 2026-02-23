@@ -518,27 +518,37 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                 <div className="lg:hidden fixed inset-0 z-40 flex flex-col justify-end" ref={mobileLogRef}>
                     {/* 딤 배경 */}
                     <div
-                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
                         onClick={() => setShowMobileLog(false)}
                     />
                     {/* 로그 시트 */}
-                    <div className="relative z-10 flex flex-col bg-bg-dark rounded-t-2xl border-t border-border-subtle max-h-[72vh] animate-slide-up">
-                        {/* 핸들 + 헤더 */}
-                        <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle/50 flex-shrink-0">
-                            <div className="w-8 h-1 rounded-full bg-border-subtle" />
-                            <span className="font-sora text-xs font-semibold text-text-secondary uppercase tracking-wider">
-                                게임 로그
-                            </span>
+                    <div className="relative z-10 flex flex-col bg-bg-dark rounded-t-2xl border-t border-border-subtle max-h-[75vh] animate-slide-up">
+                        {/* 드래그 핸들 */}
+                        <div className="flex justify-center pt-2.5 pb-1 flex-shrink-0">
+                            <div className="w-10 h-1 rounded-full bg-border-subtle" />
+                        </div>
+                        {/* 헤더 */}
+                        <div className="flex items-center justify-between px-4 py-2.5 border-b border-border-subtle/50 flex-shrink-0">
+                            <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-md bg-gold/10 border border-gold/20 flex items-center justify-center">
+                                    <span className="text-gold text-[10px]">▸</span>
+                                </div>
+                                <span className="font-sora text-sm font-bold text-text-primary">게임 로그</span>
+                                <span className="text-[10px] text-text-muted bg-bg-surface border border-border-subtle rounded-full px-2 py-0.5">
+                                    {state.log?.length ?? 0}건
+                                </span>
+                            </div>
                             <button
-                                className="text-[11px] font-semibold text-text-muted hover:text-gold transition-colors px-2 py-0.5 border border-border-subtle hover:border-gold/40 rounded"
+                                className="w-7 h-7 flex items-center justify-center rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-surface transition-colors"
                                 onClick={() => setShowMobileLog(false)}
+                                aria-label="닫기"
                             >
-                                닫기
+                                <span className="text-base leading-none">✕</span>
                             </button>
                         </div>
                         {/* 스크롤 영역 */}
                         <div className="flex-1 overflow-y-auto">
-                            <EventLog log={state.log} structuredLog={state.structuredLog} chatLogs={chatLogs} />
+                            <EventLog log={state.log} structuredLog={state.structuredLog} chatLogs={chatLogs} hideHeader players={state.players} />
                         </div>
                     </div>
                 </div>
@@ -549,14 +559,14 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
                 {/* 게임 로그 — 데스크톱에서만 표시 */}
                 <div className="hidden lg:block w-80 flex-shrink-0 border-r border-border-subtle p-3 overflow-hidden">
-                    <EventLog log={state.log} structuredLog={state.structuredLog} chatLogs={chatLogs} />
+                    <EventLog log={state.log} structuredLog={state.structuredLog} chatLogs={chatLogs} players={state.players} />
                 </div>
 
                 {/* 턴 영역 */}
                 <div className="flex-1 flex flex-col p-2 sm:p-4 overflow-y-auto">
                     {/* 내 턴 레이블 */}
                     {isMyTurn && state.phase === 'action' && (
-                        <div className="mb-3">
+                        <div className="mb-3 flex justify-center">
                             <span className="text-xs font-bold uppercase tracking-widest text-gold border border-gold/30 bg-gold/10 px-3 py-1 rounded-full">
                                 내 턴
                             </span>
@@ -627,7 +637,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                         <QuickChat
                             roomId={roomId}
                             playerId={playerId}
-                            disabled={!me.isAlive}
+                            disabled={false}
                             turnId={state.currentTurnId}
                             onSend={handleChatSend}
                             onSendText={handleChatTextSend}
