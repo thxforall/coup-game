@@ -69,6 +69,8 @@ export interface GameState {
   structuredLog?: LogEntry[];
   winnerId?: string;
   gameMode?: GameMode;
+  createdAt?: number; // 방 생성 시간 (Unix ms) - cleanup용 서버 내부 메타데이터
+  updatedAt?: number; // 마지막 활동 시간 (Unix ms) - cleanup용 서버 내부 메타데이터
 }
 
 // 액션 요청 타입 (API 전달용)

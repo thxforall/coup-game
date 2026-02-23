@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
 
   const mode: GameMode = gameMode === 'guess' ? 'guess' : 'standard';
 
+  const now = Date.now();
   const initialState: GameState = {
     players: [initialPlayer],
     currentTurnId: playerId,
@@ -34,6 +35,8 @@ export async function POST(req: NextRequest) {
     pendingAction: null,
     log: [`${playerName}이(가) 방을 만들었습니다`],
     gameMode: mode,
+    createdAt: now,
+    updatedAt: now,
   };
 
   try {

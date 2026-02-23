@@ -43,6 +43,7 @@ export async function createRoom(roomId: string, state: GameState): Promise<void
 }
 
 export async function updateRoom(roomId: string, state: GameState): Promise<void> {
+  state.updatedAt = Date.now();
   const res = await fetch(roomUrl(roomId), {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -54,6 +55,22 @@ export async function updateRoom(roomId: string, state: GameState): Promise<void
   }
 }
 
+export async function deleteRoom(roomId: string): Promise<void> {
+  const res = await fetch(roomUrl(roomId), { method: 'DELETE' });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to delete room: ${res.status} ${text}`);
+  }
+}
+
+export async function listRoomIds(): Promise<string[]> {
+  const res = await fetch(`${DB_URL}/game_rooms.json?shallow=true`, { cache: 'no-store' });
+  if (!res.ok) return [];
+  const data = await res.json();
+  if (!data) return [];
+  return Object.keys(data);
+}
+
 /**
  * state + 플레이어별 filtered views를 동시에 쓰기 (multi-path PATCH)
  */
@@ -62,6 +79,7 @@ export async function updateRoomWithViews(
   state: GameState,
   views: Record<string, FilteredGameState>
 ): Promise<void> {
+  state.updatedAt = Date.now();
   const payload: Record<string, unknown> = {
     [`game_rooms/${roomId}/state`]: state,
   };
