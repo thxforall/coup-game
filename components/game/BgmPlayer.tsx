@@ -109,7 +109,7 @@ function BgmPlayer() {
 
             {/* 볼륨 슬라이더 팝업 */}
             {playing && showSlider && (
-                <div className="absolute bottom-full right-0 mb-2 bg-bg-card border border-border-subtle rounded-xl shadow-xl p-3 flex flex-col items-center gap-2 z-50">
+                <div className="absolute top-full right-0 mt-2 bg-bg-card border border-border-subtle rounded-xl shadow-xl p-3 flex flex-col items-center gap-2 z-50">
                     <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">볼륨</span>
                     {/* 수직 슬라이더 */}
                     <div className="flex flex-col items-center gap-1 h-24">
