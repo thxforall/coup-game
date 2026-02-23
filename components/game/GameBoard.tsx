@@ -1,6 +1,7 @@
 'use client';
 
 import { GameState, Character, CHARACTER_NAMES } from '@/lib/game/types';
+import { useGameAudio } from '@/lib/useGameAudio';
 import PlayerArea from './PlayerArea';
 import MyPlayerArea from './MyPlayerArea';
 import ActionPanel from './ActionPanel';
@@ -8,6 +9,7 @@ import ResponseModal from './ResponseModal';
 import CardSelectModal from './CardSelectModal';
 import ExchangeModal from './ExchangeModal';
 import EventLog from './EventLog';
+import GameToast from './GameToast';
 
 interface Props {
     state: GameState;
@@ -22,12 +24,24 @@ export default function GameBoard({ state, playerId, onAction }: Props) {
     const isMyTurn = state.currentTurnId === playerId;
     const currentPlayer = state.players.find((p) => p.id === state.currentTurnId);
 
+    // 오디오 피드백 훅
+    useGameAudio(state, playerId);
+
     // 승리 화면
     if (state.phase === 'game_over') {
         const winner = state.players.find((p) => p.id === state.winnerId);
         const iWon = state.winnerId === playerId;
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-violet-950 px-4">
+                {/* 토스트 */}
+                <GameToast
+                    log={state.log}
+                    playerId={playerId}
+                    currentTurnId={state.currentTurnId}
+                    phase={state.phase}
+                    winnerId={state.winnerId}
+                    players={state.players}
+                />
                 <div className="glass-panel p-8 text-center max-w-sm w-full animate-slide-up">
                     <div className="text-6xl mb-4">{iWon ? '🏆' : '💀'}</div>
                     <h1 className="text-3xl font-black mb-2">
@@ -60,17 +74,27 @@ export default function GameBoard({ state, playerId, onAction }: Props) {
     const mustRespond =
         (state.phase === 'awaiting_response' || state.phase === 'awaiting_block_response') &&
         me?.isAlive &&
-        state.pendingAction?.responses[playerId] === null &&
+        state.pendingAction?.responses?.[playerId] === null &&
         state.pendingAction?.actorId !== playerId;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-violet-950 flex flex-col">
+            {/* 토스트 알림 */}
+            <GameToast
+                log={state.log}
+                playerId={playerId}
+                currentTurnId={state.currentTurnId}
+                phase={state.phase}
+                winnerId={state.winnerId}
+                players={state.players}
+            />
+
             {/* 헤더 */}
-            <header className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+            <header className={`flex items-center justify-between px-4 py-3 border-b border-white/5 transition-all duration-500 ${isMyTurn ? 'bg-amber-500/5 border-b-amber-400/20' : ''}`}>
                 <span className="text-lg font-black text-violet-300">🃏 COUP</span>
                 <div className="flex items-center gap-2">
                     <span className="text-xs text-slate-500">현재 턴:</span>
-                    <span className={`text-sm font-bold ${isMyTurn ? 'text-amber-400' : 'text-slate-300'}`}>
+                    <span className={`text-sm font-bold transition-all duration-300 ${isMyTurn ? 'text-amber-400 my-turn-glow' : 'text-slate-300'}`}>
                         {isMyTurn ? '🌟 나' : currentPlayer?.name}
                     </span>
                 </div>
@@ -94,7 +118,7 @@ export default function GameBoard({ state, playerId, onAction }: Props) {
 
             {/* 내 영역 */}
             {me && (
-                <div className="border-t border-white/5 p-4 space-y-3">
+                <div className={`border-t border-white/5 p-4 space-y-3 transition-all duration-500 ${isMyTurn ? 'bg-amber-500/5 border-t-amber-400/20' : ''}`}>
                     <MyPlayerArea player={me} />
 
                     {/* 내 턴: 액션 선택 */}

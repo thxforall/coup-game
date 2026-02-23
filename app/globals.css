@@ -64,3 +64,102 @@
   .char-assassin { @apply from-slate-600 to-slate-900 border-slate-500; }
   .char-ambassador { @apply from-emerald-600 to-emerald-800 border-emerald-500; }
 }
+
+/* ============================================================ */
+/* 토스트 알림 애니메이션                                        */
+/* ============================================================ */
+
+.toast-enter {
+  animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.toast-leave {
+  animation: toastFadeOut 0.5s ease-out forwards;
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toastFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+}
+
+/* ============================================================ */
+/* 이벤트 로그 엔트리 애니메이션                                  */
+/* ============================================================ */
+
+.log-entry {
+  animation: logSlideIn 0.3s ease-out;
+}
+
+.log-latest {
+  animation: logSlideIn 0.3s ease-out, logGlow 2s ease-in-out infinite;
+}
+
+@keyframes logSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes logGlow {
+  0%, 100% {
+    background-color: rgba(255, 255, 255, 0.06);
+  }
+  50% {
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+}
+
+/* ============================================================ */
+/* 내 턴 글로우 효과                                             */
+/* ============================================================ */
+
+.my-turn-glow {
+  animation: turnPulse 2s ease-in-out infinite;
+}
+
+@keyframes turnPulse {
+  0%, 100% {
+    text-shadow: 0 0 4px rgba(251, 191, 36, 0.3);
+  }
+  50% {
+    text-shadow: 0 0 12px rgba(251, 191, 36, 0.6), 0 0 24px rgba(251, 191, 36, 0.2);
+  }
+}
+
+/* 슬라이드 업 (모달, 패널 등 기존 애니메이션 보강) */
+.animate-slide-up {
+  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
