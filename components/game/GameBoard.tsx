@@ -313,7 +313,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
         const iWon = state.winnerId === playerId;
         const isHost = state.players[0]?.id === playerId;
         return (
-            <div className="min-h-screen flex items-center justify-center px-4">
+            <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
                 <GameToast
                     log={state.log}
                     playerId={playerId}
@@ -378,6 +378,15 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                             방 나가기
                         </button>
                     </div>
+                </div>
+                {/* 게임 로그 영역 */}
+                <div className="glass-panel mt-4 max-w-sm w-full max-h-60 overflow-y-auto">
+                    <EventLog
+                        log={state.log}
+                        structuredLog={state.structuredLog}
+                        chatLogs={chatLogs}
+                        players={state.players}
+                    />
                 </div>
                 {showSettings && (
                     <SettingsModal
