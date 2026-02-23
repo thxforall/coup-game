@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-24 - Completed quick-040 (전역 배경 이미지 적용 + 설정 토글 연동)
+- Last activity: 2026-02-24 - Completed quick-041 (BGM 볼륨 슬라이더 위치를 헤더 아래로 변경)
 
 ### Quick Tasks Completed
 
@@ -46,6 +46,7 @@
 | 038 | 이벤트 로그 플레이어 이름에 고유 색상 적용 (colorizePlayerNames, 구조화+일반 로그) | 2026-02-24 | 8787dd6 | [038-game-log-text-player-color-apply](./quick/038-game-log-text-player-color-apply/) |
 | 039 | 로비 방 목록 브라우저 + 추방 플레이어 재입장 허용 (GET /api/game/list + kickedPlayerIds 제거) | 2026-02-24 | 2c562db | [039-room-join-delete-cleanup-after-game](./quick/039-room-join-delete-cleanup-after-game/) |
 | 040 | 전역 배경 이미지 적용 + 설정 토글 연동 (GlobalBackground, layout.tsx 통합) | 2026-02-24 | 0e72fa4 | [040-bg-image-subtle-background-toggle](./quick/040-bg-image-subtle-background-toggle/) |
+| 041 | BGM 볼륨 슬라이더 위치를 헤더 아래로 변경 (bottom-full → top-full) | 2026-02-24 | 1695b2f | [041-bgm-volume-control-position-fix-below-header](./quick/041-bgm-volume-control-position-fix-below-header/) |
 
 ### Blockers/Concerns
 - None currently
