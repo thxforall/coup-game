@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-23 - Completed quick-006 (모바일 카드 겹침 및 상세보기 잘림 수정)
+- Last activity: 2026-02-23 - Completed quick-007 (액션 타임아웃 auto-pass 버그 수정)
 
 ### Quick Tasks Completed
 
@@ -15,11 +15,12 @@
 | 004 | 모바일 반응형 수정 - 화면 잘림 해결 (EventLog 토글, 카드/버튼 반응형) | 2026-02-23 | 2cf54f4 | [004-mobile-responsive-fix-screen-cutoff](./quick/004-mobile-responsive-fix-screen-cutoff/) |
 | 005 | EventLog 모바일 기본 표시 + 모든 새 로그 토스트 알림 | 2026-02-23 | dfc6eff | [005-eventlog-default-visible-mobile-notify](./quick/005-eventlog-default-visible-mobile-notify/) |
 | 006 | 모바일 카드 겹침 및 카드 상세보기 잘림 수정 | 2026-02-23 | 25f9bff | [006-mobile-card-overlap-detail-view-fix](./quick/006-mobile-card-overlap-detail-view-fix/) |
+| 007 | 액션 타임아웃 auto-pass 버그 수정 (서버 사이드 + 클라이언트 폴링) | 2026-02-23 | 941abae | [007-fix-action-timeout-auto-pass-bug](./quick/007-fix-action-timeout-auto-pass-bug/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-23T13:00:40Z
-- Stopped at: Completed quick-005-PLAN.md
+- Last session: 2026-02-23T13:08:21Z
+- Stopped at: Completed quick-007-PLAN.md
 - Resume file: None
