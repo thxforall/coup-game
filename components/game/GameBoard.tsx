@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
+import { memo, useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { Skull, Settings, Trophy, ScrollText, RotateCcw } from 'lucide-react';
+import { Skull, Settings, Trophy, ScrollText, RotateCcw, BookOpen } from 'lucide-react';
 import { FilteredGameState, Card, Player, ACTION_NAMES } from '@/lib/game/types';
 import { PresenceMap, subscribeToChatMessages, CHAT_MESSAGES } from '@/lib/firebase.client';
 import { clearActiveRoom } from '@/lib/storage';
@@ -16,8 +16,8 @@ import BgmPlayer from './BgmPlayer';
 import QuickChat from './QuickChat';
 import ChatBubble from './ChatBubble';
 
-// 응답 대기 표시 컴포넌트
-function WaitingResponseIndicator({ state, playerId }: { state: FilteredGameState; playerId: string }) {
+// 응답 대기 표시 컴포넌트 (memo 처리로 불필요한 리렌더 방지)
+const WaitingResponseIndicator = memo(function WaitingResponseIndicator({ state, playerId }: { state: FilteredGameState; playerId: string }) {
     const pending = state.pendingAction!;
     const [remainingMs, setRemainingMs] = useState(30000);
 
@@ -97,13 +97,14 @@ function WaitingResponseIndicator({ state, playerId }: { state: FilteredGameStat
             </div>
         </div>
     );
-}
+});
 
 // 모달 컴포넌트는 조건부로만 렌더되므로 dynamic import로 코드 스플릿
 const ResponseModal = dynamic(() => import('./ResponseModal'), { ssr: false });
 const CardSelectModal = dynamic(() => import('./CardSelectModal'), { ssr: false });
 const ExchangeModal = dynamic(() => import('./ExchangeModal'), { ssr: false });
 const SettingsModal = dynamic(() => import('./SettingsModal'), { ssr: false });
+const GameRulesModal = dynamic(() => import('./GameRulesModal'), { ssr: false });
 
 interface Props {
     state: FilteredGameState;
@@ -117,12 +118,12 @@ interface Props {
 export default function GameBoard({ state, playerId, roomId, onAction, onRestart, presence = {} }: Props) {
     const [showMobileLog, setShowMobileLog] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+    const [showRules, setShowRules] = useState(false);
     const mobileLogRef = useRef<HTMLDivElement>(null);
 
     // 퀵챗 말풍선 상태: playerId -> { message, leaving }
     const [chatBubbles, setChatBubbles] = useState<Map<string, { message: string; leaving: boolean }>>(new Map());
     const chatTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
-    const seenChatKeysRef = useRef<Set<string>>(new Set());
 
     // Close mobile log when tapping outside
     const handleOutsideClick = useCallback((e: MouseEvent) => {
@@ -158,55 +159,43 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
 
     // 퀵챗 구독
     useEffect(() => {
-        const unsub = subscribeToChatMessages(roomId, (messages) => {
-            const now = Date.now();
-            Object.entries(messages).forEach(([key, msg]) => {
-                // 이미 처리한 메시지 스킵
-                if (seenChatKeysRef.current.has(key)) return;
-                // 30초 이상 된 메시지 무시 (페이지 로드 시 과거 메시지)
-                if (now - msg.timestamp > 30000) {
-                    seenChatKeysRef.current.add(key);
-                    return;
-                }
-                seenChatKeysRef.current.add(key);
+        const unsub = subscribeToChatMessages(roomId, (msg) => {
+            const message = CHAT_MESSAGES[msg.messageId] ?? '';
+            if (!message) return;
 
-                const message = CHAT_MESSAGES[msg.messageId] ?? '';
-                if (!message) return;
+            const { playerId: senderPlayerId } = msg;
 
-                const { playerId: senderPlayerId } = msg;
+            // 기존 타이머 취소
+            const existingTimer = chatTimersRef.current.get(senderPlayerId);
+            if (existingTimer) clearTimeout(existingTimer);
 
-                // 기존 타이머 취소
-                const existingTimer = chatTimersRef.current.get(senderPlayerId);
-                if (existingTimer) clearTimeout(existingTimer);
+            // 말풍선 추가
+            setChatBubbles((prev) => {
+                const next = new Map(prev);
+                next.set(senderPlayerId, { message, leaving: false });
+                return next;
+            });
 
-                // 말풍선 추가
+            // 3초 후 leaving=true
+            const leaveTimer = setTimeout(() => {
                 setChatBubbles((prev) => {
                     const next = new Map(prev);
-                    next.set(senderPlayerId, { message, leaving: false });
+                    const existing = next.get(senderPlayerId);
+                    if (existing) next.set(senderPlayerId, { ...existing, leaving: true });
                     return next;
                 });
-
-                // 3초 후 leaving=true
-                const leaveTimer = setTimeout(() => {
+                // 0.5초 후 제거 (애니메이션 완료)
+                setTimeout(() => {
                     setChatBubbles((prev) => {
                         const next = new Map(prev);
-                        const existing = next.get(senderPlayerId);
-                        if (existing) next.set(senderPlayerId, { ...existing, leaving: true });
+                        next.delete(senderPlayerId);
                         return next;
                     });
-                    // 0.5초 후 제거 (애니메이션 완료)
-                    setTimeout(() => {
-                        setChatBubbles((prev) => {
-                            const next = new Map(prev);
-                            next.delete(senderPlayerId);
-                            return next;
-                        });
-                        chatTimersRef.current.delete(senderPlayerId);
-                    }, 500);
-                }, 3000);
+                    chatTimersRef.current.delete(senderPlayerId);
+                }, 500);
+            }, 3000);
 
-                chatTimersRef.current.set(senderPlayerId, leaveTimer);
-            });
+            chatTimersRef.current.set(senderPlayerId, leaveTimer);
         });
         const timers = chatTimersRef.current;
         return () => {
@@ -271,6 +260,29 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
     const timeoutRequestedRef = useRef(false);
     const timeoutDeadlineRef = useRef<number | undefined>(undefined);
 
+    // 타임아웃 fetch 헬퍼 (중복 제거)
+    const fireTimeout = useCallback(() => {
+        if (timeoutRequestedRef.current) return;
+        timeoutRequestedRef.current = true;
+        fetch('/api/game/timeout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ roomId }),
+        }).catch(() => {
+            timeoutRequestedRef.current = false;
+            setTimeout(() => {
+                if (!timeoutRequestedRef.current) {
+                    timeoutRequestedRef.current = true;
+                    fetch('/api/game/timeout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ roomId }),
+                    }).catch(() => { });
+                }
+            }, 2000);
+        });
+    }, [roomId]);
+
     useEffect(() => {
         if (state.phase === 'game_over') return;
 
@@ -287,57 +299,16 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
         if (!isAwaitingPhase || !deadline || timeoutRequestedRef.current) return;
 
         const now = Date.now();
-        const delay = deadline - now + 1000; // deadline 1초 후 요청 (클라이언트 auto-pass 여유)
+        const delay = deadline - now + 1000;
 
         if (delay <= 0) {
-            // 이미 deadline 초과
-            timeoutRequestedRef.current = true;
-            fetch('/api/game/timeout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ roomId }),
-            }).catch(() => {
-                // 실패 시 2초 후 1회 재시도
-                timeoutRequestedRef.current = false;
-                setTimeout(() => {
-                    if (!timeoutRequestedRef.current) {
-                        timeoutRequestedRef.current = true;
-                        fetch('/api/game/timeout', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ roomId }),
-                        }).catch(() => { });
-                    }
-                }, 2000);
-            });
+            fireTimeout();
             return;
         }
 
-        const timer = setTimeout(() => {
-            if (timeoutRequestedRef.current) return;
-            timeoutRequestedRef.current = true;
-            fetch('/api/game/timeout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ roomId }),
-            }).catch(() => {
-                // 실패 시 2초 후 1회 재시도
-                timeoutRequestedRef.current = false;
-                setTimeout(() => {
-                    if (!timeoutRequestedRef.current) {
-                        timeoutRequestedRef.current = true;
-                        fetch('/api/game/timeout', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ roomId }),
-                        }).catch(() => { });
-                    }
-                }, 2000);
-            });
-        }, delay);
-
+        const timer = setTimeout(fireTimeout, delay);
         return () => clearTimeout(timer);
-    }, [state.phase, state.pendingAction?.responseDeadline, roomId]);
+    }, [state.phase, state.pendingAction?.responseDeadline, fireTimeout]);
 
     // 게임 오버 화면
     if (state.phase === 'game_over') {
@@ -444,6 +415,13 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                 {/* 우: BGM + 로그 토글(모바일) + 설정 아이콘 */}
                 <div className="flex items-center gap-0.5">
                     <BgmPlayer />
+                    <button
+                        className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-surface transition-colors"
+                        aria-label="게임 규칙"
+                        onClick={() => setShowRules(true)}
+                    >
+                        <BookOpen className="w-5 h-5" />
+                    </button>
                     <button
                         className={`lg:hidden p-2 rounded-lg transition-colors ${showMobileLog
                             ? 'text-gold bg-gold/10'
@@ -633,6 +611,9 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                     onRestart={onRestart ?? (async () => { })}
                 />
             )}
+
+            {/* 모달: 게임 규칙 */}
+            {showRules && <GameRulesModal onClose={() => setShowRules(false)} />}
         </div>
     );
 }
