@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-23 - Completed quick-007 (액션 타임아웃 auto-pass 버그 수정)
+- Last activity: 2026-02-23 - Completed quick-008 (도전 시 카드 직접 선택 구현)
 
 ### Quick Tasks Completed
 
@@ -16,11 +16,12 @@
 | 005 | EventLog 모바일 기본 표시 + 모든 새 로그 토스트 알림 | 2026-02-23 | dfc6eff | [005-eventlog-default-visible-mobile-notify](./quick/005-eventlog-default-visible-mobile-notify/) |
 | 006 | 모바일 카드 겹침 및 카드 상세보기 잘림 수정 | 2026-02-23 | 25f9bff | [006-mobile-card-overlap-detail-view-fix](./quick/006-mobile-card-overlap-detail-view-fix/) |
 | 007 | 액션 타임아웃 auto-pass 버그 수정 (서버 사이드 + 클라이언트 폴링) | 2026-02-23 | 941abae | [007-fix-action-timeout-auto-pass-bug](./quick/007-fix-action-timeout-auto-pass-bug/) |
+| 008 | 도전/블록도전 시 카드를 잃는 플레이어가 직접 카드 선택 | 2026-02-23 | 212298b | [008-choose-own-card-to-lose](./quick/008-choose-own-card-to-lose/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-23T13:08:21Z
-- Stopped at: Completed quick-007-PLAN.md
+- Last session: 2026-02-23T13:18:34Z
+- Stopped at: Completed quick-008-PLAN.md
 - Resume file: None
