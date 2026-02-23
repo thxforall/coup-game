@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-24 - Completed quick-035 (ExchangeModal 낙관적 업데이트 느린 수정)
+- Last activity: 2026-02-24 - Completed quick-036 (플레이어 색상 테두리/아바타)
 
 ### Quick Tasks Completed
 
@@ -41,11 +41,12 @@
 | 033 | 플레이어별 고유 색상 채팅 로그 + 모바일 컴팩트 로그 적용 | 2026-02-24 | 6f95260 | [033-player-color-chat-log-profile](./quick/033-player-color-chat-log-profile/) |
 | 034 | QuickChat 자유 텍스트 입력 (10자 제한) — messageId=-1 센티넬, 프리셋과 쿨다운/횟수 공유 | 2026-02-24 | 2f4b3a4 | [034-quickchat-free-text-input-10char](./quick/034-quickchat-free-text-input-10char/) |
 | 035 | ExchangeModal 카드 토글 랙 수정 — useCallback/useMemo JSON stringify 안정화 + GPU 전환 최적화 | 2026-02-24 | cba886f | [035-exchange-modal-optimistic-update-slow-fix](./quick/035-exchange-modal-optimistic-update-slow-fix/) |
+| 036 | 플레이어 색상 테두리/아바타: TargetSelectModal 버튼 + MyPlayerArea 컨테이너 | 2026-02-24 | 100fe50 | [036-player-color-border-card-selection-ui](./quick/036-player-color-border-card-selection-ui/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-23T15:53:00Z
-- Stopped at: Completed quick-035 (ExchangeModal 낙관적 업데이트 느린 수정)
+- Last session: 2026-02-24T00:00:00Z
+- Stopped at: Completed quick-036 (플레이어 색상 테두리/아바타)
 - Resume file: None
