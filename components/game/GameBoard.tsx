@@ -8,7 +8,7 @@ import { useGameAudio } from '@/lib/useGameAudio';
 import PlayerArea from './PlayerArea';
 import MyPlayerArea from './MyPlayerArea';
 import ActionPanel from './ActionPanel';
-import EventLog from './EventLog';
+import EventLog, { getLogColor } from './EventLog';
 import GameToast from './GameToast';
 
 // 응답 대기 표시 컴포넌트
@@ -274,6 +274,32 @@ export default function GameBoard({ state, playerId, onAction }: Props) {
                         isCurrentTurn={state.currentTurnId === player.id}
                     />
                 ))}
+            </div>
+
+            {/* 모바일 컴팩트 로그 (항상 보임, 최근 3개) */}
+            <div className="lg:hidden flex-shrink-0 bg-bg-card/80 border-b border-border-subtle px-3 py-2">
+                <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0 space-y-0.5">
+                        {state.log.slice(-3).map((entry, i) => {
+                            const globalIndex = state.log.length - 3 + i;
+                            const isLatest = globalIndex === state.log.length - 1;
+                            const color = isLatest ? 'text-gold' : getLogColor(entry);
+                            return (
+                                <div key={globalIndex < 0 ? i : globalIndex} className="truncate">
+                                    <span className={`font-mono text-[10px] leading-relaxed ${color}`}>
+                                        &bull; {entry}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <button
+                        className="flex-shrink-0 ml-2 text-[10px] text-text-secondary hover:text-gold transition-colors"
+                        onClick={() => setShowMobileLog(true)}
+                    >
+                        전체 보기
+                    </button>
+                </div>
             </div>
 
             {/* 모바일 로그 패널 (오버레이) */}

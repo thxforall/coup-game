@@ -11,7 +11,7 @@ interface Props {
  * Log entry keyword -> Tailwind text color class
  * Uses design system tokens from tailwind.config.js
  */
-function getLogColor(entry: string): string {
+export function getLogColor(entry: string): string {
     if (entry.includes('승리')) return 'text-gold';
     if (entry.includes('탈락') || entry.includes('잃었습니다')) return 'text-contessa';
     if (entry.includes('도전 성공') || entry.includes('블러프')) return 'text-ambassador';
