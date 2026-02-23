@@ -2,14 +2,19 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { subscribeToRoom, getRoom } from '@/lib/firebase';
 import { GameState } from '@/lib/game/types';
 import WaitingRoom from '@/components/game/WaitingRoom';
 import GameBoard from '@/components/game/GameBoard';
 
 function getPlayerId(): string {
     if (typeof window === 'undefined') return '';
-    return localStorage.getItem('coup_player_id') || '';
+    let id = localStorage.getItem('coup_player_id');
+    if (!id) {
+        id = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+        localStorage.setItem('coup_player_id', id);
+    }
+    return id;
 }
 
 export default function GamePage() {
@@ -24,41 +29,28 @@ export default function GamePage() {
         setPlayerId(getPlayerId());
     }, []);
 
-    // 초기 상태 로드
+    // 초기 상태 로드 + Realtime 구독
     useEffect(() => {
         if (!roomId) return;
-        supabase
-            .from('game_rooms')
-            .select('state')
-            .eq('id', roomId)
-            .single()
-            .then(({ data, error }) => {
-                if (error || !data) {
-                    router.push('/');
-                    return;
-                }
-                setState(data.state as GameState);
-                setLoading(false);
-            });
+
+        // 방 존재 여부 먼저 확인
+        getRoom(roomId).then((room) => {
+            if (!room) {
+                router.push('/');
+                return;
+            }
+            setState(room.state);
+            setLoading(false);
+        });
+
+        // Firebase onValue 실시간 구독
+        const unsubscribe = subscribeToRoom(roomId, (newState) => {
+            setState(newState);
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
     }, [roomId, router]);
-
-    // Realtime 구독
-    useEffect(() => {
-        const channel = supabase
-            .channel(`room-${roomId}`)
-            .on(
-                'postgres_changes',
-                { event: 'UPDATE', schema: 'public', table: 'game_rooms', filter: `id=eq.${roomId}` },
-                (payload) => {
-                    setState((payload.new as { state: GameState }).state);
-                }
-            )
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [roomId]);
 
     const sendAction = useCallback(
         async (action: object) => {
@@ -83,7 +75,7 @@ export default function GamePage() {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-950">
                 <div className="text-center">
-                    <div className="text-4xl mb-4 animate-spin">🃏</div>
+                    <div className="text-4xl mb-4 animate-bounce">🃏</div>
                     <p className="text-slate-400">연결 중...</p>
                 </div>
             </div>
@@ -91,22 +83,8 @@ export default function GamePage() {
     }
 
     if (state.phase === 'waiting') {
-        return (
-            <WaitingRoom
-                state={state}
-                playerId={playerId}
-                roomId={roomId}
-                onStart={handleStart}
-            />
-        );
+        return <WaitingRoom state={state} playerId={playerId} roomId={roomId} onStart={handleStart} />;
     }
 
-    return (
-        <GameBoard
-            state={state}
-            playerId={playerId}
-            roomId={roomId}
-            onAction={sendAction}
-        />
-    );
+    return <GameBoard state={state} playerId={playerId} roomId={roomId} onAction={sendAction} />;
 }
