@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-24 - Completed quick-038 (게임 로그 플레이어 이름 고유 색상 적용)
+- Last activity: 2026-02-24 - Completed quick-039 (로비 방 목록 + 추방 플레이어 재입장 허용)
 
 ### Quick Tasks Completed
 
@@ -44,11 +44,12 @@
 | 036 | 플레이어 색상 테두리/아바타: TargetSelectModal 버튼 + MyPlayerArea 컨테이너 | 2026-02-24 | 100fe50 | [036-player-color-border-card-selection-ui](./quick/036-player-color-border-card-selection-ui/) |
 | 037 | 상대방 PlayerArea 카드에 플레이어 고유 색상 테두리 적용 (데스크탑 + 모바일 컴팩트) | 2026-02-24 | 18a66a3 | [037-player-color-border-opponent-profile](./quick/037-player-color-border-opponent-profile/) |
 | 038 | 이벤트 로그 플레이어 이름에 고유 색상 적용 (colorizePlayerNames, 구조화+일반 로그) | 2026-02-24 | 8787dd6 | [038-game-log-text-player-color-apply](./quick/038-game-log-text-player-color-apply/) |
+| 039 | 로비 방 목록 브라우저 + 추방 플레이어 재입장 허용 (GET /api/game/list + kickedPlayerIds 제거) | 2026-02-24 | 2c562db | [039-room-join-delete-cleanup-after-game](./quick/039-room-join-delete-cleanup-after-game/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-24T00:00:00Z
-- Stopped at: Completed quick-038 (이벤트 로그 플레이어 이름 고유 색상 적용)
+- Last session: 2026-02-24T01:34:00Z
+- Stopped at: Completed quick-039 (로비 방 목록 + 추방 플레이어 재입장 허용)
 - Resume file: None
