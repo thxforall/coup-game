@@ -485,6 +485,15 @@ function resolveChallenge(state: GameState, challengerId: string): GameState {
       `${challenger.name}의 도전 실패! ${actor.name}이(가) 진짜 ${CHARACTER_NAMES[requiredChar]}이었습니다`
     );
 
+    // 암살 도전 실패 시 2명 피해 예고 로그
+    if (pending.type === 'assassinate') {
+      s = addLog(s, `${challenger.name}이(가) 도전에 실패하여 카드를 잃고, ${getPlayer(s, pending.targetId!).name}도 암살됩니다!`, {
+        type: 'challenge_fail',
+        actorId: pending.actorId,
+        targetId: pending.targetId,
+      });
+    }
+
     // 도전자가 카드를 잃음 — 2장 이상이면 선택, 1장이면 자동 제거
     const challengerPlayer = getPlayer(s, challengerId);
     if (getLiveCardCount(challengerPlayer) > 1) {
