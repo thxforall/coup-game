@@ -1,8 +1,8 @@
 'use client';
 
 import { memo, useState, useEffect } from 'react';
-import { Coins, Handshake, Crown, Crosshair, Anchor, Repeat, Zap, RefreshCw, Banknote, Search } from 'lucide-react';
-import { FilteredGameState, ActionType, Character } from '@/lib/game/types';
+import { Coins, Handshake, Crown, Crosshair, Anchor, Repeat, Zap, RefreshCw, Banknote, Search, User, Users } from 'lucide-react';
+import { FilteredGameState, ActionType, Character, Allegiance, ALLEGIANCE_NAMES } from '@/lib/game/types';
 import ConfirmModal from './ConfirmModal';
 import TargetSelectModal from './TargetSelectModal';
 
@@ -162,6 +162,7 @@ function ActionPanel({ state, playerId, onAction, actionDeadline }: Props) {
     const timerColor = isCritical ? 'bg-red-500' : isUrgent ? 'bg-amber-500' : 'bg-emerald-500';
     const [pendingActionType, setPendingActionType] = useState<ActionType | null>(null);
     const [confirmAction, setConfirmAction] = useState<{ type: ActionType; targetId: string; guessChar?: Character } | null>(null);
+    const [showConversionChoice, setShowConversionChoice] = useState(false);
 
     const me = state.players.find((p) => p.id === playerId)!;
     const aliveOthers = state.players.filter((p) => p.isAlive && p.id !== playerId);
@@ -170,6 +171,11 @@ function ActionPanel({ state, playerId, onAction, actionDeadline }: Props) {
     const isReformation = state.gameMode === 'reformation';
 
     const handleActionButtonClick = (actionType: ActionType, needsTarget: boolean) => {
+        if (actionType === 'conversion') {
+            // 전향: 자기/타인 선택 모달 표시
+            setShowConversionChoice(true);
+            return;
+        }
         if (needsTarget) {
             // Open target selection modal
             setPendingActionType(actionType);
@@ -181,6 +187,7 @@ function ActionPanel({ state, playerId, onAction, actionDeadline }: Props) {
 
     const handleCancelTargetSelection = () => {
         setPendingActionType(null);
+        setShowConversionChoice(false);
     };
 
     // Called by TargetSelectModal when user clicks confirm
@@ -194,7 +201,7 @@ function ActionPanel({ state, playerId, onAction, actionDeadline }: Props) {
         // Keep pendingActionType so TargetSelectModal reappears if ConfirmModal is cancelled
     };
 
-    const getConfirmInfo = (type: ActionType, target?: { name: string; coins?: number }) => {
+    const getConfirmInfo = (type: ActionType, target?: { name: string; coins?: number; allegiance?: Allegiance }) => {
         switch (type) {
             case 'income':
                 return { title: '소득 확인', message: '소득을 선택하시겠습니까? (코인 +1)', label: '소득 받기', color: 'var(--gold)', icon: Coins };
@@ -213,7 +220,12 @@ function ActionPanel({ state, playerId, onAction, actionDeadline }: Props) {
             case 'coup':
                 return { title: '쿠데타 확인', message: `정말 ${target?.name}에게 쿠데타를 하시겠습니까? (7코인 소모)`, label: `${target?.name ?? ''} 쿠데타`, color: 'var(--gold)', icon: Zap };
             case 'conversion':
-                return { title: '전향 확인', message: '자신의 진영을 변경하시겠습니까? (1코인 → 재무부)', label: '전향하기', color: '#a855f7', icon: RefreshCw };
+                if (target) {
+                    const targetAllegiance = target.allegiance ? ALLEGIANCE_NAMES[target.allegiance] : '';
+                    const newAllegiance = target.allegiance === 'loyalist' ? ALLEGIANCE_NAMES.reformist : ALLEGIANCE_NAMES.loyalist;
+                    return { title: '타인 전향 확인', message: `${target.name}의 진영을 ${targetAllegiance} → ${newAllegiance}(으)로 변경하시겠습니까? (2코인 → 재무부)`, label: `${target.name} 전향시키기`, color: '#a855f7', icon: RefreshCw };
+                }
+                return { title: '자기 전향 확인', message: '자신의 진영을 변경하시겠습니까? (1코인 → 재무부)', label: '전향하기', color: '#a855f7', icon: RefreshCw };
             case 'embezzlement':
                 return { title: '횡령 확인', message: `재무부의 ${state.treasury ?? 0}코인을 횡령하시겠습니까? (도전 가능)`, label: '횡령하기', color: 'var(--gold)', icon: Banknote };
             case 'examine':
@@ -303,6 +315,48 @@ function ActionPanel({ state, playerId, onAction, actionDeadline }: Props) {
                     <p className="text-xs text-text-muted text-center mt-1">
                         {mustCoup ? '⏱ 시간 초과 시 자동 쿠데타' : '⏱ 시간 초과 시 자동 소득'}
                     </p>
+                </div>
+            )}
+
+            {/* 전향 선택 모달 — 자기 전향 / 타인 전향 */}
+            {showConversionChoice && !pendingActionType && !confirmAction && (
+                <div className="p-4 rounded-xl border border-purple-500/30 bg-bg-card space-y-3">
+                    <div className="text-center">
+                        <h3 className="text-sm font-bold text-purple-300 mb-1">전향 대상 선택</h3>
+                        <p className="text-xs text-text-muted">누구의 진영을 변경하시겠습니까?</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                        <button
+                            onClick={() => {
+                                setShowConversionChoice(false);
+                                setConfirmAction({ type: 'conversion', targetId: '' });
+                            }}
+                            disabled={me.coins < 1 || loading}
+                            className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-purple-500/40 bg-purple-500/10 hover:bg-purple-500/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
+                        >
+                            <User className="w-5 h-5 text-purple-400" />
+                            <span className="text-xs font-bold text-text-primary">자기 전향</span>
+                            <span className="text-[10px] text-text-muted">1코인 → 재무부</span>
+                        </button>
+                        <button
+                            onClick={() => {
+                                setShowConversionChoice(false);
+                                setPendingActionType('conversion');
+                            }}
+                            disabled={me.coins < 2 || loading}
+                            className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-purple-500/40 bg-purple-500/10 hover:bg-purple-500/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
+                        >
+                            <Users className="w-5 h-5 text-purple-400" />
+                            <span className="text-xs font-bold text-text-primary">타인 전향</span>
+                            <span className="text-[10px] text-text-muted">2코인 → 재무부</span>
+                        </button>
+                    </div>
+                    <button
+                        onClick={() => setShowConversionChoice(false)}
+                        className="w-full text-xs text-text-muted hover:text-text-secondary py-1"
+                    >
+                        취소
+                    </button>
                 </div>
             )}
 
