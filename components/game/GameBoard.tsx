@@ -809,7 +809,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             )}
 
             {/* 모달: 게임 규칙 */}
-            {showRules && <GameRulesModal onClose={() => setShowRules(false)} />}
+            {showRules && <GameRulesModal onClose={() => setShowRules(false)} gameMode={state.gameMode} useInquisitor={state.useInquisitor} />}
 
             {/* 모달: 방 나가기 확인 */}
             {showLeaveConfirm && (

@@ -343,7 +343,7 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
             </div>
 
             {/* 게임 규칙 모달 */}
-            {showRules && <GameRulesModal onClose={() => setShowRules(false)} />}
+            {showRules && <GameRulesModal onClose={() => setShowRules(false)} gameMode={state.gameMode} useInquisitor={state.useInquisitor} />}
 
             {/* 확인 모달 */}
             {confirmAction && confirmProps && (
