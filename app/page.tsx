@@ -15,6 +15,8 @@ interface RoomListItem {
     maxPlayers: number;
     gameMode: string;
     createdAt: number;
+    status: 'waiting' | 'playing';
+    alivePlayers?: number;
 }
 
 export default function LobbyPage() {
@@ -24,7 +26,8 @@ export default function LobbyPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [tab, setTab] = useState<'create' | 'join' | 'rooms'>('create');
-    const [gameMode, setGameMode] = useState<'standard' | 'guess'>('standard');
+    const [gameMode, setGameMode] = useState<'standard' | 'guess' | 'reformation'>('standard');
+    const [useInquisitor, setUseInquisitor] = useState(true);
     const [checkingRoom, setCheckingRoom] = useState(true);
     const [ruleTab, setRuleTab] = useState<RuleTab>('basic');
     const [rooms, setRooms] = useState<RoomListItem[]>([]);
@@ -112,7 +115,12 @@ export default function LobbyPage() {
         const res = await fetch('/api/game/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ playerName: playerName.trim(), playerId, gameMode }),
+            body: JSON.stringify({
+                playerName: playerName.trim(),
+                playerId,
+                gameMode,
+                ...(gameMode === 'reformation' && { useInquisitor }),
+            }),
         });
         const data = await res.json();
         setLoading(false);
@@ -246,7 +254,7 @@ export default function LobbyPage() {
                     <div className="mb-5">
                         <div className="flex items-center justify-between mb-3">
                             <label className="block text-xs text-text-muted font-mono uppercase tracking-widest">
-                                대기 중인 방
+                                방 목록
                             </label>
                             <button
                                 onClick={async () => {
@@ -273,7 +281,7 @@ export default function LobbyPage() {
                             ) : rooms.length === 0 ? (
                                 <div className="text-center py-8">
                                     <Users size={32} className="text-text-muted mx-auto mb-3 opacity-50" />
-                                    <p className="text-text-muted text-sm">대기 중인 방이 없습니다</p>
+                                    <p className="text-text-muted text-sm">열려있는 방이 없습니다</p>
                                     <button
                                         onClick={() => setTab('create')}
                                         className="text-gold text-xs mt-2 hover:underline font-medium"
@@ -285,7 +293,7 @@ export default function LobbyPage() {
                                 rooms.map((room) => (
                                     <div
                                         key={room.roomId}
-                                        className="bg-bg-surface border border-border-subtle rounded-lg p-3 flex items-center justify-between gap-3"
+                                        className={`bg-bg-surface border border-border-subtle rounded-lg p-3 flex items-center justify-between gap-3 ${room.status === 'playing' ? 'opacity-70' : ''}`}
                                     >
                                         <div className="min-w-0 flex-1">
                                             <div className="flex items-center gap-2 mb-1">
@@ -298,23 +306,40 @@ export default function LobbyPage() {
                                                     }`}>
                                                     {room.gameMode === 'guess' ? 'Guess' : 'Standard'}
                                                 </span>
+                                                {room.status === 'waiting' ? (
+                                                    <span className="text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0 bg-emerald-500/20 text-emerald-300">
+                                                        대기 중
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0 bg-orange-500/20 text-orange-300">
+                                                        게임 중
+                                                    </span>
+                                                )}
                                             </div>
                                             <div className="flex items-center gap-3 text-[11px] text-text-muted">
                                                 <span className="font-mono">{room.roomId}</span>
                                                 <span className="flex items-center gap-1">
                                                     <Users size={11} />
-                                                    {room.playerCount}/{room.maxPlayers}
+                                                    {room.status === 'playing' && room.alivePlayers !== undefined
+                                                        ? `생존 ${room.alivePlayers}/${room.playerCount}`
+                                                        : `${room.playerCount}/${room.maxPlayers}`}
                                                 </span>
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={() => handleJoinRoom(room.roomId)}
-                                            disabled={loading}
-                                            className="btn-gold px-3 py-1.5 text-xs flex items-center gap-1 shrink-0"
-                                        >
-                                            <LogIn size={12} />
-                                            입장
-                                        </button>
+                                        {room.status === 'waiting' ? (
+                                            <button
+                                                onClick={() => handleJoinRoom(room.roomId)}
+                                                disabled={loading}
+                                                className="btn-gold px-3 py-1.5 text-xs flex items-center gap-1 shrink-0"
+                                            >
+                                                <LogIn size={12} />
+                                                입장
+                                            </button>
+                                        ) : (
+                                            <span className="text-[11px] text-text-muted font-mono shrink-0">
+                                                게임 중
+                                            </span>
+                                        )}
                                     </div>
                                 ))
                             )}
