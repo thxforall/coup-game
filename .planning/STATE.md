@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-24 - Completed quick-050 (대기실 방 나가기 + 방 삭제 시 자동 리다이렉트)
+- Last activity: 2026-02-24 - Completed quick-051 (비공개 개인 로그 — 카드 교체/교환)
 
 ### Quick Tasks Completed
 
@@ -55,11 +55,12 @@
 | 048 | 갈취 대상 코인 수 반영 — 1코인 대상 안내 표시 + 확인 메시지 실제 금액 | 2026-02-24 | 656c929 | [048-steal-show-target-coin-count](./quick/048-steal-show-target-coin-count/) |
 | 049 | game_over 화면에 스크롤 가능한 게임 로그(EventLog) 표시 | 2026-02-24 | c6c0c21 | [049-game-over-show-game-log](./quick/049-game-over-show-game-log/) |
 | 050 | 대기실 방 나가기 + 방 삭제 시 자동 리다이렉트 | 2026-02-24 | 08f07f6 | [050-waiting-room-delete-leave](./quick/050-waiting-room-delete-leave/) |
+| 051 | 비공개 개인 로그 — 카드 교체/교환 시 본인만 볼 수 있는 로그 | 2026-02-24 | 3ab6523 | [051-private-personal-log-for-card-swap-exchange](./quick/051-private-personal-log-for-card-swap-exchange/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-24T02:06:00Z
-- Stopped at: Completed quick-050 (대기실 방 나가기 + 방 삭제 시 자동 리다이렉트)
+- Last session: 2026-02-24T02:09:00Z
+- Stopped at: Completed quick-051 (비공개 개인 로그 — 카드 교체/교환)
 - Resume file: None
