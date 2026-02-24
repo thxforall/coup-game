@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-24 - Completed quick-058 (방 목록에 진행 중 방 표시 + status 배지 UI)
+- Last activity: 2026-02-24 - Completed quick-059 (종교개혁 확장판 룰 수정: 횡령 역도전 + 심문 카드선택)
 
 ### Quick Tasks Completed
 
@@ -62,11 +62,12 @@
 | 055 | 타이머 바 아래 자동 행동 안내 텍스트 (자동 소득/쿠데타) | 2026-02-24 | 8e12295 | [055-timer-bar-auto-income-info-text](./quick/055-timer-bar-auto-income-info-text/) |
 | 056 | ExchangeModal swap 카드 선택 UX + exchange_select 45초 타임아웃 자동 기존 카드 유지 | 2026-02-24 | c5fcad6 | [056-exchange-card-swap-and-timeout-fix](./quick/056-exchange-card-swap-and-timeout-fix/) |
 | 058 | 방 목록에 진행 중인(playing) 방 표시 + 상태 배지 UI (대기 중/게임 중) | 2026-02-24 | a82695f | [058-room-list-show-in-progress-games](./quick/058-room-list-show-in-progress-games/) |
+| 059 | 종교개혁 확장판 룰 수정: 횡령 역도전 + 심문 대상 카드선택 + 공격 제한 검증 | 2026-02-24 | 36535bb | [059-reformation-rules-fix](./quick/059-reformation-rules-fix/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
 - Last session: 2026-02-24
-- Stopped at: Completed quick-058 (방 목록에 진행 중 방 표시 + status 배지 UI)
+- Stopped at: Completed quick-059 (종교개혁 확장판 룰 수정)
 - Resume file: None
