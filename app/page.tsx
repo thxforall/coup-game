@@ -7,17 +7,11 @@ import { Skull, Play, Crown, Crosshair, Anchor, Repeat, Shield, BookOpen, Github
 import { getOrCreatePlayerId, getPlayerStorage, setPlayerStorage, getActiveRoom, clearActiveRoom } from '@/lib/storage';
 import BgmPlayer from '@/components/game/BgmPlayer';
 import CardInfoModal from '@/components/game/CardInfoModal';
-import type { Character } from '@/lib/game/types';
+import { Character } from '@/lib/game/types';
+import { CARD_IMAGES } from '@/lib/game/constants';
 
 type RuleTab = 'mode' | 'basic' | 'action' | 'character' | 'challenge';
 
-const CARD_IMAGES: Record<string, string> = {
-    Duke: '/cards/duke.jpg',
-    Contessa: '/cards/contessa.jpg',
-    Captain: '/cards/captain.jpg',
-    Assassin: '/cards/assassin.jpg',
-    Ambassador: '/cards/ambassador.jpg',
-};
 
 interface RoomListItem {
     roomId: string;
@@ -347,10 +341,10 @@ export default function LobbyPage() {
                                                     {room.hostName}
                                                 </span>
                                                 <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0 ${room.gameMode === 'guess'
-                                                        ? 'bg-violet-500/20 text-violet-300'
-                                                        : room.gameMode === 'reformation'
-                                                            ? 'bg-purple-500/20 text-purple-300'
-                                                            : 'bg-gold/20 text-gold'
+                                                    ? 'bg-violet-500/20 text-violet-300'
+                                                    : room.gameMode === 'reformation'
+                                                        ? 'bg-purple-500/20 text-purple-300'
+                                                        : 'bg-gold/20 text-gold'
                                                     }`}>
                                                     {room.gameMode === 'guess' ? 'Guess' : room.gameMode === 'reformation' ? '종교개혁' : 'Standard'}
                                                 </span>
@@ -517,25 +511,26 @@ export default function LobbyPage() {
                                     { key: 'Ambassador', kr: '대사', color: 'text-emerald-400', ability: '교환(덱과 카드 교체) / 갈취 차단' },
                                     { key: 'Contessa', kr: '백작부인', color: 'text-red-400', ability: '암살 차단' },
                                 ].map((c) => (
-                                    <div key={c.key} className="flex items-center gap-3">
-                                        <button
-                                            onClick={() => setSelectedChar(c.key as Character)}
-                                            className="shrink-0 w-10 h-14 relative rounded overflow-hidden border border-white/10 hover:border-white/30 transition-colors"
-                                            aria-label={`${c.kr} 카드 상세보기`}
-                                        >
+                                    <button
+                                        key={c.key}
+                                        onClick={() => setSelectedChar(c.key as Character)}
+                                        className="flex items-center gap-3 w-full text-left rounded-lg p-2 -m-2 hover:bg-white/5 transition-colors cursor-pointer"
+                                        aria-label={`${c.kr} 카드 상세보기`}
+                                    >
+                                        <div className="shrink-0 w-10 h-14 relative rounded overflow-hidden border border-white/10">
                                             <Image
-                                                src={CARD_IMAGES[c.key]}
+                                                src={CARD_IMAGES[c.key as Character]}
                                                 alt={c.kr}
                                                 fill
                                                 className="object-cover"
                                                 sizes="40px"
                                             />
-                                        </button>
+                                        </div>
                                         <div className="min-w-0">
                                             <span className={`${c.color} font-bold`}>{c.kr}</span>
                                             <p className="text-text-secondary mt-0.5">{c.ability}</p>
                                         </div>
-                                    </div>
+                                    </button>
                                 ))}
                             </div>
                         )}
