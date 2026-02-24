@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-24 - Completed quick-062 (게임 중 방 삭제 감지 버그 수정)
+- Last activity: 2026-02-24 - Completed quick-063 (로비 게임 규칙 탭 헤더 가로 스크롤 제거)
 
 ### Quick Tasks Completed
 
@@ -67,6 +67,7 @@
 | 060b | 대기실 진영 선택 UI (종교개혁 모드 충성파/개혁파 토글) | 2026-02-24 | 31d2de9 | [060-allegiance-selection-ui](./quick/060-allegiance-selection-ui/) |
 | 061 | GameRulesModal 캐릭터 능력 섹션에 카드 이미지 썸네일 + CardInfoModal 연동 | 2026-02-24 | 97e70bc | [061-game-rules-modal-card-image-view](./quick/061-game-rules-modal-card-image-view/) |
 | 062 | 게임 중 방 삭제 감지 버그 수정 (viewRef onValue else 브랜치) | 2026-02-24 | ed2bd62 | [062-fix-room-delete-in-game](./quick/062-fix-room-delete-in-game/) |
+| 063 | 로비 게임 규칙 탭 헤더 가로 스크롤 제거 | 2026-02-24 | 8ba2b12 | [063-gamerules-tab-header-no-scroll](./quick/063-gamerules-tab-header-no-scroll/) |
 
 ### Blockers/Concerns
 - None currently
