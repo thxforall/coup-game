@@ -2,7 +2,7 @@
 
 import { memo, useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { Skull, Settings, Trophy, ScrollText, RotateCcw, BookOpen, LogOut } from 'lucide-react';
+import { Skull, Settings, Trophy, ScrollText, RotateCcw, BookOpen, LogOut, Eye } from 'lucide-react';
 import { FilteredGameState, Card, Player, ACTION_NAMES } from '@/lib/game/types';
 import { PresenceMap, subscribeToChatMessages, CHAT_MESSAGES } from '@/lib/firebase.client';
 import { clearActiveRoom } from '@/lib/storage';
@@ -519,18 +519,35 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                 <div className="flex items-center gap-2">
                     <div className="flex-1 min-w-0 flex flex-col gap-0.5">
                         {(() => {
-                            const gameParts = state.log.map((entry, i) => ({
-                                type: 'game' as const,
-                                text: entry,
-                                timestamp: i,
-                            }));
+                            // structuredLog 우선 사용 (타임스탬프 정렬 + private 필터 완료)
+                            const useStructured = state.structuredLog && state.structuredLog.length > 0;
+
+                            const gameParts = useStructured
+                                ? state.structuredLog!.map((entry) => ({
+                                    type: 'game' as const,
+                                    text: entry.message,
+                                    timestamp: entry.timestamp,
+                                    isPrivate: !!entry.visibleTo,
+                                    logType: entry.type,
+                                }))
+                                : state.log.map((entry, i) => ({
+                                    type: 'game' as const,
+                                    text: entry,
+                                    timestamp: i,
+                                    isPrivate: false,
+                                    logType: undefined as string | undefined,
+                                }));
+
                             const chatParts = chatLogs.map((c) => ({
                                 type: 'chat' as const,
                                 playerName: c.playerName,
                                 playerId: c.playerId,
                                 text: c.message,
-                                timestamp: gameParts.length + c.timestamp / 1e13,
+                                timestamp: useStructured ? c.timestamp : (gameParts.length + c.timestamp / 1e13),
+                                isPrivate: false,
+                                logType: undefined as string | undefined,
                             }));
+
                             const merged = [...gameParts, ...chatParts]
                                 .sort((a, b) => a.timestamp - b.timestamp)
                                 .slice(-3);
@@ -551,10 +568,16 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                                         </div>
                                     );
                                 }
-                                const color = isLatest ? 'text-gold font-semibold' : getLogColor(item.text) + ' opacity-70';
+                                const color = isLatest
+                                    ? 'text-gold font-semibold'
+                                    : item.isPrivate
+                                        ? 'text-ambassador/70 italic'
+                                        : getLogColor(item.text) + ' opacity-70';
                                 return (
                                     <div key={`game-${i}`} className="flex items-center gap-1.5 truncate">
-                                        <span className={`text-[10px] flex-shrink-0 ${isLatest ? 'text-gold' : 'text-border-subtle'}`}>▸</span>
+                                        <span className={`text-[10px] flex-shrink-0 ${isLatest ? 'text-gold' : 'text-border-subtle'}`}>
+                                            {item.isPrivate ? <Eye size={10} strokeWidth={2.5} className="text-ambassador/70" /> : '▸'}
+                                        </span>
                                         <span className={`font-mono text-[11px] truncate ${color}`}>
                                             {item.text}
                                         </span>
