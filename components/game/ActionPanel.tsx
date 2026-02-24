@@ -105,9 +105,8 @@ const ACTION_BUTTONS: {
             type: 'embezzlement',
             label: '횡령',
             icon: Banknote,
-            desc: '재무부 코인 횡령 (공작, 도전 가능)',
-            claimedChar: 'Duke',
-            variant: 'duke',
+            desc: '재무부 코인 횡령 (공작이 없다고 선언, 도전 가능)',
+            variant: 'reformation',
             row: 3 as 1 | 2,
         },
         {

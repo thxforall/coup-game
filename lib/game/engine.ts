@@ -604,6 +604,11 @@ function resolveChallenge(state: GameState, challengerId: string): GameState {
   const actor = getPlayer(state, pending.actorId);
   const challenger = getPlayer(state, challengerId);
 
+  // 횡령 특별 처리: 역도전 메커니즘 (공작이 있으면 도전 성공)
+  if (pending.type === 'embezzlement') {
+    return resolveEmbezzlementChallenge(state, challengerId);
+  }
+
   // 행동에 필요한 캐릭터 확인
   const requiredChar = getRequiredCharacter(pending.type, state);
   if (!requiredChar) {
@@ -701,6 +706,82 @@ function resolveChallenge(state: GameState, challengerId: string): GameState {
   }
 }
 
+/**
+ * 횡령 역도전 처리: 횡령은 "공작이 없다"는 선언이므로 도전 로직이 역방향.
+ * - 공작이 있으면: 도전 성공 (횡령자가 거짓말 — 공작이 있는데 없다고 함)
+ * - 공작이 없으면: 도전 실패 (횡령자가 진짜 공작 없음 — 횡령 진행)
+ */
+function resolveEmbezzlementChallenge(state: GameState, challengerId: string): GameState {
+  const pending = state.pendingAction!;
+  const actor = getPlayer(state, pending.actorId);
+  const challenger = getPlayer(state, challengerId);
+  let s = state;
+
+  const actorHasDuke = hasCharacter(actor, 'Duke');
+
+  if (actorHasDuke) {
+    // 도전 성공: 횡령자가 공작을 가지고 있었음 (거짓말 — 공작이 있으면서 없다고 함)
+    s = addLog(
+      s,
+      `${challenger.name}의 도전 성공! ${actor.name}이(가) 공작을 가지고 있었습니다`
+    );
+
+    // 횡령자가 카드를 잃음 — 행동 무효 (next_turn)
+    const actorPlayer = getPlayer(s, pending.actorId);
+    if (getLiveCardCount(actorPlayer) > 1) {
+      s = checkWinner(s);
+      if (s.phase === 'game_over') return s;
+      return {
+        ...s,
+        phase: 'lose_influence',
+        pendingAction: {
+          ...s.pendingAction!,
+          losingPlayerId: pending.actorId,
+          challengeLoseContext: { continuation: 'next_turn' },
+        },
+      };
+    } else {
+      const updatedPlayers = s.players.map((p) =>
+        p.id === pending.actorId ? removeFirstLiveCard(p) : p
+      );
+      s = { ...s, players: updatedPlayers };
+      s = checkWinner(s);
+      if (s.phase === 'game_over') return s;
+      return nextTurn(s);
+    }
+  } else {
+    // 도전 실패: 횡령자가 진짜 공작이 없음 — 횡령 진행
+    s = addLog(
+      s,
+      `${challenger.name}의 도전 실패! ${actor.name}은(는) 정말 공작이 없었습니다`
+    );
+
+    // 도전자가 카드를 잃음 — 횡령 실행 (execute_action)
+    const challengerPlayer = getPlayer(s, challengerId);
+    if (getLiveCardCount(challengerPlayer) > 1) {
+      s = checkWinner(s);
+      if (s.phase === 'game_over') return s;
+      return {
+        ...s,
+        phase: 'lose_influence',
+        pendingAction: {
+          ...s.pendingAction!,
+          losingPlayerId: challengerId,
+          challengeLoseContext: { continuation: 'execute_action' },
+        },
+      };
+    } else {
+      const updatedPlayers = s.players.map((p) =>
+        p.id === challengerId ? removeFirstLiveCard(p) : p
+      );
+      s = { ...s, players: updatedPlayers };
+      s = checkWinner(s);
+      if (s.phase === 'game_over') return s;
+      return executeAction(s);
+    }
+  }
+}
+
 function getRequiredCharacter(actionType: ActionType, state?: GameState): Character | null {
   const useInquisitor = state?.gameMode === 'reformation' && state?.useInquisitor;
   const map: Partial<Record<ActionType, Character>> = {
@@ -709,7 +790,7 @@ function getRequiredCharacter(actionType: ActionType, state?: GameState): Charac
     steal: 'Captain',
     exchange: useInquisitor ? 'Inquisitor' : 'Ambassador',
     examine: 'Inquisitor',
-    embezzlement: 'Duke',
+    // embezzlement는 resolveEmbezzlementChallenge에서 역도전으로 처리 (getRequiredCharacter 미사용)
   };
   return map[actionType] ?? null;
 }

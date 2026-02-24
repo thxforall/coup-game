@@ -74,11 +74,11 @@ const ACTION_CONTEXT: Record<ActionType, ActionContext> = {
         passInfo: '자동 통과',
     },
     embezzlement: {
-        claimedRole: '공작',
-        effect: '재무부 코인 횡령',
+        claimedRole: null,
+        effect: '공작이 없다고 선언하고 재무부 코인을 가져옵니다.',
         blockInfo: null,
-        challengeInfo: '공작이 아닐 수 있습니다!',
-        passInfo: '횡령을 허용합니다',
+        challengeInfo: '도전 시: 횡령자가 실제로 공작을 가지고 있으면 도전 성공 (횡령 무효, 횡령자 카드 잃음).\n공작이 없으면 도전 실패 (도전자 카드 잃음, 횡령 실행).',
+        passInfo: '패스하면 재무부 코인을 횡령합니다.',
     },
     examine: {
         claimedRole: '종교재판관',
