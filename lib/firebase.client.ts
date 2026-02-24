@@ -49,6 +49,9 @@ export function subscribeToRoom(
     (snapshot) => {
       if (snapshot.exists()) {
         callback(snapshot.val() as FilteredGameState);
+      } else {
+        // 게임 중 방 삭제 감지 (stateRef는 게임 시작 후 unsubscribe되므로 viewRef에서 처리)
+        onRoomDeleted?.();
       }
     },
     (error) => {
