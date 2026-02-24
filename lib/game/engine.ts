@@ -106,6 +106,20 @@ function addLog(state: GameState, msg: string, entry?: Omit<LogEntry, 'message' 
   return newState;
 }
 
+function addPrivateLog(state: GameState, playerId: string, msg: string, entry?: Omit<LogEntry, 'message' | 'timestamp' | 'visibleTo'>): GameState {
+  const logEntry: LogEntry = {
+    ...(entry ?? { type: 'action_resolved' as LogEntryType }),
+    message: msg,
+    timestamp: Date.now(),
+    visibleTo: playerId,
+  };
+  return {
+    ...state,
+    structuredLog: [...(state.structuredLog ?? []), logEntry],
+    // log[] (string[])에는 추가하지 않음 — 비공개이므로
+  };
+}
+
 // 다음 살아있는 플레이어로 턴 이동
 function nextTurn(state: GameState): GameState {
   const alive = getAlivePlayers(state);
@@ -393,6 +407,10 @@ export function processBlockResponse(
         { ...s, players: updatedPlayers, deck: shuffledDeck },
         `${responder.name}의 도전 실패! ${blocker.name}이(가) 진짜 ${CHARACTER_NAMES[pending.blockerCharacter!]}이었습니다`
       );
+      s = addPrivateLog(s, pending.blockerId!,
+        `${CHARACTER_NAMES[pending.blockerCharacter!]}이(가) 덱으로 돌아가고 새 카드를 받았습니다`,
+        { type: 'block_challenge_fail', actorId: pending.blockerId }
+      );
 
       // 도전자가 카드를 잃음 — 2장 이상이면 선택, 1장이면 자동 제거
       const challengerPlayer = getPlayer(s, responderId);
@@ -501,6 +519,10 @@ function resolveChallenge(state: GameState, challengerId: string): GameState {
     s = addLog(
       { ...s, players: updatedPlayers, deck: shuffled },
       `${challenger.name}의 도전 실패! ${actor.name}이(가) 진짜 ${CHARACTER_NAMES[requiredChar]}이었습니다`
+    );
+    s = addPrivateLog(s, pending.actorId,
+      `${CHARACTER_NAMES[requiredChar]}이(가) 덱으로 돌아가고 새 카드를 받았습니다`,
+      { type: 'challenge_fail', actorId: pending.actorId }
     );
 
     // 암살 도전 실패 시 2명 피해 예고 로그
@@ -872,6 +894,12 @@ export function processExchangeSelect(
   let s = addLog(
     { ...state, players: updatedPlayers, deck: newDeck },
     `${actor.name}이(가) 카드를 교환했습니다`
+  );
+  const allOptionNames = allOptions.map(c => CHARACTER_NAMES[c]).join(', ');
+  const keptNames = keptChars.map(c => CHARACTER_NAMES[c]).join(', ');
+  s = addPrivateLog(s, actorId,
+    `교환: [${allOptionNames}] 중 ${keptNames}을(를) 선택했습니다`,
+    { type: 'exchange_complete', actorId }
   );
   return nextTurn(s);
 }
