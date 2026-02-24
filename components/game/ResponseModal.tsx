@@ -381,25 +381,27 @@ function ResponseModal({ state, playerId, myCards, onAction }: Props) {
                         </div>
                     )}
 
-                    {/* 도전 버튼 */}
-                    <button
-                        className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-sora font-semibold text-xs sm:text-sm transition-opacity disabled:opacity-50"
-                        style={{
-                            backgroundColor: 'rgba(231, 76, 60, 0.15)',
-                            border: '1px solid var(--red-light, #E74C3C)',
-                            color: 'var(--red-light, #E74C3C)',
-                        }}
-                        onClick={() => handleResponse('challenge')}
-                        disabled={loading}
-                    >
-                        <Zap size={16} />
-                        {isBlockPhase
-                            ? '블록에 도전! (거짓말이라고 생각해요)'
-                            : pending.type === 'assassinate'
-                                ? '도전! (암살자가 아니라고 생각해요)'
-                                : '도전! (거짓말이라고 생각해요)'
-                        }
-                    </button>
+                    {/* 도전 버튼 — 역할 주장이 없는 액션(소득/해외원조/쿠데타/전향)은 도전 불가, 블록 단계는 항상 도전 가능 */}
+                    {(isBlockPhase || !['income', 'foreignAid', 'coup', 'conversion'].includes(pending.type)) && (
+                        <button
+                            className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-sora font-semibold text-xs sm:text-sm transition-opacity disabled:opacity-50"
+                            style={{
+                                backgroundColor: 'rgba(231, 76, 60, 0.15)',
+                                border: '1px solid var(--red-light, #E74C3C)',
+                                color: 'var(--red-light, #E74C3C)',
+                            }}
+                            onClick={() => handleResponse('challenge')}
+                            disabled={loading}
+                        >
+                            <Zap size={16} />
+                            {isBlockPhase
+                                ? '블록에 도전! (거짓말이라고 생각해요)'
+                                : pending.type === 'assassinate'
+                                    ? '도전! (암살자가 아니라고 생각해요)'
+                                    : '도전! (거짓말이라고 생각해요)'
+                            }
+                        </button>
+                    )}
 
                     {/* 블록 버튼들 (직접 액션 단계, 비대상자) */}
                     {!isBlockPhase && blockableChars.length > 0 && pending.targetId !== playerId && pending.actorId !== playerId && (
