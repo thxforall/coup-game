@@ -286,7 +286,8 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
 
         const isAwaitingPhase =
             state.phase === 'awaiting_response' || state.phase === 'awaiting_block_response';
-        const deadline = state.pendingAction?.responseDeadline;
+        const isActionPhase = state.phase === 'action' && !!state.actionDeadline;
+        const deadline = isActionPhase ? state.actionDeadline : state.pendingAction?.responseDeadline;
 
         // phase나 deadline이 변경되면 플래그 리셋
         if (deadline !== timeoutDeadlineRef.current) {
@@ -294,7 +295,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             timeoutDeadlineRef.current = deadline;
         }
 
-        if (!isAwaitingPhase || !deadline || timeoutRequestedRef.current) return;
+        if ((!isAwaitingPhase && !isActionPhase) || !deadline || timeoutRequestedRef.current) return;
 
         const now = Date.now();
         const delay = deadline - now + 1000;
@@ -306,7 +307,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
 
         const timer = setTimeout(fireTimeout, delay);
         return () => clearTimeout(timer);
-    }, [state.phase, state.pendingAction?.responseDeadline, fireTimeout]);
+    }, [state.phase, state.pendingAction?.responseDeadline, state.actionDeadline, fireTimeout]);
 
     // 게임 오버 화면
     if (state.phase === 'game_over') {
@@ -637,6 +638,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                             state={state}
                             playerId={playerId}
                             onAction={onAction}
+                            actionDeadline={state.actionDeadline}
                         />
                     )}
 

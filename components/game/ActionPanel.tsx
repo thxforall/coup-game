@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useState } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { Coins, Handshake, Crown, Crosshair, Anchor, Repeat, Zap } from 'lucide-react';
 import { FilteredGameState, ActionType, Character } from '@/lib/game/types';
 import ConfirmModal from './ConfirmModal';
@@ -10,6 +10,7 @@ interface Props {
     state: FilteredGameState;
     playerId: string;
     onAction: (action: object) => Promise<void>;
+    actionDeadline?: number;
 }
 
 type ButtonVariant = 'general' | 'duke' | 'assassin' | 'captain' | 'ambassador' | 'coup';
@@ -110,8 +111,23 @@ const VARIANT_ICON_COLORS: Record<ButtonVariant, string> = {
     coup: 'text-bg-dark',
 };
 
-function ActionPanel({ state, playerId, onAction }: Props) {
+function ActionPanel({ state, playerId, onAction, actionDeadline }: Props) {
     const [loading, setLoading] = useState(false);
+    const [remainingMs, setRemainingMs] = useState(45000);
+
+    useEffect(() => {
+        if (!actionDeadline) return;
+        const update = () => setRemainingMs(Math.max(0, actionDeadline - Date.now()));
+        update();
+        const interval = setInterval(update, 200);
+        return () => clearInterval(interval);
+    }, [actionDeadline]);
+
+    const remainingSeconds = Math.ceil(remainingMs / 1000);
+    const progress = Math.max(0, remainingMs / 45000);
+    const isCritical = remainingSeconds <= 5;
+    const isUrgent = remainingSeconds <= 15;
+    const timerColor = isCritical ? 'bg-red-500' : isUrgent ? 'bg-amber-500' : 'bg-emerald-500';
     const [pendingActionType, setPendingActionType] = useState<ActionType | null>(null);
     const [confirmAction, setConfirmAction] = useState<{ type: ActionType; targetId: string; guessChar?: Character } | null>(null);
 
@@ -218,6 +234,24 @@ function ActionPanel({ state, playerId, onAction }: Props) {
 
     return (
         <div className="space-y-3">
+            {/* 타이머 바 */}
+            {actionDeadline && (
+                <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                        <span className="text-text-muted">남은 시간</span>
+                        <span className={`font-bold tabular-nums ${isCritical ? 'text-red-400 animate-pulse' : isUrgent ? 'text-amber-400' : 'text-text-muted'}`}>
+                            {remainingSeconds}s
+                        </span>
+                    </div>
+                    <div className="w-full h-1 bg-bg-surface rounded-full overflow-hidden">
+                        <div
+                            className={`h-full rounded-full transition-all duration-200 ${timerColor}`}
+                            style={{ width: `${progress * 100}%` }}
+                        />
+                    </div>
+                </div>
+            )}
+
             {/* Target Select Modal — shown when action requires target, hidden while ConfirmModal is open */}
             {pendingActionType && pendingActionDef && !confirmAction && (
                 <TargetSelectModal
