@@ -2,11 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Skull, Play, Crown, Crosshair, Anchor, Repeat, Shield, BookOpen, Github, Users, RefreshCw, LogIn } from 'lucide-react';
+import Image from 'next/image';
+import { Skull, Play, Crown, Crosshair, Anchor, Repeat, Shield, BookOpen, Github, Users, RefreshCw, LogIn, Swords } from 'lucide-react';
 import { getOrCreatePlayerId, getPlayerStorage, setPlayerStorage, getActiveRoom, clearActiveRoom } from '@/lib/storage';
 import BgmPlayer from '@/components/game/BgmPlayer';
 
-type RuleTab = 'basic' | 'action' | 'character' | 'challenge';
+type RuleTab = 'mode' | 'basic' | 'action' | 'character' | 'challenge';
+
+const CARD_IMAGES: Record<string, string> = {
+    Duke: '/cards/duke.jpg',
+    Contessa: '/cards/contessa.jpg',
+    Captain: '/cards/captain.jpg',
+    Assassin: '/cards/assassin.jpg',
+    Ambassador: '/cards/ambassador.jpg',
+};
 
 interface RoomListItem {
     roomId: string;
@@ -412,23 +421,52 @@ export default function LobbyPage() {
 
                 <div className="glass-panel overflow-hidden">
                     {/* Inner Tabs */}
-                    <div className="flex border-b border-border-subtle bg-bg-surface/30">
-                        {(['basic', 'action', 'character', 'challenge'] as const).map((t) => (
+                    <div className="flex border-b border-border-subtle bg-bg-surface/30 overflow-x-auto">
+                        {(['mode', 'basic', 'action', 'character', 'challenge'] as const).map((t) => (
                             <button
                                 key={t}
                                 onClick={() => setRuleTab(t)}
-                                className={`flex-1 py-3 text-[10px] font-bold transition-colors uppercase tracking-tight ${ruleTab === t
+                                className={`flex-1 py-3 text-[10px] font-bold transition-colors uppercase tracking-tight whitespace-nowrap px-1 ${ruleTab === t
                                     ? 'text-gold border-b-2 border-gold -mb-[1px] bg-gold/5'
                                     : 'text-text-muted hover:text-text-secondary'
                                     }`}
                             >
-                                {t === 'basic' ? '기본' : t === 'action' ? '일반액션' : t === 'character' ? '캐릭터' : '도전/블록'}
+                                {t === 'mode' ? '모드' : t === 'basic' ? '기본' : t === 'action' ? '일반액션' : t === 'character' ? '캐릭터' : '도전/블록'}
                             </button>
                         ))}
                     </div>
 
                     {/* Rule Content */}
                     <div className="p-5 min-h-[160px]">
+                        {ruleTab === 'mode' && (
+                            <div className="space-y-3 text-xs animate-in fade-in slide-in-from-left-2 duration-300">
+                                <div className="rounded-md p-2.5 border border-border-subtle">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Swords size={12} className="text-gold" />
+                                        <span className="font-bold text-text-primary">스탠다드</span>
+                                        <span className="text-[10px] text-text-muted">2~6인</span>
+                                    </div>
+                                    <p className="text-text-secondary leading-relaxed">기본 쿠 규칙. 5가지 캐릭터(공작, 암살자, 사령관, 대사, 백작부인)로 진행합니다.</p>
+                                </div>
+                                <div className="rounded-md p-2.5 border border-amber-500/20 bg-amber-500/5">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Crosshair size={12} className="text-amber-400" />
+                                        <span className="font-bold text-amber-400">추측 모드</span>
+                                        <span className="text-[10px] text-text-muted">2~6인</span>
+                                    </div>
+                                    <p className="text-text-secondary leading-relaxed">쿠데타 시 대상의 카드를 추측. 맞추면 추가 카드 제거, 틀리면 일반 쿠데타로 진행.</p>
+                                </div>
+                                <div className="rounded-md p-2.5 border border-purple-500/20 bg-purple-500/5">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Users size={12} className="text-purple-400" />
+                                        <span className="font-bold text-purple-400">종교개혁</span>
+                                        <span className="text-[10px] text-text-muted">2~10인</span>
+                                    </div>
+                                    <p className="text-text-secondary leading-relaxed">충성파/개혁파 진영 시스템. 같은 진영 공격 불가. 전향·횡령 액션 추가. 종교재판관 캐릭터 선택 가능.</p>
+                                </div>
+                            </div>
+                        )}
+
                         {ruleTab === 'basic' && (
                             <ul className="space-y-2.5 text-xs text-text-secondary leading-relaxed animate-in fade-in slide-in-from-left-2 duration-300">
                                 <li className="flex gap-2">
@@ -469,41 +507,29 @@ export default function LobbyPage() {
 
                         {ruleTab === 'character' && (
                             <div className="grid grid-cols-1 gap-3 text-[11px] animate-in fade-in slide-in-from-left-2 duration-300">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-6 h-6 rounded-full bg-violet-500/10 flex items-center justify-center border border-violet-500/20">
-                                        <Crown size={12} className="text-violet-400" />
+                                {[
+                                    { key: 'Duke', kr: '공작', color: 'text-violet-400', ability: '세금징수(+3코인) / 해외원조 차단' },
+                                    { key: 'Assassin', kr: '암살자', color: 'text-slate-300', ability: '3코인으로 암살 (상대 카드 제거)' },
+                                    { key: 'Captain', kr: '사령관', color: 'text-blue-400', ability: '갈취(상대 2코인 탈취) / 갈취 차단' },
+                                    { key: 'Ambassador', kr: '대사', color: 'text-emerald-400', ability: '교환(덱과 카드 교체) / 갈취 차단' },
+                                    { key: 'Contessa', kr: '백작부인', color: 'text-red-400', ability: '암살 차단' },
+                                ].map((c) => (
+                                    <div key={c.key} className="flex items-center gap-3">
+                                        <div className="shrink-0 w-10 h-14 relative rounded overflow-hidden border border-white/10">
+                                            <Image
+                                                src={CARD_IMAGES[c.key]}
+                                                alt={c.kr}
+                                                fill
+                                                className="object-cover"
+                                                sizes="40px"
+                                            />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <span className={`${c.color} font-bold`}>{c.kr}</span>
+                                            <p className="text-text-secondary mt-0.5">{c.ability}</p>
+                                        </div>
                                     </div>
-                                    <span className="text-violet-400 font-bold w-12">공작</span>
-                                    <span className="text-text-secondary">세금징수(+3코인) / 해외원조 차단</span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-6 h-6 rounded-full bg-slate-500/10 flex items-center justify-center border border-slate-500/20">
-                                        <Crosshair size={12} className="text-slate-300" />
-                                    </div>
-                                    <span className="text-slate-300 font-bold w-12">암살자</span>
-                                    <span className="text-text-secondary">3코인으로 암살 (상대 카드 제거)</span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
-                                        <Anchor size={12} className="text-blue-400" />
-                                    </div>
-                                    <span className="text-blue-400 font-bold w-12">사령관</span>
-                                    <span className="text-text-secondary">갈취(상대 2코인 탈취) / 갈취 차단</span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-6 h-6 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
-                                        <Repeat size={12} className="text-emerald-400" />
-                                    </div>
-                                    <span className="text-emerald-400 font-bold w-12">대사</span>
-                                    <span className="text-text-secondary">교환(덱과 카드 교체) / 갈취 차단</span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-6 h-6 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20">
-                                        <Shield size={12} className="text-red-400" />
-                                    </div>
-                                    <span className="text-red-400 font-bold w-12">백작부인</span>
-                                    <span className="text-text-secondary">암살 차단</span>
-                                </div>
+                                ))}
                             </div>
                         )}
 
