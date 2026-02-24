@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-24 - Completed quick-051 (비공개 개인 로그 — 카드 교체/교환)
+- Last activity: 2026-02-24 - Completed quick-052 (턴 액션 45초 타임아웃 자동 소득/쿠데타)
 
 ### Quick Tasks Completed
 
@@ -56,11 +56,12 @@
 | 049 | game_over 화면에 스크롤 가능한 게임 로그(EventLog) 표시 | 2026-02-24 | c6c0c21 | [049-game-over-show-game-log](./quick/049-game-over-show-game-log/) |
 | 050 | 대기실 방 나가기 + 방 삭제 시 자동 리다이렉트 | 2026-02-24 | 08f07f6 | [050-waiting-room-delete-leave](./quick/050-waiting-room-delete-leave/) |
 | 051 | 비공개 개인 로그 — 카드 교체/교환 시 본인만 볼 수 있는 로그 | 2026-02-24 | 3ab6523 | [051-private-personal-log-for-card-swap-exchange](./quick/051-private-personal-log-for-card-swap-exchange/) |
+| 052 | 턴 액션 45초 타임아웃 자동 소득/쿠데타 + 카운트다운 타이머 UI | 2026-02-24 | c40868e | [052-turn-action-timeout-auto-income](./quick/052-turn-action-timeout-auto-income/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
-- Last session: 2026-02-24T02:09:00Z
-- Stopped at: Completed quick-051 (비공개 개인 로그 — 카드 교체/교환)
+- Last session: 2026-02-24T08:44:00Z
+- Stopped at: Completed quick-052 (턴 액션 45초 타임아웃 자동 소득/쿠데타)
 - Resume file: None
