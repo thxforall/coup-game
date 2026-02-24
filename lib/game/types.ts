@@ -54,6 +54,7 @@ export interface PendingAction {
   blockerCharacter?: Character;                            // 블로커가 주장하는 캐릭터
   losingPlayerId?: string;                                 // 카드를 잃어야 하는 플레이어 ID
   exchangeCards?: Character[];                             // 대사가 뽑은 카드 2장
+  exchangeDeadline?: number;                               // 교환 선택 제한시간 (Unix timestamp ms)
   responseDeadline?: number;                               // 응답 제한시간 (Unix timestamp ms)
   guessedCharacter?: Character;                            // guess 모드: 쿠데타 시 추측 캐릭터
   challengeLoseContext?: ChallengeLoseContext;              // 도전으로 인한 카드 잃기 컨텍스트
@@ -115,6 +116,7 @@ export interface FilteredPendingAction {
   blockerCharacter?: Character;
   losingPlayerId?: string;
   exchangeCards?: Character[]; // 본인 exchange일 때만 포함
+  exchangeDeadline?: number;   // 교환 선택 제한시간 (Unix timestamp ms)
   responseDeadline?: number;   // 응답 제한시간 (Unix timestamp ms)
   guessedCharacter?: Character; // guess 모드: 쿠데타 시 추측 캐릭터
   challengeLoseContext?: ChallengeLoseContext; // 도전으로 인한 카드 잃기 컨텍스트

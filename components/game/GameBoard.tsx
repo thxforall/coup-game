@@ -287,7 +287,10 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
         const isAwaitingPhase =
             state.phase === 'awaiting_response' || state.phase === 'awaiting_block_response';
         const isActionPhase = state.phase === 'action' && !!state.actionDeadline;
-        const deadline = isActionPhase ? state.actionDeadline : state.pendingAction?.responseDeadline;
+        const isExchangePhase = state.phase === 'exchange_select' && !!state.pendingAction?.exchangeDeadline;
+        const deadline = isActionPhase ? state.actionDeadline
+            : isExchangePhase ? state.pendingAction?.exchangeDeadline
+            : state.pendingAction?.responseDeadline;
 
         // phase나 deadline이 변경되면 플래그 리셋
         if (deadline !== timeoutDeadlineRef.current) {
@@ -295,7 +298,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             timeoutDeadlineRef.current = deadline;
         }
 
-        if ((!isAwaitingPhase && !isActionPhase) || !deadline || timeoutRequestedRef.current) return;
+        if ((!isAwaitingPhase && !isActionPhase && !isExchangePhase) || !deadline || timeoutRequestedRef.current) return;
 
         const now = Date.now();
         const delay = deadline - now + 1000;
@@ -307,7 +310,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
 
         const timer = setTimeout(fireTimeout, delay);
         return () => clearTimeout(timer);
-    }, [state.phase, state.pendingAction?.responseDeadline, state.actionDeadline, fireTimeout]);
+    }, [state.phase, state.pendingAction?.responseDeadline, state.pendingAction?.exchangeDeadline, state.actionDeadline, fireTimeout]);
 
     // 게임 오버 화면
     if (state.phase === 'game_over') {
@@ -758,6 +761,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                     player={me}
                     exchangeCards={exchangeCardsMemo}
                     onSelect={handleExchangeSelect}
+                    exchangeDeadline={state.pendingAction?.exchangeDeadline}
                 />
             )}
 

@@ -678,7 +678,7 @@ function executeAction(state: GameState): GameState {
         ...s,
         deck: newDeck,
         phase: 'exchange_select',
-        pendingAction: { ...pending, exchangeCards: drawnCards },
+        pendingAction: { ...pending, exchangeCards: drawnCards, exchangeDeadline: Date.now() + 45000 },
       };
     }
 
@@ -764,6 +764,27 @@ export function resolveActionTimeout(state: GameState): GameState {
     });
     return processAction(s, state.currentTurnId, { type: 'income' });
   }
+}
+
+// ============================================================
+// 교환 선택 타임아웃 해소: 45초 초과 시 기존 카드 유지
+// ============================================================
+
+export function resolveExchangeTimeout(state: GameState): GameState {
+  if (
+    state.phase !== 'exchange_select' ||
+    !state.pendingAction?.exchangeDeadline ||
+    Date.now() <= state.pendingAction.exchangeDeadline
+  ) {
+    return state;
+  }
+
+  // 타임아웃: 기존 보유 카드를 그대로 유지 (새 카드를 덱으로 반환)
+  const actor = getPlayer(state, state.pendingAction.actorId);
+  const liveCards = actor.cards.filter(c => !c.revealed);
+  const keptIndices = liveCards.map((_, i) => i); // 기존 카드 인덱스들 (0부터 liveCount-1)
+  const s = addLog(state, `${actor.name}이(가) 시간 초과로 기존 카드를 유지합니다`);
+  return processExchangeSelect(s, actor.id, keptIndices);
 }
 
 // ============================================================
