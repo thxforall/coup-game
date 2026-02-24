@@ -68,6 +68,7 @@ export function initGame(players: { id: string; name: string }[], gameMode?: str
     phase: 'action',
     deck,
     pendingAction: null,
+    actionDeadline: Date.now() + 45000,
     log: [startMsg, turnMsg],
     structuredLog: [
       { type: 'game_start', message: startMsg, timestamp: now },
@@ -126,7 +127,7 @@ function nextTurn(state: GameState): GameState {
   const idx = alive.findIndex((p) => p.id === state.currentTurnId);
   const next = alive[(idx + 1) % alive.length];
   const s = addLog(state, `--- ${next.name}의 턴 ---`, { type: 'turn_start', actorId: next.id });
-  return { ...s, currentTurnId: next.id, phase: 'action', pendingAction: null };
+  return { ...s, currentTurnId: next.id, phase: 'action', pendingAction: null, actionDeadline: Date.now() + 45000 };
 }
 
 // 특정 플레이어가 캐릭터 카드(비공개)를 보유 중인지 확인
@@ -725,6 +726,43 @@ export function resolveTimeouts(state: GameState): GameState {
     // awaiting_block_response: 모두 pass → 블록 확정, 행동 취소
     s = addLog(s, '블록이 확정되었습니다. 행동이 취소되었습니다');
     return nextTurn(s);
+  }
+}
+
+// ============================================================
+// 턴 액션 타임아웃 해소: 45초 내 액션 미선택 시 자동 소득/쿠데타
+// ============================================================
+
+export function resolveActionTimeout(state: GameState): GameState {
+  if (
+    state.phase !== 'action' ||
+    !state.actionDeadline ||
+    Date.now() <= state.actionDeadline
+  ) {
+    return state;
+  }
+
+  const player = getPlayer(state, state.currentTurnId);
+
+  if (player.coins >= 10) {
+    // 10코인 이상: 랜덤 생존 상대에게 자동 쿠데타
+    const alive = getAlivePlayers(state).filter(p => p.id !== state.currentTurnId);
+    const target = alive[Math.floor(Math.random() * alive.length)];
+    const s = addLog(state, `${player.name}이(가) 시간 초과로 자동 쿠데타를 실행합니다`, {
+      type: 'action_declared',
+      actorId: player.id,
+      targetId: target.id,
+      action: 'coup',
+    });
+    return processAction(s, state.currentTurnId, { type: 'coup', targetId: target.id });
+  } else {
+    // 자동 소득
+    const s = addLog(state, `${player.name}이(가) 시간 초과로 자동 소득을 받습니다`, {
+      type: 'action_declared',
+      actorId: player.id,
+      action: 'income',
+    });
+    return processAction(s, state.currentTurnId, { type: 'income' });
   }
 }
 

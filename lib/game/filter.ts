@@ -71,6 +71,7 @@ export function filterStateForPlayer(
     phase: state.phase,
     pendingAction,
     log: state.log,
+    ...(state.actionDeadline !== undefined && { actionDeadline: state.actionDeadline }),
     ...(state.winnerId !== undefined && { winnerId: state.winnerId }),
     ...(state.gameMode && { gameMode: state.gameMode }),
     ...(state.structuredLog && {

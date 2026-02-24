@@ -65,6 +65,7 @@ export interface GameState {
   phase: GamePhase;
   deck: Character[];
   pendingAction: PendingAction | null;
+  actionDeadline?: number; // 턴 액션 선택 제한시간 (Unix timestamp ms) - 45초
   log: string[];
   structuredLog?: LogEntry[];
   winnerId?: string;
@@ -124,6 +125,7 @@ export interface FilteredGameState {
   currentTurnId: string;
   phase: GamePhase;
   pendingAction: FilteredPendingAction | null;
+  actionDeadline?: number; // 턴 액션 선택 제한시간 (Unix timestamp ms) - 45초
   log: string[];
   structuredLog?: LogEntry[];
   winnerId?: string;
