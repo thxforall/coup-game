@@ -58,6 +58,7 @@
 | 051 | 비공개 개인 로그 — 카드 교체/교환 시 본인만 볼 수 있는 로그 | 2026-02-24 | 3ab6523 | [051-private-personal-log-for-card-swap-exchange](./quick/051-private-personal-log-for-card-swap-exchange/) |
 | 052 | 턴 액션 45초 타임아웃 자동 소득/쿠데타 + 카운트다운 타이머 UI | 2026-02-24 | c40868e | [052-turn-action-timeout-auto-income](./quick/052-turn-action-timeout-auto-income/) |
 | 053 | AlertModal 생성 + WaitingRoom/GamePage window.alert/confirm 모달 교체 + 닉네임 없는 접속 리다이렉트 | 2026-02-24 | 6bfc2c1 | [053-alert-modal-leave-message-nickname-redirect](./quick/053-alert-modal-leave-message-nickname-redirect/) |
+| 054 | 미니 로그 structuredLog 타임스탬프 정렬 + private 로그 필터링 | 2026-02-24 | 4198fd7 | [054-board-mini-log-timestamp-sort-private-log-filter](./quick/054-board-mini-log-timestamp-sort-private-log-filter/) |
 | 055 | 타이머 바 아래 자동 행동 안내 텍스트 (자동 소득/쿠데타) | 2026-02-24 | 8e12295 | [055-timer-bar-auto-income-info-text](./quick/055-timer-bar-auto-income-info-text/) |
 
 ### Blockers/Concerns
