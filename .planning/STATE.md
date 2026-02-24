@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-24 - Completed quick-061 (GameRulesModal 캐릭터 카드 이미지 썸네일)
+- Last activity: 2026-02-24 - Completed quick-062 (게임 중 방 삭제 감지 버그 수정)
 
 ### Quick Tasks Completed
 
@@ -66,11 +66,12 @@
 | 060 | CardInfoModal 카드 이미지 전체 표시 (aspect-[2/3] + object-contain) | 2026-02-24 | 1e9a573 | [060-card-detail-modal-full-view](./quick/060-card-detail-modal-full-view/) |
 | 060b | 대기실 진영 선택 UI (종교개혁 모드 충성파/개혁파 토글) | 2026-02-24 | 31d2de9 | [060-allegiance-selection-ui](./quick/060-allegiance-selection-ui/) |
 | 061 | GameRulesModal 캐릭터 능력 섹션에 카드 이미지 썸네일 + CardInfoModal 연동 | 2026-02-24 | 97e70bc | [061-game-rules-modal-card-image-view](./quick/061-game-rules-modal-card-image-view/) |
+| 062 | 게임 중 방 삭제 감지 버그 수정 (viewRef onValue else 브랜치) | 2026-02-24 | ed2bd62 | [062-fix-room-delete-in-game](./quick/062-fix-room-delete-in-game/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
 - Last session: 2026-02-24
-- Stopped at: Completed quick-061 (GameRulesModal 카드 이미지 썸네일)
+- Stopped at: Completed quick-062 (게임 중 방 삭제 감지 버그 수정)
 - Resume file: None
