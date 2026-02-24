@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useEffect, useRef } from 'react';
-import { ScrollText, Swords, ShieldAlert, ShieldCheck, Zap, Crosshair, Repeat, Skull, Trophy, MessageCircle, Eye } from 'lucide-react';
+import { ScrollText, Swords, ShieldAlert, ShieldCheck, Zap, Crosshair, Repeat, Skull, Trophy, MessageCircle, Eye, Crown, Search } from 'lucide-react';
 import { LogEntry, LogEntryType } from '@/lib/game/types';
 import { getPlayerColor } from '@/lib/game/player-colors';
 
@@ -58,6 +58,9 @@ const LOG_TYPE_CONFIG: Record<LogEntryType, { color: string; icon?: React.Elemen
     guess_success: { color: 'text-ambassador', icon: Zap },
     guess_fail: { color: 'text-contessa', icon: Zap },
     turn_start: { color: 'text-gold', icon: Zap },
+    conversion: { color: 'text-purple-400', icon: Repeat },
+    embezzlement: { color: 'text-amber-400', icon: Crown },
+    examine_complete: { color: 'text-teal-400', icon: Search },
 };
 
 

@@ -12,7 +12,7 @@ function generateRoomId(): string {
 }
 
 export async function POST(req: NextRequest) {
-  const { playerName, playerId, gameMode } = await req.json();
+  const { playerName, playerId, gameMode, useInquisitor } = await req.json();
   if (!playerName || !playerId) {
     return NextResponse.json({ error: '이름과 플레이어 ID가 필요합니다' }, { status: 400 });
   }
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     cards: [], isAlive: true, isReady: false,
   };
 
-  const mode: GameMode = gameMode === 'guess' ? 'guess' : 'standard';
+  const mode: GameMode = gameMode === 'reformation' ? 'reformation' : gameMode === 'guess' ? 'guess' : 'standard';
 
   const now = Date.now();
   const initialState: GameState = {
@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
     pendingAction: null,
     log: [`${playerName}이(가) 방을 만들었습니다`],
     gameMode: mode,
+    ...(mode === 'reformation' && { treasury: 0, useInquisitor: useInquisitor !== false }),
     createdAt: now,
     updatedAt: now,
   };

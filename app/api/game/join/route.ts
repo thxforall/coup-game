@@ -15,7 +15,8 @@ export async function POST(req: NextRequest) {
 
     const state = room.state;
     if (state.phase !== 'waiting') return NextResponse.json({ error: '게임이 이미 시작되었습니다' }, { status: 400 });
-    if (state.players.length >= 6) return NextResponse.json({ error: '방이 가득 찼습니다' }, { status: 400 });
+    const maxPlayers = state.gameMode === 'reformation' ? 10 : 6;
+    if (state.players.length >= maxPlayers) return NextResponse.json({ error: '방이 가득 찼습니다' }, { status: 400 });
 
     // 재입장 확인 (ID가 같으면 이름 상관없이 통과)
     if (state.players.some((p) => p.id === playerId)) {

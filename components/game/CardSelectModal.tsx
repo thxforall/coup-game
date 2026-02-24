@@ -12,6 +12,7 @@ const CARD_IMAGES: Record<Character, string> = {
     Captain: '/cards/captain.jpg',
     Assassin: '/cards/assassin.jpg',
     Ambassador: '/cards/ambassador.jpg',
+    Inquisitor: '/cards/inquisitor.jpg',
 };
 
 const CHAR_BORDER: Record<Character, string> = {
@@ -20,6 +21,7 @@ const CHAR_BORDER: Record<Character, string> = {
     Captain: 'border-captain',
     Assassin: 'border-assassin',
     Ambassador: 'border-ambassador',
+    Inquisitor: 'border-teal-500',
 };
 
 interface Props {

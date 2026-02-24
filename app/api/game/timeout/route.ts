@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRoom, updateRoomWithViews } from '@/lib/firebase';
-import { resolveTimeouts, resolveActionTimeout, resolveExchangeTimeout } from '@/lib/game/engine';
+import { resolveTimeouts, resolveActionTimeout, resolveExchangeTimeout, resolveExamineTimeout } from '@/lib/game/engine';
 import { filterStateForPlayer } from '@/lib/game/filter';
 import type { GameState, FilteredGameState } from '@/lib/game/types';
 
@@ -28,12 +28,13 @@ export async function POST(req: NextRequest) {
   const resolved = resolveTimeouts(original);
   const resolved2 = resolveActionTimeout(resolved);
   const resolved3 = resolveExchangeTimeout(resolved2);
+  const resolved4 = resolveExamineTimeout(resolved3);
 
   // state가 변경되지 않았으면 DB 쓰기 생략
-  if (resolved3 === original) {
+  if (resolved4 === original) {
     return NextResponse.json({ ok: true, changed: false });
   }
 
-  await updateRoomWithViews(roomId, resolved3, buildViews(resolved3));
+  await updateRoomWithViews(roomId, resolved4, buildViews(resolved4));
   return NextResponse.json({ ok: true, changed: true });
 }

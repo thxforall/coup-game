@@ -2,7 +2,7 @@
 
 import { memo, useState } from 'react';
 import Image from 'next/image';
-import { Player, Character, CHARACTER_NAMES } from '@/lib/game/types';
+import { Player, Character, CHARACTER_NAMES, ALLEGIANCE_NAMES } from '@/lib/game/types';
 import CardInfoModal from './CardInfoModal';
 import { getPlayerColor } from '@/lib/game/player-colors';
 
@@ -14,6 +14,7 @@ const CARD_IMAGES: Record<Character, string> = {
     Captain: '/cards/captain.jpg',
     Assassin: '/cards/assassin.jpg',
     Ambassador: '/cards/ambassador.jpg',
+    Inquisitor: '/cards/inquisitor.jpg',
 };
 
 /** Inline border color via CSS variable so Tailwind purging is not an issue */
@@ -23,6 +24,7 @@ const CHAR_BORDER_COLOR: Record<Character, string> = {
     Captain: 'var(--captain-color)',
     Ambassador: 'var(--ambassador-color)',
     Contessa: 'var(--contessa-color)',
+    Inquisitor: '#5eead4',
 };
 
 // ── sub-components ─────────────────────────────────────────────────────────
@@ -170,6 +172,11 @@ function MyPlayerArea({ player }: Props) {
                 <div className="flex items-center justify-between mb-2 sm:mb-4 flex-wrap gap-1">
                     <div className="flex items-center gap-2 sm:gap-3">
                         <PlayerBadge name={player.name} playerColor={playerColor} />
+                        {player.allegiance && (
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${player.allegiance === 'loyalist' ? 'bg-blue-500/20 text-blue-300' : 'bg-orange-500/20 text-orange-300'}`}>
+                                {ALLEGIANCE_NAMES[player.allegiance]}
+                            </span>
+                        )}
                         <span
                             className="font-mono text-xs uppercase tracking-widest hidden sm:inline"
                             style={{ color: 'var(--text-muted)' }}

@@ -208,28 +208,62 @@ export default function LobbyPage() {
                         <label className="block text-xs text-text-muted mb-2 font-mono uppercase tracking-widest">
                             게임 모드
                         </label>
-                        <div className="flex gap-2">
+                        <div className="grid grid-cols-3 gap-2">
                             <button
                                 onClick={() => setGameMode('standard')}
-                                className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-semibold border transition-all text-left ${gameMode === 'standard'
+                                className={`py-2.5 px-3 rounded-lg text-sm font-semibold border transition-all text-left ${gameMode === 'standard'
                                     ? 'border-gold bg-gold/10 text-text-primary'
                                     : 'border-border-subtle bg-bg-surface text-text-muted hover:border-gold/50'
                                     }`}
                             >
                                 <div className="font-bold">Standard</div>
-                                <div className="text-[10px] text-text-muted mt-0.5">기본 쿠데타 룰</div>
+                                <div className="text-[10px] text-text-muted mt-0.5">기본 룰</div>
                             </button>
                             <button
                                 onClick={() => setGameMode('guess')}
-                                className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-semibold border transition-all text-left ${gameMode === 'guess'
+                                className={`py-2.5 px-3 rounded-lg text-sm font-semibold border transition-all text-left ${gameMode === 'guess'
                                     ? 'border-gold bg-gold/10 text-text-primary'
                                     : 'border-border-subtle bg-bg-surface text-text-muted hover:border-gold/50'
                                     }`}
                             >
                                 <div className="font-bold">Guess</div>
-                                <div className="text-[10px] text-text-muted mt-0.5">쿠데타 시 카드 추측</div>
+                                <div className="text-[10px] text-text-muted mt-0.5">카드 추측</div>
+                            </button>
+                            <button
+                                onClick={() => setGameMode('reformation')}
+                                className={`py-2.5 px-3 rounded-lg text-sm font-semibold border transition-all text-left ${gameMode === 'reformation'
+                                    ? 'border-purple-500 bg-purple-500/10 text-text-primary'
+                                    : 'border-border-subtle bg-bg-surface text-text-muted hover:border-purple-500/50'
+                                    }`}
+                            >
+                                <div className="font-bold">종교개혁</div>
+                                <div className="text-[10px] text-text-muted mt-0.5">확장판</div>
                             </button>
                         </div>
+
+                        {/* 종교개혁 서브 옵션 */}
+                        {gameMode === 'reformation' && (
+                            <div className="mt-3 p-3 bg-purple-500/5 border border-purple-500/20 rounded-lg">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="text-xs font-bold text-purple-300">종교재판관 사용</div>
+                                        <div className="text-[10px] text-text-muted mt-0.5">대사 대신 종교재판관 (심문 + 1장 교환)</div>
+                                    </div>
+                                    <button
+                                        onClick={() => setUseInquisitor(!useInquisitor)}
+                                        className={`w-10 h-5 rounded-full transition-colors relative ${useInquisitor ? 'bg-purple-500' : 'bg-gray-600'}`}
+                                    >
+                                        <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition-transform ${useInquisitor ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                                    </button>
+                                </div>
+                                <div className="mt-2 text-[10px] text-text-muted space-y-1">
+                                    <p>• 진영 시스템: 충성파 vs 개혁파</p>
+                                    <p>• 같은 진영 공격 불가</p>
+                                    <p>• 전향/횡령 액션 추가</p>
+                                    <p>• 최대 10인 지원</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -302,9 +336,11 @@ export default function LobbyPage() {
                                                 </span>
                                                 <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0 ${room.gameMode === 'guess'
                                                         ? 'bg-violet-500/20 text-violet-300'
-                                                        : 'bg-gold/20 text-gold'
+                                                        : room.gameMode === 'reformation'
+                                                            ? 'bg-purple-500/20 text-purple-300'
+                                                            : 'bg-gold/20 text-gold'
                                                     }`}>
-                                                    {room.gameMode === 'guess' ? 'Guess' : 'Standard'}
+                                                    {room.gameMode === 'guess' ? 'Guess' : room.gameMode === 'reformation' ? '종교개혁' : 'Standard'}
                                                 </span>
                                                 {room.status === 'waiting' ? (
                                                     <span className="text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0 bg-emerald-500/20 text-emerald-300">

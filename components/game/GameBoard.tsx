@@ -103,6 +103,7 @@ const WaitingResponseIndicator = memo(function WaitingResponseIndicator({ state,
 const ResponseModal = dynamic(() => import('./ResponseModal'), { ssr: false });
 const CardSelectModal = dynamic(() => import('./CardSelectModal'), { ssr: false });
 const ExchangeModal = dynamic(() => import('./ExchangeModal'), { ssr: false });
+const ExamineModal = dynamic(() => import('./ExamineModal'), { ssr: false });
 const SettingsModal = dynamic(() => import('./SettingsModal'), { ssr: false });
 const GameRulesModal = dynamic(() => import('./GameRulesModal'), { ssr: false });
 const ConfirmModal = dynamic(() => import('./ConfirmModal'), { ssr: false });
@@ -762,6 +763,15 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                     exchangeCards={exchangeCardsMemo}
                     onSelect={handleExchangeSelect}
                     exchangeDeadline={state.pendingAction?.exchangeDeadline}
+                />
+            )}
+
+            {/* 모달: 인퀴지터 심문 */}
+            {state.phase === 'examine_select' && state.pendingAction?.actorId === playerId && (
+                <ExamineModal
+                    state={state}
+                    playerId={playerId}
+                    onAction={onAction}
                 />
             )}
 

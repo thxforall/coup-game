@@ -9,8 +9,9 @@ import {
     Repeat,
     Shield,
     Coins,
+    Search,
 } from 'lucide-react';
-import { FilteredPlayer, Character, CHARACTER_NAMES } from '@/lib/game/types';
+import { FilteredPlayer, Character, CHARACTER_NAMES, ALLEGIANCE_NAMES } from '@/lib/game/types';
 import { PLAYER_AVATAR_COLORS, getPlayerColor } from '@/lib/game/player-colors';
 import CardInfoModal from './CardInfoModal';
 import BottomSheet from '@/components/ui/BottomSheet';
@@ -31,6 +32,7 @@ const CHAR_COLORS: Record<Character, string> = {
     Captain: '#2980B9',
     Ambassador: '#27AE60',
     Contessa: '#C0392B',
+    Inquisitor: '#5eead4',
 };
 
 const CHAR_ICONS: Record<Character, React.ElementType> = {
@@ -39,6 +41,7 @@ const CHAR_ICONS: Record<Character, React.ElementType> = {
     Captain: Anchor,
     Ambassador: Repeat,
     Contessa: Shield,
+    Inquisitor: Search,
 };
 
 // ----------------------------------------------------------------
@@ -295,6 +298,13 @@ function PlayerArea({ player, isCurrentTurn, online }: Props) {
                     {player.name}
                 </span>
 
+                {/* Allegiance badge */}
+                {player.allegiance && (
+                    <span className={`text-[8px] px-1 rounded font-bold ${player.allegiance === 'loyalist' ? 'bg-blue-500/20 text-blue-300' : 'bg-orange-500/20 text-orange-300'}`}>
+                        {ALLEGIANCE_NAMES[player.allegiance]}
+                    </span>
+                )}
+
                 {/* Coin badge */}
                 {player.isAlive ? (
                     <div
@@ -339,6 +349,11 @@ function PlayerArea({ player, isCurrentTurn, online }: Props) {
                                         <span className="text-[10px] font-bold text-gold bg-gold/10 border border-gold/30 px-1.5 py-0.5 rounded-full">턴</span>
                                     )}
                                     <span className="text-base font-black text-text-primary truncate">{player.name}</span>
+                                    {player.allegiance && (
+                                        <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${player.allegiance === 'loyalist' ? 'bg-blue-500/20 text-blue-300' : 'bg-orange-500/20 text-orange-300'}`}>
+                                            {ALLEGIANCE_NAMES[player.allegiance]}
+                                        </span>
+                                    )}
                                     <div className={`w-2 h-2 rounded-full flex-shrink-0 ${online ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]' : 'bg-gray-600'}`} />
                                 </div>
                                 {/* Status row */}

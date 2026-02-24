@@ -1,12 +1,12 @@
 'use client';
 
 import { memo, useState } from 'react';
-import { Coins, Crown, Crosshair, Anchor, Repeat, Zap, Shield } from 'lucide-react';
-import { FilteredPlayer, Character, CHARACTER_NAMES, ActionType } from '@/lib/game/types';
+import { Coins, Crown, Crosshair, Anchor, Repeat, Zap, Shield, Search } from 'lucide-react';
+import { FilteredPlayer, Character, CHARACTER_NAMES, ActionType, Allegiance, ALLEGIANCE_NAMES } from '@/lib/game/types';
 import BottomSheet from '@/components/ui/BottomSheet';
 import { getPlayerColor } from '@/lib/game/player-colors';
 
-type ButtonVariant = 'general' | 'duke' | 'assassin' | 'captain' | 'ambassador' | 'coup';
+type ButtonVariant = 'general' | 'duke' | 'assassin' | 'captain' | 'ambassador' | 'coup' | 'reformation' | 'inquisitor';
 
 const DARK_COLORS = ['var(--assassin-color)', '#2C3E50'];
 function isDarkColor(color?: string): boolean {
@@ -21,9 +21,11 @@ const VARIANT_COLORS: Record<ButtonVariant, string> = {
     captain: 'var(--captain-color)',
     ambassador: 'var(--ambassador-color)',
     coup: 'var(--gold)',
+    reformation: '#a855f7',
+    inquisitor: '#5eead4',
 };
 
-const ALL_CHARACTERS: Character[] = ['Duke', 'Contessa', 'Captain', 'Assassin', 'Ambassador'];
+const ALL_CHARACTERS: Character[] = ['Duke', 'Contessa', 'Captain', 'Assassin', 'Ambassador', 'Inquisitor'];
 
 const GUESS_CHAR_ICONS: Record<Character, React.ElementType> = {
     Duke: Crown,
@@ -31,6 +33,7 @@ const GUESS_CHAR_ICONS: Record<Character, React.ElementType> = {
     Captain: Anchor,
     Assassin: Crosshair,
     Ambassador: Repeat,
+    Inquisitor: Search,
 };
 
 interface ActionDef {
@@ -50,9 +53,11 @@ interface Props {
     loading: boolean;
     onSelectTarget: (targetId: string, guessChar?: Character) => void;
     onCancel: () => void;
+    myAllegiance?: Allegiance;
+    allSameAllegiance?: boolean;
 }
 
-function TargetSelectModal({ actionDef, aliveOthers, isGuessMode, loading, onSelectTarget, onCancel }: Props) {
+function TargetSelectModal({ actionDef, aliveOthers, isGuessMode, loading, onSelectTarget, onCancel, myAllegiance, allSameAllegiance }: Props) {
     const [selectedTargetId, setSelectedTargetId] = useState('');
     const [selectedGuessChar, setSelectedGuessChar] = useState<Character | null>(null);
 
@@ -104,14 +109,17 @@ function TargetSelectModal({ actionDef, aliveOthers, isGuessMode, loading, onSel
                         {aliveOthers.map((p) => {
                             const isSelected = selectedTargetId === p.id;
                             const isStealNoCoins = actionDef.type === 'steal' && p.coins === 0;
+                            // 종교개혁: 같은 진영 공격 제한 (모두 같은 진영이면 허용)
+                            const factionRestricted = ['coup', 'assassinate', 'steal'].includes(actionDef.type)
+                                && myAllegiance && p.allegiance === myAllegiance && !allSameAllegiance;
                             const stealAmount = actionDef.type === 'steal' ? Math.min(p.coins, 2) : 0;
                             const playerColor = getPlayerColor(p.id);
                             return (
                                 <button
                                     key={p.id}
-                                    onClick={() => handleTargetClick(p.id, isStealNoCoins)}
-                                    disabled={loading || isStealNoCoins}
-                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm font-semibold transition-all disabled:opacity-40 ${isStealNoCoins
+                                    onClick={() => handleTargetClick(p.id, isStealNoCoins || !!factionRestricted)}
+                                    disabled={loading || isStealNoCoins || !!factionRestricted}
+                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm font-semibold transition-all disabled:opacity-40 ${(isStealNoCoins || factionRestricted)
                                             ? 'cursor-not-allowed bg-bg-surface border-border-subtle text-text-muted'
                                             : isSelected
                                                 ? 'text-text-primary active:scale-95'
@@ -140,13 +148,21 @@ function TargetSelectModal({ actionDef, aliveOthers, isGuessMode, loading, onSel
                                         />
                                     )}
                                     {p.name}
+                                    {p.allegiance && (
+                                        <span className={`text-[9px] px-1 py-0.5 rounded font-bold ${p.allegiance === 'loyalist' ? 'bg-blue-500/20 text-blue-300' : 'bg-orange-500/20 text-orange-300'}`}>
+                                            {ALLEGIANCE_NAMES[p.allegiance]}
+                                        </span>
+                                    )}
                                     <span
                                         className="text-xs"
                                         style={{ color: isStealNoCoins ? 'var(--text-muted)' : 'var(--coin-color)' }}
                                     >
                                         {p.coins}
                                     </span>
-                                    {isStealNoCoins && (
+                                    {factionRestricted && (
+                                        <span className="text-[10px] text-text-muted">같은 진영</span>
+                                    )}
+                                    {isStealNoCoins && !factionRestricted && (
                                         <span className="text-[10px] text-text-muted">코인 없음</span>
                                     )}
                                     {actionDef.type === 'steal' && stealAmount === 1 && (

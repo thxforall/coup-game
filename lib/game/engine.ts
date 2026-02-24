@@ -1,6 +1,7 @@
 import {
   Character,
   ActionType,
+  Allegiance,
   GameMode,
   GameState,
   Player,
@@ -9,6 +10,7 @@ import {
   ResponseType,
   CHARACTER_NAMES,
   ACTION_NAMES,
+  ALLEGIANCE_NAMES,
   BLOCK_CHARACTERS,
   ChallengeLoseContext,
   LogEntry,
@@ -27,6 +29,20 @@ const ALL_CHARACTERS: Character[] = [
   'Ambassador', 'Ambassador', 'Ambassador',
 ];
 
+/** reformation 모드 덱 생성: 인퀴지터 옵션 + 인원수 기반 카드 수 조정 */
+function buildReformationDeck(playerCount: number, useInquisitor: boolean): Character[] {
+  const copiesPerChar = playerCount <= 6 ? 3 : playerCount <= 8 ? 4 : 5;
+  const exchangeChar: Character = useInquisitor ? 'Inquisitor' : 'Ambassador';
+  const chars: Character[] = ['Duke', 'Contessa', 'Captain', 'Assassin', exchangeChar];
+  const deck: Character[] = [];
+  for (const c of chars) {
+    for (let i = 0; i < copiesPerChar; i++) {
+      deck.push(c);
+    }
+  }
+  return deck;
+}
+
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -40,10 +56,22 @@ function shuffle<T>(arr: T[]): T[] {
 // 게임 초기화
 // ============================================================
 
-export function initGame(players: { id: string; name: string }[], gameMode?: string): GameState {
-  const deck = shuffle([...ALL_CHARACTERS]);
-  const mode: GameMode = gameMode === 'guess' ? 'guess' : 'standard';
-  const gamePlayers: Player[] = players.map((p) => ({
+export function initGame(
+  players: { id: string; name: string }[],
+  gameMode?: string,
+  options?: { useInquisitor?: boolean }
+): GameState {
+  const mode: GameMode = gameMode === 'reformation' ? 'reformation' : gameMode === 'guess' ? 'guess' : 'standard';
+  const useInquisitor = mode === 'reformation' ? (options?.useInquisitor ?? true) : false;
+
+  const deck = mode === 'reformation'
+    ? shuffle(buildReformationDeck(players.length, useInquisitor))
+    : shuffle([...ALL_CHARACTERS]);
+
+  // 진영 배정 (reformation 모드): 교대 배정
+  const allegiances: Allegiance[] = ['loyalist', 'reformist'];
+
+  const gamePlayers: Player[] = players.map((p, i) => ({
     id: p.id,
     name: p.name,
     coins: 2,
@@ -53,13 +81,15 @@ export function initGame(players: { id: string; name: string }[], gameMode?: str
     ],
     isAlive: true,
     isReady: false,
+    ...(mode === 'reformation' && { allegiance: allegiances[i % 2] }),
   }));
 
   const firstPlayerIndex = Math.floor(Math.random() * gamePlayers.length);
   const firstPlayer = gamePlayers[firstPlayerIndex];
 
   const now = Date.now();
-  const startMsg = mode === 'guess' ? '게임이 시작되었습니다! (추측 모드)' : '게임이 시작되었습니다!';
+  const modeLabel = mode === 'guess' ? ' (추측 모드)' : mode === 'reformation' ? ' (종교개혁 확장판)' : '';
+  const startMsg = `게임이 시작되었습니다!${modeLabel}`;
   const turnMsg = `--- ${firstPlayer.name}의 턴 ---`;
 
   return {
@@ -75,6 +105,7 @@ export function initGame(players: { id: string; name: string }[], gameMode?: str
       { type: 'turn_start', message: turnMsg, actorId: firstPlayer.id, timestamp: now + 1 },
     ],
     gameMode: mode,
+    ...(mode === 'reformation' && { treasury: 0, useInquisitor }),
   };
 }
 
@@ -135,6 +166,21 @@ function hasCharacter(player: Player, character: Character): boolean {
   return player.cards.some((c) => c.character === character && !c.revealed);
 }
 
+// reformation 모드: 같은 진영 공격 가능한지 확인
+function canTargetPlayer(state: GameState, actorId: string, targetId: string): boolean {
+  if (state.gameMode !== 'reformation') return true;
+  const actor = getPlayer(state, actorId);
+  const target = getPlayer(state, targetId);
+  if (!actor.allegiance || !target.allegiance) return true;
+  // 같은 진영이면 공격 불가 — 단, 모든 생존자가 같은 진영이면 허용
+  if (actor.allegiance === target.allegiance) {
+    const alive = getAlivePlayers(state);
+    const allSame = alive.every((p) => p.allegiance === actor.allegiance);
+    return allSame;
+  }
+  return true;
+}
+
 // 카드 1장 잃기 (인덱스 지정)
 function revealCard(player: Player, cardIndex: number): Player {
   const cards = [...player.cards];
@@ -176,9 +222,16 @@ export function processAction(
   const actor = getPlayer(state, actorId);
   const { type, targetId } = action;
 
-  // 쿠데타 10코인 강제 체크
-  if (actor.coins >= 10 && type !== 'coup') {
+  // 쿠데타 10코인 강제 체크 (전향은 예외 — 10코인이어도 전향 가능)
+  if (actor.coins >= 10 && type !== 'coup' && type !== 'conversion') {
     throw new Error('코인이 10개 이상이면 쿠데타를 해야 합니다');
+  }
+
+  // reformation 모드: 같은 진영 공격 제한 (쿠데타/암살/갈취)
+  if (action.targetId && (type === 'coup' || type === 'assassinate' || type === 'steal')) {
+    if (!canTargetPlayer(state, actorId, action.targetId)) {
+      throw new Error('같은 진영의 플레이어에게는 이 행동을 사용할 수 없습니다');
+    }
   }
 
   let s = state;
@@ -267,9 +320,20 @@ export function processAction(
     case 'tax':
     case 'assassinate':
     case 'steal':
-    case 'exchange': {
-      if ((type === 'assassinate' || type === 'steal') && !targetId) {
+    case 'exchange':
+    case 'examine':
+    case 'embezzlement': {
+      if ((type === 'assassinate' || type === 'steal' || type === 'examine') && !targetId) {
         throw new Error(`${type}: 대상이 필요합니다`);
+      }
+      if (type === 'examine' && s.gameMode !== 'reformation') {
+        throw new Error('심문은 종교개혁 모드에서만 사용 가능합니다');
+      }
+      if (type === 'embezzlement' && s.gameMode !== 'reformation') {
+        throw new Error('횡령은 종교개혁 모드에서만 사용 가능합니다');
+      }
+      if (type === 'embezzlement' && (s.treasury ?? 0) === 0) {
+        throw new Error('횡령: 재무부에 코인이 없습니다');
       }
       if (type === 'steal' && targetId) {
         const stealTarget = getPlayer(s, targetId);
@@ -302,6 +366,41 @@ export function processAction(
       };
     }
 
+    case 'conversion': {
+      // 전향: 즉시 처리 (도전/블록 불가)
+      if (s.gameMode !== 'reformation') {
+        throw new Error('전향은 종교개혁 모드에서만 사용 가능합니다');
+      }
+      const convTargetId = action.targetId;
+      const cost = convTargetId ? 2 : 1;
+      if (actor.coins < cost) {
+        throw new Error(`전향: 코인 ${cost}개 필요`);
+      }
+      const convTarget = convTargetId ? getPlayer(s, convTargetId) : actor;
+      if (!convTarget.allegiance) {
+        throw new Error('전향: 대상에 진영이 없습니다');
+      }
+      const newAllegiance: Allegiance = convTarget.allegiance === 'loyalist' ? 'reformist' : 'loyalist';
+
+      // 자기 전향: actorId의 코인 차감 + 진영 변경
+      // 타인 전향: actorId 코인 차감, targetId 진영 변경
+      const playersFixed = s.players.map((p) => {
+        if (p.id === actorId) {
+          return convTargetId
+            ? { ...p, coins: p.coins - cost }
+            : { ...p, coins: p.coins - cost, allegiance: newAllegiance };
+        }
+        if (convTargetId && p.id === convTargetId) return { ...p, allegiance: newAllegiance };
+        return p;
+      });
+
+      const treasury = (s.treasury ?? 0) + cost;
+      const targetName = convTargetId ? getPlayer(s, convTargetId).name : actor.name;
+      const logMsg = `${actor.name}이(가) ${targetName}을(를) ${ALLEGIANCE_NAMES[newAllegiance]}(으)로 전향시켰습니다 (${cost}코인 → 재무부)`;
+      s = addLog({ ...s, players: playersFixed, treasury }, logMsg, { type: 'conversion', actorId });
+      return nextTurn(s);
+    }
+
     default:
       throw new Error(`Unknown action: ${type}`);
   }
@@ -331,13 +430,24 @@ export function processResponse(
   // --- 블록 ---
   if (response === 'block') {
     if (!blockCharacter) throw new Error('블록 시 캐릭터를 지정해야 합니다');
+    // reformation 모드에서 인퀴지터 사용 시 'Ambassador'를 'Inquisitor'로 매핑
+    let effectiveBlockChar = blockCharacter;
+    if (s.gameMode === 'reformation' && s.useInquisitor && blockCharacter === 'Ambassador') {
+      effectiveBlockChar = 'Inquisitor';
+    }
     const allowedBlockers = BLOCK_CHARACTERS[pending.type];
-    if (!allowedBlockers || !allowedBlockers.includes(blockCharacter)) {
-      throw new Error(`${CHARACTER_NAMES[blockCharacter]}은(는) 이 행동을 막을 수 없습니다`);
+    if (!allowedBlockers || !allowedBlockers.includes(effectiveBlockChar)) {
+      throw new Error(`${CHARACTER_NAMES[effectiveBlockChar]}은(는) 이 행동을 막을 수 없습니다`);
     }
     // steal/assassinate는 대상만 블록 가능
     if ((pending.type === 'steal' || pending.type === 'assassinate') && responderId !== pending.targetId) {
       throw new Error('이 행동은 대상만 막을 수 있습니다');
+    }
+    // reformation: 해외원조 블록은 같은 진영 제한 적용
+    if (pending.type === 'foreignAid' && s.gameMode === 'reformation') {
+      if (!canTargetPlayer(s, responderId, pending.actorId)) {
+        throw new Error('같은 진영의 플레이어의 해외원조를 막을 수 없습니다');
+      }
     }
     s = addLog(s, `${responder.name}이(가) ${CHARACTER_NAMES[blockCharacter]}으로 막습니다!`);
 
@@ -495,7 +605,7 @@ function resolveChallenge(state: GameState, challengerId: string): GameState {
   const challenger = getPlayer(state, challengerId);
 
   // 행동에 필요한 캐릭터 확인
-  const requiredChar = getRequiredCharacter(pending.type);
+  const requiredChar = getRequiredCharacter(pending.type, state);
   if (!requiredChar) {
     throw new Error('이 행동은 도전할 수 없습니다');
   }
@@ -591,12 +701,15 @@ function resolveChallenge(state: GameState, challengerId: string): GameState {
   }
 }
 
-function getRequiredCharacter(actionType: ActionType): Character | null {
+function getRequiredCharacter(actionType: ActionType, state?: GameState): Character | null {
+  const useInquisitor = state?.gameMode === 'reformation' && state?.useInquisitor;
   const map: Partial<Record<ActionType, Character>> = {
     tax: 'Duke',
     assassinate: 'Assassin',
     steal: 'Captain',
-    exchange: 'Ambassador',
+    exchange: useInquisitor ? 'Inquisitor' : 'Ambassador',
+    examine: 'Inquisitor',
+    embezzlement: 'Duke',
   };
   return map[actionType] ?? null;
 }
@@ -666,9 +779,11 @@ function executeAction(state: GameState): GameState {
     }
 
     case 'exchange': {
-      // 덱에서 가용한 만큼만 뽑기 (최대 2장)
+      // 인퀴지터: 1장만, 대사: 2장
+      const isInquisitor = s.gameMode === 'reformation' && s.useInquisitor;
+      const maxDraw = isInquisitor ? 1 : 2;
       const newDeck = [...s.deck];
-      const drawCount = Math.min(2, newDeck.length);
+      const drawCount = Math.min(maxDraw, newDeck.length);
       const drawnCards: Character[] = [];
       for (let i = 0; i < drawCount; i++) {
         drawnCards.push(newDeck.pop()!);
@@ -679,6 +794,50 @@ function executeAction(state: GameState): GameState {
         deck: newDeck,
         phase: 'exchange_select',
         pendingAction: { ...pending, exchangeCards: drawnCards, exchangeDeadline: Date.now() + 45000 },
+      };
+    }
+
+    case 'embezzlement': {
+      // 횡령: 재무부 코인 가져옴 (공작 능력)
+      const treasuryCoins = s.treasury ?? 0;
+      const updatedPlayers = s.players.map((p) =>
+        p.id === actorId ? { ...p, coins: p.coins + treasuryCoins } : p
+      );
+      s = addLog(
+        { ...s, players: updatedPlayers, treasury: 0 },
+        `${actor.name}이(가) 재무부에서 ${treasuryCoins}코인을 횡령했습니다`,
+        { type: 'embezzlement', actorId }
+      );
+      return nextTurn(s);
+    }
+
+    case 'examine': {
+      // 심문: 상대 카드 확인 → examine_select phase로 전환
+      if (!targetId) throw new Error('examine: targetId required');
+      const target = getPlayer(s, targetId);
+      const liveCards = target.cards.filter((c) => !c.revealed);
+      if (liveCards.length === 0) throw new Error('심문: 대상에 비공개 카드가 없습니다');
+      // 랜덤 비공개 카드 1장 선택
+      const liveIndices = target.cards
+        .map((c, i) => (!c.revealed ? i : -1))
+        .filter((i) => i !== -1);
+      const examineIdx = liveIndices[Math.floor(Math.random() * liveIndices.length)];
+      const examinedCard = target.cards[examineIdx].character;
+
+      s = addLog(s, `${actor.name}이(가) ${target.name}의 카드를 심문합니다`);
+      s = addPrivateLog(s, actorId,
+        `심문: ${target.name}의 카드는 ${CHARACTER_NAMES[examinedCard]}입니다`,
+        { type: 'examine_complete', actorId, targetId }
+      );
+      return {
+        ...s,
+        phase: 'examine_select',
+        pendingAction: {
+          ...pending,
+          examinedCard,
+          examinedCardIndex: examineIdx,
+          exchangeDeadline: Date.now() + 45000,
+        },
       };
     }
 
@@ -785,6 +944,24 @@ export function resolveExchangeTimeout(state: GameState): GameState {
   const keptIndices = liveCards.map((_, i) => i); // 기존 카드 인덱스들 (0부터 liveCount-1)
   const s = addLog(state, `${actor.name}이(가) 시간 초과로 기존 카드를 유지합니다`);
   return processExchangeSelect(s, actor.id, keptIndices);
+}
+
+// ============================================================
+// 심문 선택 타임아웃 해소: 45초 초과 시 자동 돌려주기
+// ============================================================
+
+export function resolveExamineTimeout(state: GameState): GameState {
+  if (
+    state.phase !== 'examine_select' ||
+    !state.pendingAction?.exchangeDeadline ||
+    Date.now() <= state.pendingAction.exchangeDeadline
+  ) {
+    return state;
+  }
+
+  const actor = getPlayer(state, state.pendingAction.actorId);
+  const s = addLog(state, `${actor.name}이(가) 시간 초과로 카드를 돌려주었습니다`);
+  return processExamineSelect(s, actor.id, 'return');
 }
 
 // ============================================================
@@ -961,4 +1138,53 @@ export function processExchangeSelect(
     { type: 'exchange_complete', actorId }
   );
   return nextTurn(s);
+}
+
+// ============================================================
+// 인퀴지터 심문 선택 처리
+// ============================================================
+
+export function processExamineSelect(
+  state: GameState,
+  actorId: string,
+  action: 'return' | 'replace'
+): GameState {
+  const pending = state.pendingAction;
+  if (!pending || pending.examinedCard === undefined || pending.examinedCardIndex === undefined) {
+    throw new Error('No examine pending');
+  }
+
+  const targetId = pending.targetId!;
+  const target = getPlayer(state, targetId);
+  const actor = getPlayer(state, actorId);
+  let s = state;
+
+  if (action === 'return') {
+    // 돌려주기: 카드 그대로 유지
+    s = addLog(s, `${actor.name}이(가) ${target.name}의 카드를 돌려주었습니다`);
+    return nextTurn(s);
+  } else {
+    // 교체: 해당 카드를 덱으로 반환하고 새 카드 지급
+    const cardIdx = pending.examinedCardIndex;
+    const oldChar = pending.examinedCard;
+    const newDeck = shuffle([...s.deck, oldChar]);
+    const newChar = newDeck.pop()!;
+
+    const updatedPlayers = s.players.map((p) => {
+      if (p.id !== targetId) return p;
+      const newCards = [...p.cards];
+      newCards[cardIdx] = { ...newCards[cardIdx], character: newChar };
+      return { ...p, cards: newCards };
+    });
+
+    s = addLog(
+      { ...s, players: updatedPlayers, deck: newDeck },
+      `${actor.name}이(가) ${target.name}의 카드를 교체했습니다`
+    );
+    s = addPrivateLog(s, targetId,
+      `심문으로 ${CHARACTER_NAMES[oldChar]}이(가) 덱으로 돌아가고 새 카드를 받았습니다`,
+      { type: 'examine_complete', actorId, targetId }
+    );
+    return nextTurn(s);
+  }
 }

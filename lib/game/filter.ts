@@ -27,6 +27,7 @@ export function filterStateForPlayer(
         cards: p.cards ?? [],
         isAlive: p.isAlive,
         isReady: p.isReady,
+        ...(p.allegiance && { allegiance: p.allegiance }),
       };
     }
     // 상대: 비공개 카드 마스킹
@@ -41,6 +42,7 @@ export function filterStateForPlayer(
       cards: maskedCards,
       isAlive: p.isAlive,
       isReady: p.isReady,
+      ...(p.allegiance && { allegiance: p.allegiance }),
     };
   });
 
@@ -63,6 +65,14 @@ export function filterStateForPlayer(
     if (pa.exchangeCards && pa.actorId === playerId) {
       pendingAction.exchangeCards = pa.exchangeCards;
     }
+    // examinedCard: 인퀴지터(actor) 본인만 볼 수 있음
+    if (pa.examinedCard && pa.actorId === playerId) {
+      pendingAction.examinedCard = pa.examinedCard;
+    }
+    // conversionTargetId: 전달
+    if (pa.conversionTargetId) {
+      pendingAction.conversionTargetId = pa.conversionTargetId;
+    }
   }
 
   return {
@@ -74,6 +84,8 @@ export function filterStateForPlayer(
     ...(state.actionDeadline !== undefined && { actionDeadline: state.actionDeadline }),
     ...(state.winnerId !== undefined && { winnerId: state.winnerId }),
     ...(state.gameMode && { gameMode: state.gameMode }),
+    ...(state.treasury !== undefined && { treasury: state.treasury }),
+    ...(state.useInquisitor !== undefined && { useInquisitor: state.useInquisitor }),
     ...(state.structuredLog && {
       structuredLog: state.structuredLog.filter(
         (entry) => !entry.visibleTo || entry.visibleTo === playerId

@@ -6,6 +6,7 @@ import {
   processBlockResponse,
   processLoseInfluence,
   processExchangeSelect,
+  processExamineSelect,
   resolveTimeouts,
 } from '@/lib/game/engine';
 import { ActionType, Character, ResponseType } from '@/lib/game/types';
@@ -42,7 +43,8 @@ export async function POST(req: NextRequest) {
   try {
     switch (action.type) {
       case 'income': case 'foreignAid': case 'coup':
-      case 'tax': case 'assassinate': case 'steal': case 'exchange': {
+      case 'tax': case 'assassinate': case 'steal': case 'exchange':
+      case 'conversion': case 'embezzlement': case 'examine': {
         if (state.currentTurnId !== playerId) return NextResponse.json({ error: '당신의 턴이 아닙니다' }, { status: 403 });
         state = processAction(state, playerId, { type: action.type as ActionType, targetId: action.targetId, guessedCharacter: action.guessedCharacter });
         break;
@@ -67,6 +69,12 @@ export async function POST(req: NextRequest) {
         if (state.phase !== 'exchange_select') return NextResponse.json({ error: '잘못된 단계' }, { status: 400 });
         if (state.pendingAction?.actorId !== playerId) return NextResponse.json({ error: '권한 없음' }, { status: 403 });
         state = processExchangeSelect(state, playerId, action.keptIndices);
+        break;
+      }
+      case 'examine_select': {
+        if (state.phase !== 'examine_select') return NextResponse.json({ error: '잘못된 단계' }, { status: 400 });
+        if (state.pendingAction?.actorId !== playerId) return NextResponse.json({ error: '권한 없음' }, { status: 403 });
+        state = processExamineSelect(state, playerId, action.action as 'return' | 'replace');
         break;
       }
       default:

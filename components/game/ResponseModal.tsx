@@ -66,6 +66,27 @@ const ACTION_CONTEXT: Record<ActionType, ActionContext> = {
         challengeInfo: '도전 성공 시: 대사가 아니면 행동이 취소되고 선언자가 카드를 잃습니다.\n도전 실패 시: 도전자가 카드를 잃고 교환이 진행됩니다.',
         passInfo: '패스하면 카드 교환이 진행됩니다.',
     },
+    conversion: {
+        claimedRole: null,
+        effect: '진영 변경',
+        blockInfo: null,
+        challengeInfo: '도전 불가 — 즉시 처리됩니다',
+        passInfo: '자동 통과',
+    },
+    embezzlement: {
+        claimedRole: '공작',
+        effect: '재무부 코인 횡령',
+        blockInfo: null,
+        challengeInfo: '공작이 아닐 수 있습니다!',
+        passInfo: '횡령을 허용합니다',
+    },
+    examine: {
+        claimedRole: '종교재판관',
+        effect: '상대 카드 심문',
+        blockInfo: null,
+        challengeInfo: '종교재판관이 아닐 수 있습니다!',
+        passInfo: '심문을 허용합니다',
+    },
 };
 
 // 블록 단계 컨텍스트
@@ -96,6 +117,11 @@ function getBlockContext(actionType: ActionType, blockerChar: Character): { effe
             effect: '',
             challengeInfo: '',
             passInfo: '',
+        },
+        Inquisitor: {
+            effect: `종교재판관(${charName})으로 갈취를 차단합니다.`,
+            challengeInfo: `도전 성공 시: 블로커가 종교재판관이 아니면 블록이 무효화되고 갈취가 진행됩니다.\n도전 실패 시: 도전자가 카드를 잃고 갈취는 차단됩니다.`,
+            passInfo: '패스하면 갈취가 차단됩니다.',
         },
     };
     return blockContextMap[blockerChar] || { effect: '', challengeInfo: '', passInfo: '' };

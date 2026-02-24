@@ -174,9 +174,15 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
                 {/* Game mode badge */}
                 {state.gameMode && state.gameMode !== 'standard' && (
                     <div className="flex justify-center mb-4">
-                        <span className="text-xs font-mono px-3 py-1 rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-400">
-                            Guess 모드 — 쿠데타 시 카드 추측
-                        </span>
+                        {state.gameMode === 'reformation' ? (
+                            <span className="text-xs font-mono px-3 py-1 rounded-full border border-purple-500/40 bg-purple-500/10 text-purple-300">
+                                종교개혁 확장판 {state.useInquisitor ? '(종교재판관)' : '(대사)'}
+                            </span>
+                        ) : (
+                            <span className="text-xs font-mono px-3 py-1 rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-400">
+                                Guess 모드 — 쿠데타 시 카드 추측
+                            </span>
+                        )}
                     </div>
                 )}
 
@@ -186,7 +192,7 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
                 {/* Player list */}
                 <div className="mb-6">
                     <p className="text-xs text-text-muted uppercase tracking-widest font-mono mb-4">
-                        참가자 ({state.players.length}/6)
+                        참가자 ({state.players.length}/{state.gameMode === 'reformation' ? 10 : 6})
                     </p>
                     <ul className="space-y-3">
                         {state.players.map((p, i) => (

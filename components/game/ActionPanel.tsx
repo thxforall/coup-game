@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useState, useEffect } from 'react';
-import { Coins, Handshake, Crown, Crosshair, Anchor, Repeat, Zap } from 'lucide-react';
+import { Coins, Handshake, Crown, Crosshair, Anchor, Repeat, Zap, RefreshCw, Banknote, Search } from 'lucide-react';
 import { FilteredGameState, ActionType, Character } from '@/lib/game/types';
 import ConfirmModal from './ConfirmModal';
 import TargetSelectModal from './TargetSelectModal';
@@ -13,7 +13,7 @@ interface Props {
     actionDeadline?: number;
 }
 
-type ButtonVariant = 'general' | 'duke' | 'assassin' | 'captain' | 'ambassador' | 'coup';
+type ButtonVariant = 'general' | 'duke' | 'assassin' | 'captain' | 'ambassador' | 'coup' | 'reformation' | 'inquisitor';
 
 const ACTION_BUTTONS: {
     type: ActionType;
@@ -24,7 +24,7 @@ const ACTION_BUTTONS: {
     needsTarget?: boolean;
     claimedChar?: Character;
     variant: ButtonVariant;
-    row: 1 | 2;
+    row: 1 | 2 | 3;
 }[] = [
         {
             type: 'income',
@@ -91,6 +91,35 @@ const ACTION_BUTTONS: {
             variant: 'ambassador',
             row: 2,
         },
+        // Reformation 전용 액션
+        {
+            type: 'conversion',
+            label: '전향',
+            icon: RefreshCw,
+            desc: '진영 변경 (자기 1코인, 타인 2코인)',
+            cost: 1,
+            variant: 'reformation',
+            row: 3 as 1 | 2,
+        },
+        {
+            type: 'embezzlement',
+            label: '횡령',
+            icon: Banknote,
+            desc: '재무부 코인 횡령 (공작, 도전 가능)',
+            claimedChar: 'Duke',
+            variant: 'duke',
+            row: 3 as 1 | 2,
+        },
+        {
+            type: 'examine',
+            label: '심문',
+            icon: Search,
+            desc: '상대 카드 확인 후 교체 (종교재판관)',
+            needsTarget: true,
+            claimedChar: 'Inquisitor',
+            variant: 'inquisitor',
+            row: 3 as 1 | 2,
+        },
     ];
 
 const VARIANT_STYLES: Record<ButtonVariant, string> = {
@@ -100,6 +129,8 @@ const VARIANT_STYLES: Record<ButtonVariant, string> = {
     captain: 'bg-captain/20 border-captain hover:bg-captain/30',
     ambassador: 'bg-ambassador/20 border-ambassador hover:bg-ambassador/30',
     coup: 'border-gold hover:opacity-90',
+    reformation: 'bg-purple-500/20 border-purple-500 hover:bg-purple-500/30',
+    inquisitor: 'bg-teal-500/20 border-teal-500 hover:bg-teal-500/30',
 };
 
 const VARIANT_ICON_COLORS: Record<ButtonVariant, string> = {
@@ -109,6 +140,8 @@ const VARIANT_ICON_COLORS: Record<ButtonVariant, string> = {
     captain: 'text-captain',
     ambassador: 'text-ambassador',
     coup: 'text-bg-dark',
+    reformation: 'text-purple-400',
+    inquisitor: 'text-teal-400',
 };
 
 function ActionPanel({ state, playerId, onAction, actionDeadline }: Props) {
@@ -135,6 +168,7 @@ function ActionPanel({ state, playerId, onAction, actionDeadline }: Props) {
     const aliveOthers = state.players.filter((p) => p.isAlive && p.id !== playerId);
     const mustCoup = me.coins >= 10;
     const isGuessMode = state.gameMode === 'guess';
+    const isReformation = state.gameMode === 'reformation';
 
     const handleActionButtonClick = (actionType: ActionType, needsTarget: boolean) => {
         if (needsTarget) {
@@ -179,6 +213,12 @@ function ActionPanel({ state, playerId, onAction, actionDeadline }: Props) {
                 return { title: '암살 확인', message: `정말 ${target?.name}을(를) 암살하시겠습니까? (3코인 소모)`, label: `${target?.name ?? ''} 암살하기`, color: 'var(--gold)', icon: Crosshair };
             case 'coup':
                 return { title: '쿠데타 확인', message: `정말 ${target?.name}에게 쿠데타를 하시겠습니까? (7코인 소모)`, label: `${target?.name ?? ''} 쿠데타`, color: 'var(--gold)', icon: Zap };
+            case 'conversion':
+                return { title: '전향 확인', message: '자신의 진영을 변경하시겠습니까? (1코인 → 재무부)', label: '전향하기', color: '#a855f7', icon: RefreshCw };
+            case 'embezzlement':
+                return { title: '횡령 확인', message: `재무부의 ${state.treasury ?? 0}코인을 횡령하시겠습니까? (도전 가능)`, label: '횡령하기', color: 'var(--gold)', icon: Banknote };
+            case 'examine':
+                return { title: '심문 확인', message: `${target?.name}의 카드를 심문하시겠습니까? (도전 가능)`, label: `${target?.name ?? ''} 심문하기`, color: '#5eead4', icon: Search };
             default:
                 return { title: '확인', message: '이 행동을 선택하시겠습니까?', label: '확인', color: 'var(--gold)', icon: undefined as React.ElementType | undefined };
         }
@@ -205,12 +245,18 @@ function ActionPanel({ state, playerId, onAction, actionDeadline }: Props) {
     };
 
     const visibleButtons = ACTION_BUTTONS.filter((a) => {
-        if (mustCoup && a.type !== 'coup') return false;
+        if (mustCoup && a.type !== 'coup' && a.type !== 'conversion') return false;
+        // reformation 전용 액션은 reformation 모드에서만
+        if (a.row === 3 && !isReformation) return false;
+        // reformation 모드에서 인퀴지터 미사용 시 examine 숨김
+        if (a.type === 'examine' && (!isReformation || !state.useInquisitor)) return false;
+        // reformation 모드에서 인퀴지터 사용 시 exchange 라벨 변경은 아래에서 처리
         return true;
     });
 
     const row1 = visibleButtons.filter((a) => a.row === 1);
     const row2 = visibleButtons.filter((a) => a.row === 2);
+    const row3 = visibleButtons.filter((a) => a.row === 3);
 
     const pendingActionDef = pendingActionType
         ? ACTION_BUTTONS.find((a) => a.type === pendingActionType)
@@ -264,6 +310,8 @@ function ActionPanel({ state, playerId, onAction, actionDeadline }: Props) {
                     loading={loading}
                     onSelectTarget={handleTargetSelected}
                     onCancel={handleCancelTargetSelection}
+                    myAllegiance={me.allegiance}
+                    allSameAllegiance={isReformation ? aliveOthers.every((p) => p.allegiance === me.allegiance) : undefined}
                 />
             )}
 
@@ -386,6 +434,54 @@ function ActionPanel({ state, playerId, onAction, actionDeadline }: Props) {
                             </button>
                         );
                     })}
+                </div>
+            )}
+
+            {/* 액션 버튼 — Row 3: 종교개혁 전용 (전향 / 횡령 / 심문) */}
+            {row3.length > 0 && (
+                <div>
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="h-px flex-1 bg-purple-500/20" />
+                        <span className="text-[10px] text-purple-400 font-bold uppercase tracking-widest">종교개혁</span>
+                        <div className="h-px flex-1 bg-purple-500/20" />
+                    </div>
+                    {/* 재무부 코인 표시 */}
+                    {isReformation && (
+                        <div className="flex items-center justify-center gap-2 mb-2 px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                            <Banknote size={14} className="text-purple-400" />
+                            <span className="text-xs text-purple-300 font-bold">재무부: {state.treasury ?? 0}코인</span>
+                        </div>
+                    )}
+                    <div className={`grid gap-2 ${row3.length === 3 ? 'grid-cols-3' : row3.length === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                        {row3.map((a) => {
+                            const canAfford = a.cost ? me.coins >= a.cost : true;
+                            const hasTreasury = a.type === 'embezzlement' ? (state.treasury ?? 0) > 0 : true;
+                            const disabled = !canAfford || !hasTreasury || loading;
+                            const Icon = a.icon;
+
+                            return (
+                                <button
+                                    key={a.type}
+                                    onClick={() => handleActionButtonClick(a.type, !!a.needsTarget)}
+                                    disabled={disabled}
+                                    className={`flex flex-col items-start p-1.5 sm:p-3 rounded-xl border transition-all text-left disabled:opacity-40 ${disabled ? 'cursor-not-allowed' : 'active:scale-95'
+                                        } ${VARIANT_STYLES[a.variant]}`}
+                                >
+                                    <div className="flex items-center gap-1.5 mb-1 w-full">
+                                        <Icon
+                                            className={`w-4 h-4 sm:w-5 sm:h-5 shrink-0 ${VARIANT_ICON_COLORS[a.variant]}`}
+                                        />
+                                        <span className="font-bold text-xs sm:text-sm text-text-primary truncate">
+                                            {a.label}
+                                        </span>
+                                    </div>
+                                    <span className="text-[10px] text-text-muted leading-tight line-clamp-2">
+                                        {a.desc}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
             )}
 

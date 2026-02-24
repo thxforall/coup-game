@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
     pendingAction: null,
     log: ['게임이 재시작되었습니다. 준비를 눌러주세요!'],
     gameMode: state.gameMode,
+    ...(state.gameMode === 'reformation' && { treasury: 0, useInquisitor: state.useInquisitor }),
   };
 
   const views: Record<string, import('@/lib/game/types').FilteredGameState> = {};

@@ -11,6 +11,7 @@ const CARD_IMAGES: Record<Character, string> = {
     Captain: '/cards/captain.jpg',
     Assassin: '/cards/assassin.jpg',
     Ambassador: '/cards/ambassador.jpg',
+    Inquisitor: '/cards/inquisitor.jpg',
 };
 
 const CHAR_COLOR: Record<Character, string> = {
@@ -19,6 +20,7 @@ const CHAR_COLOR: Record<Character, string> = {
     Captain: 'text-blue-400',
     Assassin: 'text-slate-300',
     Ambassador: 'text-emerald-400',
+    Inquisitor: 'text-teal-400',
 };
 
 const CHAR_BORDER_COLOR: Record<Character, string> = {
@@ -27,6 +29,7 @@ const CHAR_BORDER_COLOR: Record<Character, string> = {
     Captain: 'border-blue-500/50',
     Assassin: 'border-slate-500/50',
     Ambassador: 'border-emerald-500/50',
+    Inquisitor: 'border-teal-500/50',
 };
 
 interface CharacterInfo {
@@ -78,6 +81,14 @@ const CHARACTER_INFO: Record<Character, CharacterInfo> = {
         blocks: '갈취 차단 🛡️',
         blocksDesc: '사령관의 갈취로부터 자신을 보호합니다.',
         tip: '카드 교환으로 상황에 맞는 캐릭터를 얻으세요. 전략의 핵심!',
+    },
+    Inquisitor: {
+        action: '심문/교환',
+        actionDesc: '상대 카드 1장 확인 후 교체 가능 / 덱과 카드 1장 교환',
+        actionCost: null,
+        blocks: '갈취 차단',
+        blocksDesc: '사령관의 갈취를 막음',
+        tip: '정보력으로 게임을 지배하세요',
     },
 };
 

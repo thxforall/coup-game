@@ -74,7 +74,7 @@ describe('filterStateForPlayer', () => {
     const state = createTestState();
     const filtered = filterStateForPlayer(state, 'p1');
 
-    expect((filtered as Record<string, unknown>).deck).toBeUndefined();
+    expect((filtered as unknown as Record<string, unknown>).deck).toBeUndefined();
   });
 
   test('exchangeCards: 본인 exchange일 때만 접근 가능', () => {

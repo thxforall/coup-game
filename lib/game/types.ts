@@ -2,9 +2,11 @@
 // 게임 타입 정의
 // ============================================================
 
-export type GameMode = 'standard' | 'guess';
+export type GameMode = 'standard' | 'guess' | 'reformation';
 
-export type Character = 'Duke' | 'Contessa' | 'Captain' | 'Assassin' | 'Ambassador';
+export type Character = 'Duke' | 'Contessa' | 'Captain' | 'Assassin' | 'Ambassador' | 'Inquisitor';
+
+export type Allegiance = 'loyalist' | 'reformist';
 
 export type ActionType =
   | 'income'       // 소득: 코인 +1 (막기 불가)
@@ -13,7 +15,10 @@ export type ActionType =
   | 'tax'          // 세금징수: 코인 +3 (공작 능력, 도전 가능)
   | 'assassinate'  // 암살: 코인 3개, 상대 카드 제거 (암살자 능력, 백작부인 막기, 도전 가능)
   | 'steal'        // 갈취: 상대 코인 2개 탈취 (사령관 능력, 대사/사령관 막기, 도전 가능)
-  | 'exchange';    // 교환: 덱에서 카드 교체 (대사 능력, 도전 가능)
+  | 'exchange'      // 교환: 덱에서 카드 교체 (대사 능력, 도전 가능)
+  | 'conversion'    // 전향: 진영 변경 (reformation 전용, 자기 1코인/타인 2코인 → 재무부)
+  | 'embezzlement'  // 횡령: 재무부 코인 가져옴 (공작 능력, 도전 가능, reformation 전용)
+  | 'examine';      // 심문: 상대 카드 확인 후 교체 강제 (인퀴지터 능력, reformation 전용)
 
 export type ResponseType = 'challenge' | 'block' | 'pass';
 
@@ -24,6 +29,7 @@ export type GamePhase =
   | 'awaiting_block_response' // 블록에 대한 도전 대기
   | 'lose_influence'          // 카드 잃을 플레이어가 선택해야 함
   | 'exchange_select'         // 대사 능력: 교환할 카드 선택
+  | 'examine_select'          // 인퀴지터 심문: 카드 확인 후 돌려주기/교체 선택
   | 'game_over';              // 게임 종료
 
 export interface Card {
@@ -38,6 +44,7 @@ export interface Player {
   cards: Card[];
   isAlive: boolean;
   isReady: boolean; // 대기실에서 준비 완료 여부
+  allegiance?: Allegiance; // reformation 모드 진영 (loyalist/reformist)
 }
 
 export interface ChallengeLoseContext {
@@ -53,8 +60,11 @@ export interface PendingAction {
   blockerId?: string;                                      // 블로커 플레이어 ID
   blockerCharacter?: Character;                            // 블로커가 주장하는 캐릭터
   losingPlayerId?: string;                                 // 카드를 잃어야 하는 플레이어 ID
-  exchangeCards?: Character[];                             // 대사가 뽑은 카드 2장
+  exchangeCards?: Character[];                             // 대사가 뽑은 카드 2장 (인퀴지터는 1장)
   exchangeDeadline?: number;                               // 교환 선택 제한시간 (Unix timestamp ms)
+  examinedCard?: Character;                                // 인퀴지터 심문: 확인된 카드
+  examinedCardIndex?: number;                              // 인퀴지터 심문: 확인된 카드의 인덱스
+  conversionTargetId?: string;                             // 전향 대상 플레이어 ID (타인 전향 시)
   responseDeadline?: number;                               // 응답 제한시간 (Unix timestamp ms)
   guessedCharacter?: Character;                            // guess 모드: 쿠데타 시 추측 캐릭터
   challengeLoseContext?: ChallengeLoseContext;              // 도전으로 인한 카드 잃기 컨텍스트
@@ -71,6 +81,8 @@ export interface GameState {
   structuredLog?: LogEntry[];
   winnerId?: string;
   gameMode?: GameMode;
+  treasury?: number; // 재무부 코인 (reformation 모드)
+  useInquisitor?: boolean; // 인퀴지터 사용 여부 (reformation 모드)
   kickedPlayerIds?: string[]; // 추방된 플레이어 ID 목록 (재입장 차단)
   createdAt?: number; // 방 생성 시간 (Unix ms) - cleanup용 서버 내부 메타데이터
   updatedAt?: number; // 마지막 활동 시간 (Unix ms) - cleanup용 서버 내부 메타데이터
@@ -85,9 +97,13 @@ export type GameAction =
   | { type: 'assassinate'; targetId: string }
   | { type: 'steal'; targetId: string }
   | { type: 'exchange' }
+  | { type: 'conversion'; targetId?: string } // 자기 전향(targetId 없음) or 타인 전향
+  | { type: 'embezzlement' }
+  | { type: 'examine'; targetId: string }
   | { type: 'respond'; response: ResponseType; character?: Character } // block 시 character 필요
   | { type: 'lose_influence'; cardIndex: number }
-  | { type: 'exchange_select'; keptIndices: number[] };
+  | { type: 'exchange_select'; keptIndices: number[] }
+  | { type: 'examine_select'; action: 'return' | 'replace' }; // 심문 후 돌려주기/교체
 
 // ============================================================
 // Server-side filtered state (클라이언트에 전달)
@@ -105,6 +121,7 @@ export interface FilteredPlayer {
   cards: Card[] | MaskedCard[]; // self: Card[], opponent: MaskedCard[]
   isAlive: boolean;
   isReady: boolean;
+  allegiance?: Allegiance;
 }
 
 export interface FilteredPendingAction {
@@ -120,6 +137,8 @@ export interface FilteredPendingAction {
   responseDeadline?: number;   // 응답 제한시간 (Unix timestamp ms)
   guessedCharacter?: Character; // guess 모드: 쿠데타 시 추측 캐릭터
   challengeLoseContext?: ChallengeLoseContext; // 도전으로 인한 카드 잃기 컨텍스트
+  examinedCard?: Character;    // 인퀴지터 심문: 본인(인퀴지터)만 볼 수 있음
+  conversionTargetId?: string; // 전향 대상
 }
 
 export interface FilteredGameState {
@@ -132,16 +151,25 @@ export interface FilteredGameState {
   structuredLog?: LogEntry[];
   winnerId?: string;
   gameMode?: GameMode;
+  treasury?: number; // 재무부 코인 (reformation 모드)
+  useInquisitor?: boolean; // 인퀴지터 사용 여부 (reformation 모드)
   // deck 제외 — 클라이언트에 절대 노출 안함
 }
 
 // 캐릭터 한국어 이름
+// 진영 한국어 이름
+export const ALLEGIANCE_NAMES: Record<Allegiance, string> = {
+  loyalist: '충성파',
+  reformist: '개혁파',
+};
+
 export const CHARACTER_NAMES: Record<Character, string> = {
   Duke: '공작',
   Contessa: '백작부인',
   Captain: '사령관',
   Assassin: '암살자',
   Ambassador: '대사',
+  Inquisitor: '종교재판관',
 };
 
 // 액션 한국어 이름
@@ -153,13 +181,16 @@ export const ACTION_NAMES: Record<ActionType, string> = {
   assassinate: '암살',
   steal: '갈취',
   exchange: '교환',
+  conversion: '전향',
+  embezzlement: '횡령',
+  examine: '심문',
 };
 
 // 블록 가능 캐릭터 (action -> 막을 수 있는 캐릭터들)
 export const BLOCK_CHARACTERS: Partial<Record<ActionType, Character[]>> = {
   foreignAid: ['Duke'],
   assassinate: ['Contessa'],
-  steal: ['Captain', 'Ambassador'],
+  steal: ['Captain', 'Ambassador', 'Inquisitor'],
 };
 
 // 캐릭터별 액션 능력
@@ -168,6 +199,7 @@ export const CHARACTER_ACTIONS: Partial<Record<Character, ActionType>> = {
   Captain: 'steal',
   Assassin: 'assassinate',
   Ambassador: 'exchange',
+  Inquisitor: 'exchange', // 인퀴지터도 교환 가능 (1장만), examine은 별도 액션
 };
 
 // ============================================================
@@ -182,7 +214,8 @@ export type LogEntryType =
   | 'lose_influence' | 'player_eliminated'
   | 'exchange_complete' | 'game_over'
   | 'guess_success' | 'guess_fail'
-  | 'turn_start';
+  | 'turn_start'
+  | 'conversion' | 'embezzlement' | 'examine_complete';
 
 export interface LogEntry {
   type: LogEntryType;
