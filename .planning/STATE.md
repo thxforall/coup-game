@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-24 - Completed quick-065 (로비 게임 규칙 종교재판관 추가)
+- Last activity: 2026-02-24 - Completed quick-066 (전향 타인 전향 2코인 UI 추가)
 
 ### Quick Tasks Completed
 
@@ -69,6 +69,7 @@
 | 062 | 게임 중 방 삭제 감지 버그 수정 (viewRef onValue else 브랜치) | 2026-02-24 | ed2bd62 | [062-fix-room-delete-in-game](./quick/062-fix-room-delete-in-game/) |
 | 063 | 로비 게임 규칙 탭 헤더 가로 스크롤 제거 | 2026-02-24 | 8ba2b12 | [063-gamerules-tab-header-no-scroll](./quick/063-gamerules-tab-header-no-scroll/) |
 | 065 | 로비 게임 규칙 캐릭터 탭에 종교재판관 추가 | 2026-02-24 | e746820 | [065-lobby-game-rules-add-inquisitor](./quick/065-lobby-game-rules-add-inquisitor/) |
+| 066 | 전향(conversion) 타인 전향(2코인) UI 추가 | 2026-02-24 | ae6242d | [066-conversion-target-player-ui](./quick/066-conversion-target-player-ui/) |
 
 ### Blockers/Concerns
 - None currently
