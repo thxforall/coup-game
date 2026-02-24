@@ -510,7 +510,7 @@ export default function LobbyPage() {
                                     { key: 'Captain', kr: '사령관', color: 'text-blue-400', ability: '갈취(상대 2코인 탈취) / 갈취 차단' },
                                     { key: 'Ambassador', kr: '대사', color: 'text-emerald-400', ability: '교환(덱과 카드 교체) / 갈취 차단' },
                                     { key: 'Contessa', kr: '백작부인', color: 'text-red-400', ability: '암살 차단' },
-                                    { key: 'Inquisitor', kr: '종교재판관', color: 'text-yellow-400', ability: '심문(상대 카드 확인 후 교체 강제) / 교환(덱과 카드 1장 교체) / 갈취 차단', tag: '종교개혁' },
+                                    { key: 'Inquisitor', kr: '종교재판관', color: 'text-teal-400', ability: '심문(상대 카드 확인 후 교체 강제) / 교환(덱과 카드 1장 교체) / 갈취 차단', tag: '종교개혁' },
                                 ].map((c) => (
                                     <button
                                         key={c.key}
