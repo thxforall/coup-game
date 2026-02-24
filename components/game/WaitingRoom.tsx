@@ -6,6 +6,8 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Skull, Copy, Check, Crown, Play, CheckCircle2, Circle, X, BookOpen, Home, LogOut } from 'lucide-react';
 import { clearActiveRoom } from '@/lib/storage';
+import ConfirmModal from '@/components/game/ConfirmModal';
+import AlertModal from '@/components/ui/AlertModal';
 
 const GameRulesModal = dynamic(() => import('./GameRulesModal'), { ssr: false });
 import BgmPlayer from './BgmPlayer';
@@ -21,9 +23,18 @@ interface Props {
     presence?: PresenceMap;
 }
 
+type ConfirmAction =
+    | { type: 'kick'; targetId: string; targetName: string }
+    | { type: 'leave' }
+    | { type: 'delete' };
+
 export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, onReady, onLeave, presence }: Props) {
     const [copied, setCopied] = useState(false);
     const [showRules, setShowRules] = useState(false);
+    const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [alertMessage, setAlertMessage] = useState<string | null>(null);
+
     const isHost = state.players[0]?.id === playerId;
 
     const currentPlayer = state.players.find((p) => p.id === playerId);
@@ -38,10 +49,73 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
     };
 
     const handleKick = (targetId: string, targetName: string) => {
-        if (window.confirm(`${targetName}을(를) 추방하시겠습니까?`)) {
-            onKick(targetId);
+        setConfirmAction({ type: 'kick', targetId, targetName });
+    };
+
+    const handleConfirm = async () => {
+        if (!confirmAction) return;
+
+        if (confirmAction.type === 'kick') {
+            onKick(confirmAction.targetId);
+            setConfirmAction(null);
+        } else if (confirmAction.type === 'leave') {
+            setConfirmAction(null);
+            onLeave();
+        } else if (confirmAction.type === 'delete') {
+            setDeleteLoading(true);
+            try {
+                const res = await fetch('/api/game/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ roomId, playerId }),
+                });
+                if (res.ok) {
+                    clearActiveRoom();
+                    window.location.href = '/';
+                } else {
+                    setDeleteLoading(false);
+                    setConfirmAction(null);
+                    setAlertMessage('방 삭제에 실패했습니다.');
+                }
+            } catch (e) {
+                console.error(e);
+                setDeleteLoading(false);
+                setConfirmAction(null);
+                setAlertMessage('방 삭제에 실패했습니다.');
+            }
         }
     };
+
+    const getConfirmProps = () => {
+        if (!confirmAction) return null;
+        if (confirmAction.type === 'kick') {
+            return {
+                title: '플레이어 추방',
+                message: `${confirmAction.targetName}을(를) 방에서 추방하시겠습니까?`,
+                confirmLabel: '추방',
+                confirmColor: 'var(--assassin)',
+            };
+        }
+        if (confirmAction.type === 'leave') {
+            return {
+                title: '방 나가기',
+                message: '방을 나가시겠습니까?',
+                confirmLabel: '나가기',
+                confirmColor: undefined,
+            };
+        }
+        if (confirmAction.type === 'delete') {
+            return {
+                title: '방 없애기',
+                message: '방을 정말 없애시겠습니까? 모든 플레이어가 튕겨 나갑니다.',
+                confirmLabel: '없애기',
+                confirmColor: 'var(--assassin)',
+            };
+        }
+        return null;
+    };
+
+    const confirmProps = getConfirmProps();
 
     const startButtonLabel = () => {
         if (state.players.length < 2) return '최소 2명 필요';
@@ -55,7 +129,7 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
             <div className="absolute top-4 left-4 flex items-center gap-2">
                 <button
                     className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-surface transition-colors flex items-center gap-2 text-sm"
-                    onClick={() => { if (window.confirm('방을 나가시겠습니까?')) onLeave(); }}
+                    onClick={() => setConfirmAction({ type: 'leave' })}
                     aria-label="로비로 이동"
                 >
                     <Home size={18} />
@@ -184,24 +258,7 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
                         </button>
                         <button
                             className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-500 hover:bg-red-500/20 transition-all flex items-center justify-center gap-2"
-                            onClick={async () => {
-                                if (window.confirm('방을 정말 없애시겠습니까? 모든 플레이어가 튕겨 나갑니다.')) {
-                                    try {
-                                        const res = await fetch('/api/game/delete', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ roomId, playerId }),
-                                        });
-                                        if (res.ok) {
-                                            clearActiveRoom();
-                                            window.location.href = '/';
-                                        }
-                                    } catch (e) {
-                                        console.error(e);
-                                        alert('방 삭제에 실패했습니다.');
-                                    }
-                                }
-                            }}
+                            onClick={() => setConfirmAction({ type: 'delete' })}
                             title="방 없애기"
                         >
                             <X size={18} />
@@ -230,7 +287,7 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
                         </button>
                         <button
                             className="btn-ghost w-full py-2.5 flex items-center justify-center gap-2 text-sm border border-border-subtle mt-3 text-text-secondary hover:text-red-400 hover:border-red-500/30"
-                            onClick={() => { if (window.confirm('방을 나가시겠습니까?')) onLeave(); }}
+                            onClick={() => setConfirmAction({ type: 'leave' })}
                         >
                             <LogOut size={16} />
                             방 나가기
@@ -250,6 +307,28 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
 
             {/* 게임 규칙 모달 */}
             {showRules && <GameRulesModal onClose={() => setShowRules(false)} />}
+
+            {/* 확인 모달 */}
+            {confirmAction && confirmProps && (
+                <ConfirmModal
+                    title={confirmProps.title}
+                    message={confirmProps.message}
+                    confirmLabel={confirmProps.confirmLabel}
+                    confirmColor={confirmProps.confirmColor}
+                    onConfirm={handleConfirm}
+                    onCancel={() => setConfirmAction(null)}
+                    loading={deleteLoading}
+                />
+            )}
+
+            {/* 알림 모달 */}
+            {alertMessage && (
+                <AlertModal
+                    title="오류"
+                    message={alertMessage}
+                    onClose={() => setAlertMessage(null)}
+                />
+            )}
         </div>
     );
 }
