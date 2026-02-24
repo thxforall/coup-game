@@ -63,11 +63,12 @@
 | 056 | ExchangeModal swap 카드 선택 UX + exchange_select 45초 타임아웃 자동 기존 카드 유지 | 2026-02-24 | c5fcad6 | [056-exchange-card-swap-and-timeout-fix](./quick/056-exchange-card-swap-and-timeout-fix/) |
 | 058 | 방 목록에 진행 중인(playing) 방 표시 + 상태 배지 UI (대기 중/게임 중) | 2026-02-24 | a82695f | [058-room-list-show-in-progress-games](./quick/058-room-list-show-in-progress-games/) |
 | 059 | 종교개혁 확장판 룰 수정: 횡령 역도전 + 심문 대상 카드선택 + 공격 제한 검증 | 2026-02-24 | 36535bb | [059-reformation-rules-fix](./quick/059-reformation-rules-fix/) |
+| 060 | CardInfoModal 카드 이미지 전체 표시 (aspect-[2/3] + object-contain) | 2026-02-24 | 1e9a573 | [060-card-detail-modal-full-view](./quick/060-card-detail-modal-full-view/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
 - Last session: 2026-02-24
-- Stopped at: Completed quick-059 (종교개혁 확장판 룰 수정)
+- Stopped at: Completed quick-060 (CardInfoModal 카드 이미지 전체 표시)
 - Resume file: None
