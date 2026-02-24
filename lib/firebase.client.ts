@@ -42,6 +42,11 @@ export function subscribeToRoom(
   callback: (state: FilteredGameState) => void,
   onRoomDeleted?: () => void
 ): () => void {
+  // state 구독: views가 아직 없는 waiting 단계에서 사용
+  // 게임 시작 후(phase !== 'waiting') 자동 해제
+  const stateRef = ref(getDb(), `game_rooms/${roomId}/state`);
+  let stateUnsubbed = false;
+
   // views/{playerId} 경로 구독
   const viewRef = ref(getDb(), `game_rooms/${roomId}/views/${playerId}`);
   const unsubView = onValue(
@@ -49,20 +54,16 @@ export function subscribeToRoom(
     (snapshot) => {
       if (snapshot.exists()) {
         callback(snapshot.val() as FilteredGameState);
-      } else {
-        // 게임 중 방 삭제 감지 (stateRef는 게임 시작 후 unsubscribe되므로 viewRef에서 처리)
+      } else if (stateUnsubbed) {
+        // 게임 시작 후(state 구독 해제됨) view가 사라지면 = 방 삭제
         onRoomDeleted?.();
       }
+      // stateUnsubbed가 false면 waiting 단계 → view 없음은 정상 (state에서 처리)
     },
     (error) => {
       console.error('[Firebase] view subscription error:', error);
     }
   );
-
-  // fallback: views가 아직 없을 수 있으므로 state도 구독 (waiting 단계)
-  // 게임이 시작되면 (phase !== 'waiting') state 구독을 자동 해제
-  const stateRef = ref(getDb(), `game_rooms/${roomId}/state`);
-  let stateUnsubbed = false;
 
   const unsubState = onValue(
     stateRef,
