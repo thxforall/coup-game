@@ -2,7 +2,7 @@
 
 import { memo, useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { Skull, Settings, Trophy, ScrollText, RotateCcw, BookOpen, LogOut, Eye } from 'lucide-react';
+import { Skull, Settings, Trophy, ScrollText, RotateCcw, BookOpen, LogOut, Eye, Banknote } from 'lucide-react';
 import { FilteredGameState, Card, Player, ACTION_NAMES } from '@/lib/game/types';
 import { PresenceMap, subscribeToChatMessages, CHAT_MESSAGES } from '@/lib/firebase.client';
 import { clearActiveRoom } from '@/lib/storage';
@@ -15,6 +15,7 @@ import { getPlayerColor } from '@/lib/game/player-colors';
 import GameToast from './GameToast';
 import BgmPlayer from './BgmPlayer';
 import QuickChat from './QuickChat';
+import AllegianceSelectionPanel from './AllegianceSelectionPanel';
 
 // 응답 대기 표시 컴포넌트 (memo 처리로 불필요한 리렌더 방지)
 const WaitingResponseIndicator = memo(function WaitingResponseIndicator({ state, playerId }: { state: FilteredGameState; playerId: string }) {
@@ -285,11 +286,13 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
     useEffect(() => {
         if (state.phase === 'game_over') return;
 
+        const isAllegiancePhase = state.phase === 'allegiance_selection' && !!state.allegianceSelectionDeadline;
         const isAwaitingPhase =
             state.phase === 'awaiting_response' || state.phase === 'awaiting_block_response';
         const isActionPhase = state.phase === 'action' && !!state.actionDeadline;
         const isExchangePhase = (state.phase === 'exchange_select' || state.phase === 'examine_card_select' || state.phase === 'examine_select') && !!state.pendingAction?.exchangeDeadline;
-        const deadline = isActionPhase ? state.actionDeadline
+        const deadline = isAllegiancePhase ? state.allegianceSelectionDeadline
+            : isActionPhase ? state.actionDeadline
             : isExchangePhase ? state.pendingAction?.exchangeDeadline
             : state.pendingAction?.responseDeadline;
 
@@ -299,7 +302,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
             timeoutDeadlineRef.current = deadline;
         }
 
-        if ((!isAwaitingPhase && !isActionPhase && !isExchangePhase) || !deadline || timeoutRequestedRef.current) return;
+        if ((!isAllegiancePhase && !isAwaitingPhase && !isActionPhase && !isExchangePhase) || !deadline || timeoutRequestedRef.current) return;
 
         const now = Date.now();
         const delay = deadline - now + 1000;
@@ -311,7 +314,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
 
         const timer = setTimeout(fireTimeout, delay);
         return () => clearTimeout(timer);
-    }, [state.phase, state.pendingAction?.responseDeadline, state.pendingAction?.exchangeDeadline, state.actionDeadline, fireTimeout]);
+    }, [state.phase, state.pendingAction?.responseDeadline, state.pendingAction?.exchangeDeadline, state.actionDeadline, state.allegianceSelectionDeadline, fireTimeout]);
 
     // 게임 오버 화면
     if (state.phase === 'game_over') {
@@ -518,6 +521,16 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                 ))}
             </div>
 
+            {/* 재무부 코인 배너 (reformation 모드) */}
+            {state.gameMode === 'reformation' && (
+                <div className="flex-shrink-0 flex items-center justify-center gap-2 px-2 sm:px-4 py-1 border-b border-purple-500/20 bg-purple-500/10">
+                    <Banknote size={14} className="text-purple-400 flex-shrink-0" />
+                    <span className="text-xs font-bold text-purple-300">
+                        재무부: {state.treasury ?? 0}코인
+                    </span>
+                </div>
+            )}
+
             {/* 모바일 컴팩트 로그 (항상 보임, 최근 3개 - 게임로그 + 채팅 병합) */}
             <div className="lg:hidden flex-shrink-0 bg-bg-card border-b border-border-subtle px-2 sm:px-4 py-1.5">
                 <div className="flex items-center gap-2">
@@ -591,7 +604,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                         })()}
                     </div>
                     <button
-                        className="flex-shrink-0 ml-1 px-2 py-0.5 text-[10px] font-semibold text-text-secondary hover:text-gold border border-border-subtle hover:border-gold/40 rounded transition-colors"
+                        className="flex-shrink-0 ml-2 px-3 py-1.5 text-xs font-semibold text-text-secondary hover:text-gold border border-border-subtle hover:border-gold/40 rounded-md transition-colors"
                         onClick={() => setShowMobileLog(true)}
                     >
                         전체
@@ -650,6 +663,15 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
 
                 {/* 턴 영역 */}
                 <div className="flex-1 flex flex-col p-2 sm:p-4 overflow-y-auto">
+                    {/* 진영 선택 페이즈 (reformation 모드) */}
+                    {state.phase === 'allegiance_selection' && (
+                        <AllegianceSelectionPanel
+                            state={state}
+                            playerId={playerId}
+                            onAction={onAction}
+                        />
+                    )}
+
                     {/* 내 턴 레이블 */}
                     {isMyTurn && state.phase === 'action' && (
                         <div className="mb-3 flex justify-center">
