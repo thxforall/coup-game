@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-24 - Completed quick-055 (타이머 바 자동 행동 안내 텍스트)
+- Last activity: 2026-02-24 - Completed quick-056 (ExchangeModal swap 선택 UX + exchange_select 타임아웃)
 
 ### Quick Tasks Completed
 
@@ -60,11 +60,12 @@
 | 053 | AlertModal 생성 + WaitingRoom/GamePage window.alert/confirm 모달 교체 + 닉네임 없는 접속 리다이렉트 | 2026-02-24 | 6bfc2c1 | [053-alert-modal-leave-message-nickname-redirect](./quick/053-alert-modal-leave-message-nickname-redirect/) |
 | 054 | 미니 로그 structuredLog 타임스탬프 정렬 + private 로그 필터링 | 2026-02-24 | 4198fd7 | [054-board-mini-log-timestamp-sort-private-log-filter](./quick/054-board-mini-log-timestamp-sort-private-log-filter/) |
 | 055 | 타이머 바 아래 자동 행동 안내 텍스트 (자동 소득/쿠데타) | 2026-02-24 | 8e12295 | [055-timer-bar-auto-income-info-text](./quick/055-timer-bar-auto-income-info-text/) |
+| 056 | ExchangeModal swap 카드 선택 UX + exchange_select 45초 타임아웃 자동 기존 카드 유지 | 2026-02-24 | c5fcad6 | [056-exchange-card-swap-and-timeout-fix](./quick/056-exchange-card-swap-and-timeout-fix/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
 - Last session: 2026-02-24
-- Stopped at: Completed quick-055 (타이머 바 자동 행동 안내 텍스트)
+- Stopped at: Completed quick-056 (ExchangeModal swap 선택 UX + exchange_select 타임아웃)
 - Resume file: None
