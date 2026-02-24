@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-24 - Completed quick-056 (ExchangeModal swap 선택 UX + exchange_select 타임아웃)
+- Last activity: 2026-02-24 - Completed quick-058 (방 목록에 진행 중 방 표시 + status 배지 UI)
 
 ### Quick Tasks Completed
 
@@ -61,11 +61,12 @@
 | 054 | 미니 로그 structuredLog 타임스탬프 정렬 + private 로그 필터링 | 2026-02-24 | 4198fd7 | [054-board-mini-log-timestamp-sort-private-log-filter](./quick/054-board-mini-log-timestamp-sort-private-log-filter/) |
 | 055 | 타이머 바 아래 자동 행동 안내 텍스트 (자동 소득/쿠데타) | 2026-02-24 | 8e12295 | [055-timer-bar-auto-income-info-text](./quick/055-timer-bar-auto-income-info-text/) |
 | 056 | ExchangeModal swap 카드 선택 UX + exchange_select 45초 타임아웃 자동 기존 카드 유지 | 2026-02-24 | c5fcad6 | [056-exchange-card-swap-and-timeout-fix](./quick/056-exchange-card-swap-and-timeout-fix/) |
+| 058 | 방 목록에 진행 중인(playing) 방 표시 + 상태 배지 UI (대기 중/게임 중) | 2026-02-24 | a82695f | [058-room-list-show-in-progress-games](./quick/058-room-list-show-in-progress-games/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
 - Last session: 2026-02-24
-- Stopped at: Completed quick-056 (ExchangeModal swap 선택 UX + exchange_select 타임아웃)
+- Stopped at: Completed quick-058 (방 목록에 진행 중 방 표시 + status 배지 UI)
 - Resume file: None
