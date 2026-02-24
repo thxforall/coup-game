@@ -188,4 +188,5 @@ export interface LogEntry {
   action?: ActionType;
   character?: Character;
   message: string;  // 기존 string 로그 호환
+  visibleTo?: string; // 특정 플레이어만 볼 수 있는 로그 (playerId). 없으면 전체 공개.
 }
