@@ -424,12 +424,12 @@ export default function LobbyPage() {
 
                 <div className="glass-panel overflow-hidden">
                     {/* Inner Tabs */}
-                    <div className="flex border-b border-border-subtle bg-bg-surface/30 overflow-x-auto">
+                    <div className="flex border-b border-border-subtle bg-bg-surface/30">
                         {(['mode', 'basic', 'action', 'character', 'challenge'] as const).map((t) => (
                             <button
                                 key={t}
                                 onClick={() => setRuleTab(t)}
-                                className={`flex-1 py-3 text-[10px] font-bold transition-colors uppercase tracking-tight whitespace-nowrap px-1 ${ruleTab === t
+                                className={`flex-1 py-3 text-[10px] font-bold transition-colors uppercase tracking-tight px-1 ${ruleTab === t
                                     ? 'text-gold border-b-2 border-gold -mb-[1px] bg-gold/5'
                                     : 'text-text-muted hover:text-text-secondary'
                                     }`}
