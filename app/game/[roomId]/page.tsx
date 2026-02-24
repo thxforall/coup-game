@@ -8,6 +8,11 @@ import { FilteredGameState } from '@/lib/game/types';
 import WaitingRoom from '@/components/game/WaitingRoom';
 import GameBoard from '@/components/game/GameBoard';
 import { getOrCreatePlayerId as getPlayerId, setActiveRoom, clearActiveRoom } from '@/lib/storage';
+import AlertModal from '@/components/ui/AlertModal';
+
+type AlertState =
+    | { type: 'left' }
+    | { type: 'no-nickname'; roomId: string };
 
 export default function GamePage() {
     const params = useParams();
@@ -17,7 +22,10 @@ export default function GamePage() {
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
     const [presence, setPresence] = useState<PresenceMap>({});
+    const [alertState, setAlertState] = useState<AlertState | null>(null);
     const playerIdRef = useRef('');
+    // Track whether the current player has ever been in the room (joined)
+    const hasBeenInRoomRef = useRef(false);
 
     useEffect(() => {
         const pid = getPlayerId();
@@ -64,16 +72,23 @@ export default function GamePage() {
 
         // Firebase onValue 실시간 구독 (views/{playerId})
         const unsubscribe = subscribeToRoom(roomId, playerId, (newState) => {
-            // 대기실에서 내가 플레이어 목록에 없으면 추방된 것
+            // 대기실에서 내가 플레이어 목록에 없으면 추방 또는 미참가
             if (newState.phase === 'waiting') {
                 const currentPid = playerIdRef.current;
                 const stillInRoom = newState.players.some((p) => p.id === currentPid);
                 if (!stillInRoom && currentPid) {
-                    alert('방에서 추방되었습니다');
+                    if (hasBeenInRoomRef.current) {
+                        // 방에 있다가 사라진 경우 = 추방 또는 자발적 퇴장
+                        setAlertState({ type: 'left' });
+                    } else {
+                        // 방에 한 번도 없었던 경우 = 닉네임 없이 URL 직접 접속
+                        setAlertState({ type: 'no-nickname', roomId });
+                    }
                     clearActiveRoom();
-                    window.location.href = '/';
                     return;
                 }
+                // 플레이어 목록에 있으면 참가 중 상태로 표시
+                hasBeenInRoomRef.current = true;
             }
             setState(newState);
             setLoading(false);
@@ -85,6 +100,15 @@ export default function GamePage() {
 
         return () => unsubscribe();
     }, [roomId, playerId]);
+
+    const handleAlertClose = useCallback(() => {
+        if (alertState?.type === 'no-nickname') {
+            window.location.href = `/?join=${alertState.roomId}`;
+        } else {
+            window.location.href = '/';
+        }
+        setAlertState(null);
+    }, [alertState]);
 
     const sendAction = useCallback(
         async (action: object) => {
@@ -145,6 +169,25 @@ export default function GamePage() {
         clearActiveRoom();
         window.location.href = '/';
     }, [roomId, playerId]);
+
+    // AlertModal 표시 중 (방 나감/추방 또는 닉네임 없는 접속)
+    if (alertState) {
+        const isNoNickname = alertState.type === 'no-nickname';
+        return (
+            <div className="min-h-screen flex items-center justify-center px-4">
+                <AlertModal
+                    title={isNoNickname ? '참가 안내' : '방에서 나왔습니다'}
+                    message={
+                        isNoNickname
+                            ? '이 방에 참가하려면 로비에서 닉네임을 입력해주세요.'
+                            : '방에서 나왔습니다.'
+                    }
+                    buttonLabel={isNoNickname ? '로비에서 참가하기' : '로비로'}
+                    onClose={handleAlertClose}
+                />
+            </div>
+        );
+    }
 
     // 방을 찾을 수 없는 경우
     if (notFound) {

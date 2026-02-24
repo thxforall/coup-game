@@ -34,9 +34,13 @@ export async function POST(req: NextRequest) {
 
   // waiting: 플레이어를 players 배열에서 제거
   if (state.phase === 'waiting') {
+    const leavingPlayer = state.players.find((p) => p.id === playerId);
     const updatedState: GameState = {
       ...state,
       players: state.players.filter((p) => p.id !== playerId),
+      log: leavingPlayer
+        ? [...(state.log ?? []), `${leavingPlayer.name}이(가) 방을 나갔습니다`]
+        : state.log,
     };
     await updateRoom(roomId, updatedState);
     return NextResponse.json({ ok: true });
