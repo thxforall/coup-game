@@ -4,7 +4,7 @@ import { FilteredGameState } from '@/lib/game/types';
 import { PresenceMap } from '@/lib/firebase.client';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Skull, Copy, Check, Crown, Play, CheckCircle2, Circle, X, BookOpen, Home } from 'lucide-react';
+import { Skull, Copy, Check, Crown, Play, CheckCircle2, Circle, X, BookOpen, Home, LogOut } from 'lucide-react';
 import { clearActiveRoom } from '@/lib/storage';
 
 const GameRulesModal = dynamic(() => import('./GameRulesModal'), { ssr: false });
@@ -17,10 +17,11 @@ interface Props {
     onStart: () => void;
     onKick: (targetId: string) => void;
     onReady: () => void;
+    onLeave: () => void;
     presence?: PresenceMap;
 }
 
-export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, onReady, presence }: Props) {
+export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, onReady, onLeave, presence }: Props) {
     const [copied, setCopied] = useState(false);
     const [showRules, setShowRules] = useState(false);
     const isHost = state.players[0]?.id === playerId;
@@ -54,7 +55,7 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
             <div className="absolute top-4 left-4 flex items-center gap-2">
                 <button
                     className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-surface transition-colors flex items-center gap-2 text-sm"
-                    onClick={() => { clearActiveRoom(); window.location.href = '/'; }}
+                    onClick={() => { if (window.confirm('방을 나가시겠습니까?')) onLeave(); }}
                     aria-label="로비로 이동"
                 >
                     <Home size={18} />
@@ -207,25 +208,34 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
                         </button>
                     </div>
                 ) : (
-                    <button
-                        className={`w-full py-3 flex items-center justify-center gap-2 text-base transition-colors ${isReady
-                            ? 'bg-red-600 hover:bg-red-700 text-white btn font-bold shadow-lg'
-                            : 'bg-green-600 hover:bg-green-700 text-white btn font-bold shadow-lg'
-                            }`}
-                        onClick={onReady}
-                    >
-                        {isReady ? (
-                            <>
-                                <CheckCircle2 size={18} />
-                                준비 취소
-                            </>
-                        ) : (
-                            <>
-                                <Circle size={18} />
-                                준비 완료
-                            </>
-                        )}
-                    </button>
+                    <>
+                        <button
+                            className={`w-full py-3 flex items-center justify-center gap-2 text-base transition-colors ${isReady
+                                ? 'bg-red-600 hover:bg-red-700 text-white btn font-bold shadow-lg'
+                                : 'bg-green-600 hover:bg-green-700 text-white btn font-bold shadow-lg'
+                                }`}
+                            onClick={onReady}
+                        >
+                            {isReady ? (
+                                <>
+                                    <CheckCircle2 size={18} />
+                                    준비 취소
+                                </>
+                            ) : (
+                                <>
+                                    <Circle size={18} />
+                                    준비 완료
+                                </>
+                            )}
+                        </button>
+                        <button
+                            className="btn-ghost w-full py-2.5 flex items-center justify-center gap-2 text-sm border border-border-subtle mt-3 text-text-secondary hover:text-red-400 hover:border-red-500/30"
+                            onClick={() => { if (window.confirm('방을 나가시겠습니까?')) onLeave(); }}
+                        >
+                            <LogOut size={16} />
+                            방 나가기
+                        </button>
+                    </>
                 )}
 
                 {/* 게임 규칙 버튼 */}

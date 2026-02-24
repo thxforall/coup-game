@@ -77,6 +77,10 @@ export default function GamePage() {
             }
             setState(newState);
             setLoading(false);
+        }, () => {
+            // 방이 삭제됨 - 로비로 이동
+            clearActiveRoom();
+            window.location.href = '/';
         });
 
         return () => unsubscribe();
@@ -126,6 +130,20 @@ export default function GamePage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ roomId, playerId }),
         });
+    }, [roomId, playerId]);
+
+    const handleLeave = useCallback(async () => {
+        try {
+            await fetch('/api/game/leave', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ roomId, playerId }),
+            });
+        } catch {
+            // API 실패해도 나가기는 진행
+        }
+        clearActiveRoom();
+        window.location.href = '/';
     }, [roomId, playerId]);
 
     // 방을 찾을 수 없는 경우
@@ -188,6 +206,7 @@ export default function GamePage() {
                 onStart={handleStart}
                 onKick={handleKick}
                 onReady={handleReady}
+                onLeave={handleLeave}
                 presence={presence}
             />
         );

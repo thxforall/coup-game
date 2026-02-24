@@ -39,7 +39,8 @@ export async function getRoom(roomId: string, playerId?: string): Promise<{ id: 
 export function subscribeToRoom(
   roomId: string,
   playerId: string,
-  callback: (state: FilteredGameState) => void
+  callback: (state: FilteredGameState) => void,
+  onRoomDeleted?: () => void
 ): () => void {
   // views/{playerId} 경로 구독
   const viewRef = ref(getDb(), `game_rooms/${roomId}/views/${playerId}`);
@@ -75,6 +76,9 @@ export function subscribeToRoom(
             unsubState();
           }
         }
+      } else {
+        // 방이 삭제됨 (snapshot이 null)
+        onRoomDeleted?.();
       }
     },
     (error) => {
