@@ -57,7 +57,7 @@ function shuffle<T>(arr: T[]): T[] {
 // ============================================================
 
 export function initGame(
-  players: { id: string; name: string }[],
+  players: { id: string; name: string; allegiance?: Allegiance }[],
   gameMode?: string,
   options?: { useInquisitor?: boolean }
 ): GameState {
@@ -81,7 +81,7 @@ export function initGame(
     ],
     isAlive: true,
     isReady: false,
-    ...(mode === 'reformation' && { allegiance: allegiances[i % 2] }),
+    ...(mode === 'reformation' && { allegiance: p.allegiance ?? allegiances[i % 2] }),
   }));
 
   const firstPlayerIndex = Math.floor(Math.random() * gamePlayers.length);

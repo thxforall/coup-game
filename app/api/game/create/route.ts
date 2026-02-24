@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRoom } from '@/lib/firebase';
-import { GameMode, GameState, Player } from '@/lib/game/types';
+import { Allegiance, GameMode, GameState, Player } from '@/lib/game/types';
 
 function generateRoomId(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
   const initialPlayer: Player = {
     id: playerId, name: playerName, coins: 2,
     cards: [], isAlive: true, isReady: false,
+    ...(gameMode === 'reformation' && { allegiance: 'loyalist' as Allegiance }),
   };
 
   const mode: GameMode = gameMode === 'reformation' ? 'reformation' : gameMode === 'guess' ? 'guess' : 'standard';

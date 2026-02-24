@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRoom, updateRoomWithViews } from '@/lib/firebase';
-import { Player } from '@/lib/game/types';
+import { Allegiance, Player } from '@/lib/game/types';
 import { filterStateForPlayer } from '@/lib/game/filter';
 
 export async function POST(req: NextRequest) {
@@ -28,9 +28,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '이미 사용 중인 닉네임입니다' }, { status: 400 });
     }
 
+    const allegiances: Allegiance[] = ['loyalist', 'reformist'];
     const newPlayer: Player = {
       id: playerId, name: playerName, coins: 2,
       cards: [], isAlive: true, isReady: false,
+      ...(state.gameMode === 'reformation' && { allegiance: allegiances[state.players.length % 2] }),
     };
 
     const newState = {

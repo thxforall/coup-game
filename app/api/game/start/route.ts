@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   if (state.players[0].id !== playerId) return NextResponse.json({ error: '방장만 시작 가능' }, { status: 403 });
 
   const newState = initGame(
-    state.players.map((p) => ({ id: p.id, name: p.name })),
+    state.players.map((p) => ({ id: p.id, name: p.name, allegiance: p.allegiance })),
     state.gameMode,
     { useInquisitor: state.useInquisitor }
   );
