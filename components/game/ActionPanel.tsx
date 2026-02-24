@@ -249,6 +249,9 @@ function ActionPanel({ state, playerId, onAction, actionDeadline }: Props) {
                             style={{ width: `${progress * 100}%` }}
                         />
                     </div>
+                    <p className="text-xs text-text-muted text-center mt-1">
+                        {mustCoup ? '⏱ 시간 초과 시 자동 쿠데타' : '⏱ 시간 초과 시 자동 소득'}
+                    </p>
                 </div>
             )}
 
