@@ -108,12 +108,12 @@ export default function CardInfoModal({ character, onClose }: Props) {
                 className={`border-t-4 ${borderColor.replace('border-', 'border-t-')}`}
             >
                 {/* 헤더: 이미지 + 이름 */}
-                <div className="relative h-36 sm:h-48 w-full flex-shrink-0">
+                <div className="relative w-full aspect-[2/3] flex-shrink-0 bg-slate-900">
                     <Image
                         src={CARD_IMAGES[character]}
                         alt={CHARACTER_NAMES[character]}
                         fill
-                        className="object-cover object-top"
+                        className="object-contain"
                         sizes="400px"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
