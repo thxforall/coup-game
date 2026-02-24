@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-24 - Completed quick-060 (대기실 진영 선택 UI)
+- Last activity: 2026-02-24 - Completed quick-061 (GameRulesModal 캐릭터 카드 이미지 썸네일)
 
 ### Quick Tasks Completed
 
