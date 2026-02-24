@@ -22,15 +22,9 @@ const CHAR_COLORS: Record<string, string> = {
     Inquisitor: 'text-yellow-400',
 };
 
-const CARD_IMAGES: Record<string, string> = {
-    Duke: '/cards/duke.jpg',
-    Contessa: '/cards/contessa.jpg',
-    Captain: '/cards/captain.jpg',
-    Assassin: '/cards/assassin.jpg',
-    Ambassador: '/cards/ambassador.jpg',
-};
+import { CARD_IMAGES } from '@/lib/game/constants';
 
-const CHARACTERS: { key: string; kr: string; en: string; ability: string }[] = [
+const CHARACTERS: { key: Character; kr: string; en: string; ability: string }[] = [
     { key: 'Duke', kr: '공작', en: 'Duke', ability: '세금징수 +3코인 / 해외원조 차단' },
     { key: 'Assassin', kr: '암살자', en: 'Assassin', ability: '3코인으로 암살 (대상 카드 1장 제거)' },
     { key: 'Captain', kr: '사령관', en: 'Captain', ability: '갈취 (상대 코인 2개 탈취) / 갈취 차단' },
@@ -38,7 +32,7 @@ const CHARACTERS: { key: string; kr: string; en: string; ability: string }[] = [
     { key: 'Contessa', kr: '백작부인', en: 'Contessa', ability: '암살 차단' },
 ];
 
-const INQUISITOR_CHAR = {
+const INQUISITOR_CHAR: { key: Character; kr: string; en: string; ability: string } = {
     key: 'Inquisitor', kr: '종교재판관', en: 'Inquisitor',
     ability: '심문 (상대 카드 확인 후 교체 강제) / 교환 (덱에서 카드 1장 교체) / 갈취 차단',
 };

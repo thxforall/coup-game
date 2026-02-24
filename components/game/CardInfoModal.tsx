@@ -3,16 +3,8 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { Character, CHARACTER_NAMES } from '@/lib/game/types';
+import { CARD_IMAGES } from '@/lib/game/constants';
 import BottomSheet from '@/components/ui/BottomSheet';
-
-const CARD_IMAGES: Record<Character, string> = {
-    Duke: '/cards/duke.jpg',
-    Contessa: '/cards/contessa.jpg',
-    Captain: '/cards/captain.jpg',
-    Assassin: '/cards/assassin.jpg',
-    Ambassador: '/cards/ambassador.jpg',
-    Inquisitor: '/cards/inquisitor.jpg',
-};
 
 const CHAR_COLOR: Record<Character, string> = {
     Duke: 'text-violet-400',
@@ -108,7 +100,7 @@ export default function CardInfoModal({ character, onClose }: Props) {
                 className={`border-t-4 ${borderColor.replace('border-', 'border-t-')}`}
             >
                 {/* 헤더: 이미지 + 이름 */}
-                <div className="relative w-full aspect-[2/3] flex-shrink-0 bg-slate-900">
+                <div className="relative w-full aspect-[3/4] flex-shrink-0 bg-slate-900">
                     <Image
                         src={CARD_IMAGES[character]}
                         alt={CHARACTER_NAMES[character]}

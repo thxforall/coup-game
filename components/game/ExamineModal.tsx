@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Search, RotateCcw, Check, Eye } from 'lucide-react';
 import { FilteredGameState, CHARACTER_NAMES, Card } from '@/lib/game/types';
+import { CARD_IMAGES } from '@/lib/game/constants';
 
 interface Props {
     state: FilteredGameState;
@@ -107,7 +108,7 @@ export default function ExamineModal({ state, playerId, onAction }: Props) {
                             >
                                 <div className="relative w-12 h-16 rounded overflow-hidden">
                                     <img
-                                        src={`/cards/${card.character.toLowerCase()}.jpg`}
+                                        src={CARD_IMAGES[card.character]}
                                         alt={CHARACTER_NAMES[card.character]}
                                         className="w-full h-full object-cover"
                                     />

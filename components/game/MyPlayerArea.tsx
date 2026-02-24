@@ -3,19 +3,11 @@
 import { memo, useState } from 'react';
 import Image from 'next/image';
 import { Player, Character, CHARACTER_NAMES, ALLEGIANCE_NAMES } from '@/lib/game/types';
+import { CARD_IMAGES } from '@/lib/game/constants';
 import CardInfoModal from './CardInfoModal';
 import { getPlayerColor } from '@/lib/game/player-colors';
 
 // ── constants ──────────────────────────────────────────────────────────────
-
-const CARD_IMAGES: Record<Character, string> = {
-    Duke: '/cards/duke.jpg',
-    Contessa: '/cards/contessa.jpg',
-    Captain: '/cards/captain.jpg',
-    Assassin: '/cards/assassin.jpg',
-    Ambassador: '/cards/ambassador.jpg',
-    Inquisitor: '/cards/inquisitor.jpg',
-};
 
 /** Inline border color via CSS variable so Tailwind purging is not an issue */
 const CHAR_BORDER_COLOR: Record<Character, string> = {

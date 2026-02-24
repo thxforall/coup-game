@@ -25,11 +25,13 @@ function SettingsModal({ state, playerId, roomId, onClose }: Props) {
 
     const isHost = state.players[0]?.id === playerId;
     const isGameOver = state.phase === 'game_over';
-    const gameModeName = state.gameMode === 'guess' ? '추측 모드' : '스탠다드 모드';
+    const gameModeName = state.gameMode === 'reformation' ? '종교개혁' : state.gameMode === 'guess' ? '추측 모드' : '스탠다드 모드';
     const gameModeDesc =
-        state.gameMode === 'guess'
-            ? '상대방의 카드를 추측하는 확장 규칙이 적용됩니다.'
-            : '기본 쿠 규칙으로 진행됩니다.';
+        state.gameMode === 'reformation'
+            ? `진영 시스템 + 전향/횡령 액션${state.useInquisitor ? ' + 종교재판관' : ''}`
+            : state.gameMode === 'guess'
+                ? '상대방의 카드를 추측하는 확장 규칙이 적용됩니다.'
+                : '기본 쿠 규칙으로 진행됩니다.';
 
     const handleRestart = async () => {
         setRestartLoading(true);

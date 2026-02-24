@@ -4,16 +4,8 @@ import { memo } from 'react';
 import Image from 'next/image';
 import { Skull } from 'lucide-react';
 import { FilteredPlayer, Card, Character, CHARACTER_NAMES } from '@/lib/game/types';
+import { CARD_IMAGES } from '@/lib/game/constants';
 import BottomSheet from '@/components/ui/BottomSheet';
-
-const CARD_IMAGES: Record<Character, string> = {
-    Duke: '/cards/duke.jpg',
-    Contessa: '/cards/contessa.jpg',
-    Captain: '/cards/captain.jpg',
-    Assassin: '/cards/assassin.jpg',
-    Ambassador: '/cards/ambassador.jpg',
-    Inquisitor: '/cards/inquisitor.jpg',
-};
 
 const CHAR_BORDER: Record<Character, string> = {
     Duke: 'border-duke',

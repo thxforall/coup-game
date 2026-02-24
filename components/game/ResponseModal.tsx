@@ -3,6 +3,7 @@
 import { memo, useState, useEffect, useCallback, useRef } from 'react';
 import { TriangleAlert, Zap, Shield, Check, Info } from 'lucide-react';
 import { FilteredGameState, Card, Character, CHARACTER_NAMES, BLOCK_CHARACTERS, ACTION_NAMES, ActionType } from '@/lib/game/types';
+import { CARD_IMAGES } from '@/lib/game/constants';
 import BottomSheet from '@/components/ui/BottomSheet';
 
 // ============================================================
@@ -277,7 +278,7 @@ function ResponseModal({ state, playerId, myCards, onAction }: Props) {
                                     className={`relative w-8 h-11 rounded overflow-hidden shrink-0 ${card.revealed ? 'grayscale' : ''}`}
                                 >
                                     <img
-                                        src={`/cards/${card.character.toLowerCase()}.jpg`}
+                                        src={CARD_IMAGES[card.character]}
                                         alt={CHARACTER_NAMES[card.character]}
                                         className="w-full h-full object-cover"
                                     />

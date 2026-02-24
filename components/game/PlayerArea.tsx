@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { FilteredPlayer, Character, CHARACTER_NAMES, ALLEGIANCE_NAMES } from '@/lib/game/types';
 import { PLAYER_AVATAR_COLORS, getPlayerColor } from '@/lib/game/player-colors';
+import { CARD_IMAGES } from '@/lib/game/constants';
 import CardInfoModal from './CardInfoModal';
 import BottomSheet from '@/components/ui/BottomSheet';
 
@@ -142,7 +143,7 @@ function RevealedCard({ character, onClick, cardSize }: RevealedCardProps) {
             style={sizeStyle}
         >
             <Image
-                src={`/cards/${character.toLowerCase()}.jpg`}
+                src={CARD_IMAGES[character]}
                 alt={CHARACTER_NAMES[character]}
                 fill
                 className="object-cover opacity-40 grayscale"

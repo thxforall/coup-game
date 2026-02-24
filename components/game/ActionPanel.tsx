@@ -203,7 +203,7 @@ function ActionPanel({ state, playerId, onAction, actionDeadline }: Props) {
             case 'tax':
                 return { title: '세금징수 확인', message: '세금징수를 선택하시겠습니까? (코인 +3, 도전 가능)', label: '세금 징수하기', color: 'var(--gold)', icon: Crown };
             case 'exchange':
-                return { title: '교환 확인', message: '카드 교환을 선택하시겠습니까? (도전 가능)', label: '카드 교환하기', color: 'var(--gold)', icon: Repeat };
+                return { title: '교환 확인', message: '카드 교환을 선택하시겠습니까? (도전 가능)', label: '카드 교환하기', color: useInquisitor ? '#5eead4' : 'var(--gold)', icon: Repeat };
             case 'steal': {
                 const stealAmount = target?.coins != null ? Math.min(target.coins, 2) : 2;
                 return { title: '갈취 확인', message: `${target?.name}에게서 코인 ${stealAmount}개를 갈취하시겠습니까?`, label: `${target?.name ?? ''} 갈취하기`, color: 'var(--gold)', icon: Anchor };
@@ -243,14 +243,20 @@ function ActionPanel({ state, playerId, onAction, actionDeadline }: Props) {
         setConfirmAction(null);
     };
 
+    const useInquisitor = isReformation && state.useInquisitor;
     const visibleButtons = ACTION_BUTTONS.filter((a) => {
         if (mustCoup && a.type !== 'coup' && a.type !== 'conversion') return false;
         // reformation 전용 액션은 reformation 모드에서만
         if (a.row === 3 && !isReformation) return false;
         // reformation 모드에서 인퀴지터 미사용 시 examine 숨김
         if (a.type === 'examine' && (!isReformation || !state.useInquisitor)) return false;
-        // reformation 모드에서 인퀴지터 사용 시 exchange 라벨 변경은 아래에서 처리
         return true;
+    }).map((a) => {
+        // 인퀴지터 모드: 교환 버튼을 종교재판관 색상/설명으로 변경
+        if (a.type === 'exchange' && useInquisitor) {
+            return { ...a, desc: '카드 교환 (종교재판관, 도전 가능)', claimedChar: 'Inquisitor' as Character, variant: 'inquisitor' as ButtonVariant };
+        }
+        return a;
     });
 
     const row1 = visibleButtons.filter((a) => a.row === 1);
