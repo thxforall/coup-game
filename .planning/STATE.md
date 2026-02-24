@@ -65,11 +65,12 @@
 | 059 | 종교개혁 확장판 룰 수정: 횡령 역도전 + 심문 대상 카드선택 + 공격 제한 검증 | 2026-02-24 | 36535bb | [059-reformation-rules-fix](./quick/059-reformation-rules-fix/) |
 | 060 | CardInfoModal 카드 이미지 전체 표시 (aspect-[2/3] + object-contain) | 2026-02-24 | 1e9a573 | [060-card-detail-modal-full-view](./quick/060-card-detail-modal-full-view/) |
 | 060b | 대기실 진영 선택 UI (종교개혁 모드 충성파/개혁파 토글) | 2026-02-24 | 31d2de9 | [060-allegiance-selection-ui](./quick/060-allegiance-selection-ui/) |
+| 061 | GameRulesModal 캐릭터 능력 섹션에 카드 이미지 썸네일 + CardInfoModal 연동 | 2026-02-24 | 97e70bc | [061-game-rules-modal-card-image-view](./quick/061-game-rules-modal-card-image-view/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
 - Last session: 2026-02-24
-- Stopped at: Completed quick-060b (대기실 진영 선택 UI)
+- Stopped at: Completed quick-061 (GameRulesModal 카드 이미지 썸네일)
 - Resume file: None
