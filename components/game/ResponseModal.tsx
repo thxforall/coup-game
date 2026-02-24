@@ -403,8 +403,8 @@ function ResponseModal({ state, playerId, myCards, onAction }: Props) {
                         </button>
                     )}
 
-                    {/* 블록 버튼들 (직접 액션 단계, 비대상자) */}
-                    {!isBlockPhase && blockableChars.length > 0 && pending.targetId !== playerId && pending.actorId !== playerId && (
+                    {/* 블록 버튼들 (직접 액션 단계, 비대상자) — steal/assassinate는 대상만 블록 가능 */}
+                    {!isBlockPhase && blockableChars.length > 0 && pending.targetId !== playerId && pending.actorId !== playerId && !['steal', 'assassinate'].includes(pending.type) && (
                         <>
                             {blockableChars.map((char) => (
                                 <button
