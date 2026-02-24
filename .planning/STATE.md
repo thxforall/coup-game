@@ -3,7 +3,7 @@
 ## Current Status
 - Active milestone: Milestone 1 - Core Game Completion
 - Current phase: Phase 3 (UX & Polish) - pending
-- Last activity: 2026-02-24 - Completed quick-059 (종교개혁 확장판 룰 수정: 횡령 역도전 + 심문 카드선택)
+- Last activity: 2026-02-24 - Completed quick-060 (대기실 진영 선택 UI)
 
 ### Quick Tasks Completed
 
@@ -64,11 +64,12 @@
 | 058 | 방 목록에 진행 중인(playing) 방 표시 + 상태 배지 UI (대기 중/게임 중) | 2026-02-24 | a82695f | [058-room-list-show-in-progress-games](./quick/058-room-list-show-in-progress-games/) |
 | 059 | 종교개혁 확장판 룰 수정: 횡령 역도전 + 심문 대상 카드선택 + 공격 제한 검증 | 2026-02-24 | 36535bb | [059-reformation-rules-fix](./quick/059-reformation-rules-fix/) |
 | 060 | CardInfoModal 카드 이미지 전체 표시 (aspect-[2/3] + object-contain) | 2026-02-24 | 1e9a573 | [060-card-detail-modal-full-view](./quick/060-card-detail-modal-full-view/) |
+| 060b | 대기실 진영 선택 UI (종교개혁 모드 충성파/개혁파 토글) | 2026-02-24 | 31d2de9 | [060-allegiance-selection-ui](./quick/060-allegiance-selection-ui/) |
 
 ### Blockers/Concerns
 - None currently
 
 ## Session Continuity
 - Last session: 2026-02-24
-- Stopped at: Completed quick-060 (CardInfoModal 카드 이미지 전체 표시)
+- Stopped at: Completed quick-060b (대기실 진영 선택 UI)
 - Resume file: None
