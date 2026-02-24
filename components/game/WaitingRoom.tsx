@@ -19,6 +19,7 @@ interface Props {
     onStart: () => void;
     onKick: (targetId: string) => void;
     onReady: () => void;
+    onAllegiance?: (allegiance: 'loyalist' | 'reformist') => void;
     onLeave: () => void;
     presence?: PresenceMap;
 }
@@ -28,7 +29,7 @@ type ConfirmAction =
     | { type: 'leave' }
     | { type: 'delete' };
 
-export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, onReady, onLeave, presence }: Props) {
+export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, onReady, onAllegiance, onLeave, presence }: Props) {
     const [copied, setCopied] = useState(false);
     const [showRules, setShowRules] = useState(false);
     const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
@@ -195,10 +196,19 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
                         참가자 ({state.players.length}/{state.gameMode === 'reformation' ? 10 : 6})
                     </p>
                     <ul className="space-y-3">
-                        {state.players.map((p, i) => (
+                        {state.players.map((p, i) => {
+                            const isReformation = state.gameMode === 'reformation';
+                            const isMe = p.id === playerId;
+                            const isLoyalist = p.allegiance === 'loyalist';
+
+                            return (
                             <li key={p.id} className="flex items-center gap-2 sm:gap-3">
                                 {/* Avatar */}
-                                <div className="w-9 h-9 rounded-full bg-bg-surface flex items-center justify-center text-sm font-bold text-text-primary shrink-0">
+                                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-text-primary shrink-0 ${
+                                    isReformation && p.allegiance
+                                        ? (isLoyalist ? 'bg-blue-500/20' : 'bg-red-500/20')
+                                        : 'bg-bg-surface'
+                                }`}>
                                     {p.name.charAt(0).toUpperCase()}
                                 </div>
 
@@ -207,6 +217,26 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
                                     }`} />
 
                                 <span className="font-semibold text-text-primary flex-1 truncate">{p.name}</span>
+
+                                {/* Allegiance badge (reformation only) */}
+                                {isReformation && p.allegiance && (
+                                    <button
+                                        className={`text-xs font-mono px-2 py-0.5 rounded-full border shrink-0 transition-colors ${
+                                            isLoyalist
+                                                ? 'bg-blue-500/15 border-blue-500/40 text-blue-300'
+                                                : 'bg-red-500/15 border-red-500/40 text-red-300'
+                                        } ${isMe ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`}
+                                        onClick={() => {
+                                            if (isMe && onAllegiance) {
+                                                onAllegiance(isLoyalist ? 'reformist' : 'loyalist');
+                                            }
+                                        }}
+                                        disabled={!isMe}
+                                        title={isMe ? '클릭하여 진영 변경' : undefined}
+                                    >
+                                        {isLoyalist ? '충성파' : '개혁파'}
+                                    </button>
+                                )}
 
                                 {/* Ready status icon (방장 제외) */}
                                 {i !== 0 && (
@@ -223,7 +253,7 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
                                 )}
 
                                 {/* Me badge */}
-                                {p.id === playerId && (
+                                {isMe && (
                                     <span
                                         className="text-xs font-mono px-2 py-0.5 rounded-full border shrink-0"
                                         style={{
@@ -237,7 +267,7 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
                                 )}
 
                                 {/* Kick button (방장 시점, 자신 제외) */}
-                                {isHost && p.id !== playerId && (
+                                {isHost && !isMe && (
                                     <button
                                         className="w-7 h-7 flex items-center justify-center rounded text-text-muted hover:text-red-500 hover:bg-red-500/10 transition-colors shrink-0"
                                         onClick={() => handleKick(p.id, p.name)}
@@ -247,7 +277,8 @@ export default function WaitingRoom({ state, playerId, roomId, onStart, onKick, 
                                     </button>
                                 )}
                             </li>
-                        ))}
+                            );
+                        })}
                     </ul>
                 </div>
 

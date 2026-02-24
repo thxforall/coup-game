@@ -148,6 +148,14 @@ export default function GamePage() {
         });
     }, [roomId, playerId]);
 
+    const handleAllegiance = useCallback(async (allegiance: 'loyalist' | 'reformist') => {
+        await fetch('/api/game/allegiance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ roomId, playerId, allegiance }),
+        });
+    }, [roomId, playerId]);
+
     const handleRestart = useCallback(async () => {
         await fetch('/api/game/restart', {
             method: 'POST',
@@ -249,6 +257,7 @@ export default function GamePage() {
                 onStart={handleStart}
                 onKick={handleKick}
                 onReady={handleReady}
+                onAllegiance={handleAllegiance}
                 onLeave={handleLeave}
                 presence={presence}
             />
