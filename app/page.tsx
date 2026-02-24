@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { Skull, Play, Crown, Crosshair, Anchor, Repeat, Shield, BookOpen, Github, Users, RefreshCw, LogIn, Swords } from 'lucide-react';
 import { getOrCreatePlayerId, getPlayerStorage, setPlayerStorage, getActiveRoom, clearActiveRoom } from '@/lib/storage';
 import BgmPlayer from '@/components/game/BgmPlayer';
+import CardInfoModal from '@/components/game/CardInfoModal';
+import type { Character } from '@/lib/game/types';
 
 type RuleTab = 'mode' | 'basic' | 'action' | 'character' | 'challenge';
 
@@ -39,6 +41,7 @@ export default function LobbyPage() {
     const [useInquisitor, setUseInquisitor] = useState(true);
     const [checkingRoom, setCheckingRoom] = useState(true);
     const [ruleTab, setRuleTab] = useState<RuleTab>('basic');
+    const [selectedChar, setSelectedChar] = useState<Character | null>(null);
     const [rooms, setRooms] = useState<RoomListItem[]>([]);
     const [roomsLoading, setRoomsLoading] = useState(false);
 
@@ -515,7 +518,11 @@ export default function LobbyPage() {
                                     { key: 'Contessa', kr: '백작부인', color: 'text-red-400', ability: '암살 차단' },
                                 ].map((c) => (
                                     <div key={c.key} className="flex items-center gap-3">
-                                        <div className="shrink-0 w-10 h-14 relative rounded overflow-hidden border border-white/10">
+                                        <button
+                                            onClick={() => setSelectedChar(c.key as Character)}
+                                            className="shrink-0 w-10 h-14 relative rounded overflow-hidden border border-white/10 hover:border-white/30 transition-colors"
+                                            aria-label={`${c.kr} 카드 상세보기`}
+                                        >
                                             <Image
                                                 src={CARD_IMAGES[c.key]}
                                                 alt={c.kr}
@@ -523,7 +530,7 @@ export default function LobbyPage() {
                                                 className="object-cover"
                                                 sizes="40px"
                                             />
-                                        </div>
+                                        </button>
                                         <div className="min-w-0">
                                             <span className={`${c.color} font-bold`}>{c.kr}</span>
                                             <p className="text-text-secondary mt-0.5">{c.ability}</p>
@@ -565,6 +572,13 @@ export default function LobbyPage() {
                     <span>thxforall</span>
                 </a>
             </footer>
+
+            {selectedChar && (
+                <CardInfoModal
+                    character={selectedChar}
+                    onClose={() => setSelectedChar(null)}
+                />
+            )}
         </main>
     );
 }
