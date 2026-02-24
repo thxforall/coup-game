@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useEffect, useRef } from 'react';
-import { ScrollText, Swords, ShieldAlert, ShieldCheck, Zap, Crosshair, Repeat, Skull, Trophy, MessageCircle } from 'lucide-react';
+import { ScrollText, Swords, ShieldAlert, ShieldCheck, Zap, Crosshair, Repeat, Skull, Trophy, MessageCircle, Eye } from 'lucide-react';
 import { LogEntry, LogEntryType } from '@/lib/game/types';
 import { getPlayerColor } from '@/lib/game/player-colors';
 
@@ -107,8 +107,10 @@ function colorizePlayerNames(message: string, players: PlayerColorInfo[]): React
 
 function StructuredLogEntry({ entry, isLatest, players }: { entry: LogEntry; isLatest: boolean; players: PlayerColorInfo[] }) {
     const config = LOG_TYPE_CONFIG[entry.type] ?? { color: 'text-text-muted' };
-    const color = isLatest ? 'text-gold' : config.color;
+    const isPrivate = !!entry.visibleTo;
+    const color = isLatest ? 'text-gold' : isPrivate ? 'text-ambassador/70' : config.color;
     const Icon = config.icon;
+    const FinalIcon = isPrivate ? Eye : Icon;
     const isTurnStart = entry.type === 'turn_start';
 
     return (
@@ -117,9 +119,9 @@ function StructuredLogEntry({ entry, isLatest, players }: { entry: LogEntry; isL
                 } ${isLatest ? 'bg-gold/10' : 'hover:bg-bg-surface'}`}
         >
             <span className={`flex-shrink-0 mt-px ${color}`}>
-                {Icon ? <Icon size={10} strokeWidth={2.5} /> : <span className="font-mono text-[10px]">&bull;</span>}
+                {FinalIcon ? <FinalIcon size={10} strokeWidth={2.5} /> : <span className="font-mono text-[10px]">&bull;</span>}
             </span>
-            <span className={`font-mono text-[10px] leading-relaxed ${color}`}>
+            <span className={`font-mono text-[10px] leading-relaxed ${color} ${isPrivate ? 'italic' : ''}`}>
                 {colorizePlayerNames(entry.message, players)}
             </span>
         </div>
