@@ -29,6 +29,7 @@ export type GamePhase =
   | 'awaiting_block_response' // 블록에 대한 도전 대기
   | 'lose_influence'          // 카드 잃을 플레이어가 선택해야 함
   | 'exchange_select'         // 대사 능력: 교환할 카드 선택
+  | 'examine_card_select'     // 인퀴지터 심문: 대상 플레이어가 보여줄 카드 선택
   | 'examine_select'          // 인퀴지터 심문: 카드 확인 후 돌려주기/교체 선택
   | 'game_over';              // 게임 종료
 
@@ -64,6 +65,7 @@ export interface PendingAction {
   exchangeDeadline?: number;                               // 교환 선택 제한시간 (Unix timestamp ms)
   examinedCard?: Character;                                // 인퀴지터 심문: 확인된 카드
   examinedCardIndex?: number;                              // 인퀴지터 심문: 확인된 카드의 인덱스
+  examineSelectPlayerId?: string;                          // 심문: 카드를 선택해야 하는 대상 플레이어 ID
   conversionTargetId?: string;                             // 전향 대상 플레이어 ID (타인 전향 시)
   responseDeadline?: number;                               // 응답 제한시간 (Unix timestamp ms)
   guessedCharacter?: Character;                            // guess 모드: 쿠데타 시 추측 캐릭터
@@ -103,7 +105,8 @@ export type GameAction =
   | { type: 'respond'; response: ResponseType; character?: Character } // block 시 character 필요
   | { type: 'lose_influence'; cardIndex: number }
   | { type: 'exchange_select'; keptIndices: number[] }
-  | { type: 'examine_select'; action: 'return' | 'replace' }; // 심문 후 돌려주기/교체
+  | { type: 'examine_select'; action: 'return' | 'replace' } // 심문 후 돌려주기/교체
+  | { type: 'examine_card_select'; cardIndex: number }; // 심문 대상이 보여줄 카드 선택
 
 // ============================================================
 // Server-side filtered state (클라이언트에 전달)
@@ -138,6 +141,7 @@ export interface FilteredPendingAction {
   guessedCharacter?: Character; // guess 모드: 쿠데타 시 추측 캐릭터
   challengeLoseContext?: ChallengeLoseContext; // 도전으로 인한 카드 잃기 컨텍스트
   examinedCard?: Character;    // 인퀴지터 심문: 본인(인퀴지터)만 볼 수 있음
+  examineSelectPlayerId?: string; // 심문: 카드를 선택해야 하는 대상 플레이어 ID
   conversionTargetId?: string; // 전향 대상
 }
 

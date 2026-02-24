@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, RotateCcw, Check } from 'lucide-react';
-import { FilteredGameState, CHARACTER_NAMES } from '@/lib/game/types';
+import { Search, RotateCcw, Check, Eye } from 'lucide-react';
+import { FilteredGameState, CHARACTER_NAMES, Card } from '@/lib/game/types';
 
 interface Props {
     state: FilteredGameState;
@@ -25,15 +25,107 @@ export default function ExamineModal({ state, playerId, onAction }: Props) {
         return () => clearInterval(interval);
     }, [deadline]);
 
-    if (!pending || !pending.examinedCard || pending.actorId !== playerId) return null;
+    if (!pending) return null;
 
-    const target = state.players.find((p) => p.id === pending.targetId);
-    const examinedChar = pending.examinedCard;
     const remainingSeconds = Math.ceil(remainingMs / 1000);
     const progress = Math.max(0, remainingMs / 45000);
     const isCritical = remainingSeconds <= 5;
     const isUrgent = remainingSeconds <= 15;
     const timerColor = isCritical ? 'bg-red-500' : isUrgent ? 'bg-amber-500' : 'bg-teal-500';
+
+    // Mode 1: examine_card_select - target player selects which card to show
+    const isCardSelectMode =
+        state.phase === 'examine_card_select' &&
+        pending.examineSelectPlayerId === playerId;
+
+    // Mode 2: examine_select - examiner decides return/replace
+    const isExamineSelectMode =
+        state.phase === 'examine_select' &&
+        pending.actorId === playerId &&
+        pending.examinedCard;
+
+    if (!isCardSelectMode && !isExamineSelectMode) return null;
+
+    // --- Mode 1: Target selects card to show ---
+    if (isCardSelectMode) {
+        const me = state.players.find((p) => p.id === playerId);
+        const myCards = (me?.cards ?? []) as Card[];
+        const liveCards = myCards
+            .map((c, i) => ({ ...c, originalIndex: i }))
+            .filter((c) => !c.revealed);
+        const examiner = state.players.find((p) => p.id === pending.actorId);
+
+        const handleCardSelect = async (cardIndex: number) => {
+            setLoading(true);
+            await onAction({ type: 'examine_card_select', cardIndex });
+            setLoading(false);
+        };
+
+        return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                <div className="glass-panel w-full max-w-sm p-6 animate-slide-up">
+                    {/* Header */}
+                    <div className="flex items-center gap-2 mb-4">
+                        <Eye size={20} className="text-teal-400" />
+                        <h2 className="text-lg font-bold text-text-primary">심문 받는 중</h2>
+                    </div>
+
+                    {/* Timer */}
+                    <div className="mb-4">
+                        <div className="flex items-center justify-between text-xs mb-1">
+                            <span className="text-text-muted">남은 시간</span>
+                            <span className={`font-bold tabular-nums ${isCritical ? 'text-red-400 animate-pulse' : isUrgent ? 'text-amber-400' : 'text-text-muted'}`}>
+                                {remainingSeconds}s
+                            </span>
+                        </div>
+                        <div className="w-full h-1 bg-bg-surface rounded-full overflow-hidden">
+                            <div
+                                className={`h-full rounded-full transition-all duration-200 ${timerColor}`}
+                                style={{ width: `${progress * 100}%` }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Description */}
+                    <div className="text-center mb-4">
+                        <p className="text-sm text-text-muted">
+                            {examiner?.name}이(가) 심문합니다
+                        </p>
+                        <p className="text-sm text-text-primary font-semibold mt-1">
+                            보여줄 카드를 선택하세요
+                        </p>
+                    </div>
+
+                    {/* Card selection */}
+                    <div className="grid grid-cols-2 gap-3">
+                        {liveCards.map((card) => (
+                            <button
+                                key={card.originalIndex}
+                                onClick={() => handleCardSelect(card.originalIndex)}
+                                disabled={loading}
+                                className="flex flex-col items-center gap-2 p-4 rounded-xl border border-teal-500/30 bg-teal-500/10 hover:bg-teal-500/20 transition-all disabled:opacity-40"
+                            >
+                                <div className="relative w-12 h-16 rounded overflow-hidden">
+                                    <img
+                                        src={`/cards/${card.character.toLowerCase()}.jpg`}
+                                        alt={CHARACTER_NAMES[card.character]}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <span className="text-sm font-bold text-text-primary">
+                                    {CHARACTER_NAMES[card.character]}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // --- Mode 2: Examiner decides return/replace ---
+    const target = state.players.find((p) => p.id === pending.targetId);
+    const examinedChar = pending.examinedCard!;
 
     const handleAction = async (action: 'return' | 'replace') => {
         setLoading(true);

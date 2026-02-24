@@ -893,30 +893,41 @@ function executeAction(state: GameState): GameState {
     }
 
     case 'examine': {
-      // 심문: 상대 카드 확인 → examine_select phase로 전환
+      // 심문: 대상 플레이어가 보여줄 카드를 선택
       if (!targetId) throw new Error('examine: targetId required');
       const target = getPlayer(s, targetId);
       const liveCards = target.cards.filter((c) => !c.revealed);
       if (liveCards.length === 0) throw new Error('심문: 대상에 비공개 카드가 없습니다');
-      // 랜덤 비공개 카드 1장 선택
-      const liveIndices = target.cards
-        .map((c, i) => (!c.revealed ? i : -1))
-        .filter((i) => i !== -1);
-      const examineIdx = liveIndices[Math.floor(Math.random() * liveIndices.length)];
-      const examinedCard = target.cards[examineIdx].character;
 
       s = addLog(s, `${actor.name}이(가) ${target.name}의 카드를 심문합니다`);
-      s = addPrivateLog(s, actorId,
-        `심문: ${target.name}의 카드는 ${CHARACTER_NAMES[examinedCard]}입니다`,
-        { type: 'examine_complete', actorId, targetId }
-      );
+
+      // 카드가 1장이면 자동 선택
+      if (liveCards.length === 1) {
+        const liveIdx = target.cards.findIndex((c) => !c.revealed);
+        const examinedCard = target.cards[liveIdx].character;
+        s = addPrivateLog(s, actorId,
+          `심문: ${target.name}의 카드는 ${CHARACTER_NAMES[examinedCard]}입니다`,
+          { type: 'examine_complete', actorId, targetId }
+        );
+        return {
+          ...s,
+          phase: 'examine_select',
+          pendingAction: {
+            ...pending,
+            examinedCard,
+            examinedCardIndex: liveIdx,
+            exchangeDeadline: Date.now() + 45000,
+          },
+        };
+      }
+
+      // 카드 2장 이상 → 대상이 보여줄 카드 선택
       return {
         ...s,
-        phase: 'examine_select',
+        phase: 'examine_card_select',
         pendingAction: {
           ...pending,
-          examinedCard,
-          examinedCardIndex: examineIdx,
+          examineSelectPlayerId: targetId,
           exchangeDeadline: Date.now() + 45000,
         },
       };
@@ -1033,13 +1044,26 @@ export function resolveExchangeTimeout(state: GameState): GameState {
 
 export function resolveExamineTimeout(state: GameState): GameState {
   if (
-    state.phase !== 'examine_select' ||
+    (state.phase !== 'examine_select' && state.phase !== 'examine_card_select') ||
     !state.pendingAction?.exchangeDeadline ||
     Date.now() <= state.pendingAction.exchangeDeadline
   ) {
     return state;
   }
 
+  // examine_card_select 타임아웃: 대상 플레이어가 카드를 선택하지 않음 → 랜덤 카드 자동 선택
+  if (state.phase === 'examine_card_select' && state.pendingAction.examineSelectPlayerId) {
+    const targetId = state.pendingAction.examineSelectPlayerId;
+    const target = getPlayer(state, targetId);
+    const liveIndices = target.cards
+      .map((c, i) => (!c.revealed ? i : -1))
+      .filter((i) => i !== -1);
+    const randomIdx = liveIndices[Math.floor(Math.random() * liveIndices.length)];
+    const s = addLog(state, `${target.name}이(가) 시간 초과로 카드가 자동 선택되었습니다`);
+    return processExamineCardSelect(s, targetId, randomIdx);
+  }
+
+  // examine_select 타임아웃: 심문관이 선택하지 않음 → 자동 돌려주기
   const actor = getPlayer(state, state.pendingAction.actorId);
   const s = addLog(state, `${actor.name}이(가) 시간 초과로 카드를 돌려주었습니다`);
   return processExamineSelect(s, actor.id, 'return');
@@ -1268,4 +1292,46 @@ export function processExamineSelect(
     );
     return nextTurn(s);
   }
+}
+
+// ============================================================
+// 심문 대상 플레이어 카드 선택 처리
+// ============================================================
+
+export function processExamineCardSelect(
+  state: GameState,
+  targetPlayerId: string,
+  cardIndex: number
+): GameState {
+  const pending = state.pendingAction;
+  if (!pending || pending.examineSelectPlayerId !== targetPlayerId) {
+    throw new Error('No examine card select pending for this player');
+  }
+
+  const target = getPlayer(state, targetPlayerId);
+  const card = target.cards[cardIndex];
+  if (!card || card.revealed) {
+    throw new Error('유효하지 않은 카드 인덱스입니다');
+  }
+
+  const examinedCard = card.character;
+  const actorId = pending.actorId;
+
+  let s = addPrivateLog(state, actorId,
+    `심문: ${target.name}의 카드는 ${CHARACTER_NAMES[examinedCard]}입니다`,
+    { type: 'examine_complete', actorId, targetId: targetPlayerId }
+  );
+
+  // examine_select phase로 전환 (심문관이 돌려주기/교체 결정)
+  return {
+    ...s,
+    phase: 'examine_select',
+    pendingAction: {
+      ...pending,
+      examinedCard,
+      examinedCardIndex: cardIndex,
+      examineSelectPlayerId: undefined, // 카드 선택 완료
+      exchangeDeadline: Date.now() + 45000,
+    },
+  };
 }

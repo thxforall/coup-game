@@ -288,7 +288,7 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
         const isAwaitingPhase =
             state.phase === 'awaiting_response' || state.phase === 'awaiting_block_response';
         const isActionPhase = state.phase === 'action' && !!state.actionDeadline;
-        const isExchangePhase = state.phase === 'exchange_select' && !!state.pendingAction?.exchangeDeadline;
+        const isExchangePhase = (state.phase === 'exchange_select' || state.phase === 'examine_card_select' || state.phase === 'examine_select') && !!state.pendingAction?.exchangeDeadline;
         const deadline = isActionPhase ? state.actionDeadline
             : isExchangePhase ? state.pendingAction?.exchangeDeadline
             : state.pendingAction?.responseDeadline;
@@ -706,6 +706,25 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                             </div>
                         )}
 
+                    {/* 대기 메시지: 심문 대상이 카드 선택 중 (심문관 + 기타 플레이어) */}
+                    {state.phase === 'examine_card_select' &&
+                        state.pendingAction?.examineSelectPlayerId !== playerId && (
+                            <div className="flex-1 flex items-center justify-center p-4">
+                                <div className="glass-panel px-5 py-4 text-center max-w-xs w-full">
+                                    <p className="text-text-muted text-xs uppercase tracking-widest mb-1">심문 진행 중</p>
+                                    <p className="text-text-primary font-bold text-base">
+                                        {state.players.find((p) => p.id === state.pendingAction?.examineSelectPlayerId)?.name}
+                                    </p>
+                                    <p className="text-text-secondary text-sm mt-0.5">보여줄 카드를 선택하는 중...</p>
+                                    <div className="mt-2 flex items-center justify-center gap-1">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
+                                        <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse [animation-delay:150ms]" />
+                                        <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse [animation-delay:300ms]" />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                     {/* 응답 대기 중 — 타이머 + 플레이어 응답 상태 표시 */}
                     {(state.phase === 'awaiting_response' ||
                         state.phase === 'awaiting_block_response') &&
@@ -766,8 +785,11 @@ export default function GameBoard({ state, playerId, roomId, onAction, onRestart
                 />
             )}
 
-            {/* 모달: 인퀴지터 심문 */}
-            {state.phase === 'examine_select' && state.pendingAction?.actorId === playerId && (
+            {/* 모달: 인퀴지터 심문 (대상 카드 선택 또는 심문관 돌려주기/교체) */}
+            {(
+                (state.phase === 'examine_card_select' && state.pendingAction?.examineSelectPlayerId === playerId) ||
+                (state.phase === 'examine_select' && state.pendingAction?.actorId === playerId)
+            ) && (
                 <ExamineModal
                     state={state}
                     playerId={playerId}

@@ -7,6 +7,7 @@ import {
   processLoseInfluence,
   processExchangeSelect,
   processExamineSelect,
+  processExamineCardSelect,
   resolveTimeouts,
 } from '@/lib/game/engine';
 import { ActionType, Character, ResponseType } from '@/lib/game/types';
@@ -75,6 +76,12 @@ export async function POST(req: NextRequest) {
         if (state.phase !== 'examine_select') return NextResponse.json({ error: '잘못된 단계' }, { status: 400 });
         if (state.pendingAction?.actorId !== playerId) return NextResponse.json({ error: '권한 없음' }, { status: 403 });
         state = processExamineSelect(state, playerId, action.action as 'return' | 'replace');
+        break;
+      }
+      case 'examine_card_select': {
+        if (state.phase !== 'examine_card_select') return NextResponse.json({ error: '잘못된 단계' }, { status: 400 });
+        if (state.pendingAction?.examineSelectPlayerId !== playerId) return NextResponse.json({ error: '권한 없음' }, { status: 403 });
+        state = processExamineCardSelect(state, playerId, action.cardIndex);
         break;
       }
       default:

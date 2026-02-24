@@ -69,6 +69,14 @@ export function filterStateForPlayer(
     if (pa.examinedCard && pa.actorId === playerId) {
       pendingAction.examinedCard = pa.examinedCard;
     }
+    // examineSelectPlayerId: 심문 대상이 카드를 선택해야 하는 경우
+    if (pa.examineSelectPlayerId) {
+      pendingAction.examineSelectPlayerId = pa.examineSelectPlayerId;
+    }
+    // exchangeDeadline: 교환/심문 선택 제한시간
+    if (pa.exchangeDeadline) {
+      pendingAction.exchangeDeadline = pa.exchangeDeadline;
+    }
     // conversionTargetId: 전달
     if (pa.conversionTargetId) {
       pendingAction.conversionTargetId = pa.conversionTargetId;
