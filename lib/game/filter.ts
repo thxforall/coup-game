@@ -94,6 +94,8 @@ export function filterStateForPlayer(
     ...(state.gameMode && { gameMode: state.gameMode }),
     ...(state.treasury !== undefined && { treasury: state.treasury }),
     ...(state.useInquisitor !== undefined && { useInquisitor: state.useInquisitor }),
+    ...(state.allegianceSelectionIndex !== undefined && { allegianceSelectionIndex: state.allegianceSelectionIndex }),
+    ...(state.allegianceSelectionDeadline !== undefined && { allegianceSelectionDeadline: state.allegianceSelectionDeadline }),
     ...(state.structuredLog && {
       structuredLog: state.structuredLog.filter(
         (entry) => !entry.visibleTo || entry.visibleTo === playerId

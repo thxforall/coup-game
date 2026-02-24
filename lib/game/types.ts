@@ -24,6 +24,7 @@ export type ResponseType = 'challenge' | 'block' | 'pass';
 
 export type GamePhase =
   | 'waiting'                 // 대기실
+  | 'allegiance_selection'    // 종교개혁 모드: 턴제 진영 선택
   | 'action'                  // 현재 플레이어 액션 선택
   | 'awaiting_response'       // 다른 플레이어들 도전/블록 대기
   | 'awaiting_block_response' // 블록에 대한 도전 대기
@@ -86,6 +87,8 @@ export interface GameState {
   treasury?: number; // 재무부 코인 (reformation 모드)
   useInquisitor?: boolean; // 인퀴지터 사용 여부 (reformation 모드)
   kickedPlayerIds?: string[]; // 추방된 플레이어 ID 목록 (재입장 차단)
+  allegianceSelectionIndex?: number; // 현재 진영 선택 중인 플레이어 인덱스
+  allegianceSelectionDeadline?: number; // 진영 선택 제한시간 (Unix timestamp ms)
   createdAt?: number; // 방 생성 시간 (Unix ms) - cleanup용 서버 내부 메타데이터
   updatedAt?: number; // 마지막 활동 시간 (Unix ms) - cleanup용 서버 내부 메타데이터
 }
@@ -106,7 +109,8 @@ export type GameAction =
   | { type: 'lose_influence'; cardIndex: number }
   | { type: 'exchange_select'; keptIndices: number[] }
   | { type: 'examine_select'; action: 'return' | 'replace' } // 심문 후 돌려주기/교체
-  | { type: 'examine_card_select'; cardIndex: number }; // 심문 대상이 보여줄 카드 선택
+  | { type: 'examine_card_select'; cardIndex: number } // 심문 대상이 보여줄 카드 선택
+  | { type: 'allegiance_pick'; allegiance: Allegiance }; // 종교개혁 모드: 진영 선택
 
 // ============================================================
 // Server-side filtered state (클라이언트에 전달)
@@ -157,6 +161,8 @@ export interface FilteredGameState {
   gameMode?: GameMode;
   treasury?: number; // 재무부 코인 (reformation 모드)
   useInquisitor?: boolean; // 인퀴지터 사용 여부 (reformation 모드)
+  allegianceSelectionIndex?: number; // 현재 진영 선택 중인 플레이어 인덱스
+  allegianceSelectionDeadline?: number; // 진영 선택 제한시간 (Unix timestamp ms)
   // deck 제외 — 클라이언트에 절대 노출 안함
 }
 

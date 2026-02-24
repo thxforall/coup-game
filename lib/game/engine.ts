@@ -68,10 +68,7 @@ export function initGame(
     ? shuffle(buildReformationDeck(players.length, useInquisitor))
     : shuffle([...ALL_CHARACTERS]);
 
-  // 진영 배정 (reformation 모드): 교대 배정
-  const allegiances: Allegiance[] = ['loyalist', 'reformist'];
-
-  const gamePlayers: Player[] = players.map((p, i) => ({
+  const gamePlayers: Player[] = players.map((p) => ({
     id: p.id,
     name: p.name,
     coins: 2,
@@ -81,7 +78,8 @@ export function initGame(
     ],
     isAlive: true,
     isReady: false,
-    ...(mode === 'reformation' && { allegiance: p.allegiance ?? allegiances[i % 2] }),
+    // reformation 모드: 진영은 allegiance_selection 페이즈에서 선택
+    // non-reformation: allegiance 없음
   }));
 
   const firstPlayerIndex = Math.floor(Math.random() * gamePlayers.length);
@@ -90,8 +88,30 @@ export function initGame(
   const now = Date.now();
   const modeLabel = mode === 'guess' ? ' (추측 모드)' : mode === 'reformation' ? ' (종교개혁 확장판)' : '';
   const startMsg = `게임이 시작되었습니다!${modeLabel}`;
-  const turnMsg = `--- ${firstPlayer.name}의 턴 ---`;
 
+  if (mode === 'reformation') {
+    // 종교개혁 모드: 진영 선택 페이즈로 시작
+    const selectionMsg = `진영 선택을 시작합니다. ${gamePlayers[0].name}부터 선택하세요.`;
+    return {
+      players: gamePlayers,
+      currentTurnId: firstPlayer.id,
+      phase: 'allegiance_selection',
+      deck,
+      pendingAction: null,
+      allegianceSelectionIndex: 0,
+      allegianceSelectionDeadline: Date.now() + 30000,
+      log: [startMsg, selectionMsg],
+      structuredLog: [
+        { type: 'game_start', message: startMsg, timestamp: now },
+        { type: 'game_start', message: selectionMsg, timestamp: now + 1 },
+      ],
+      gameMode: mode,
+      treasury: 0,
+      useInquisitor,
+    };
+  }
+
+  const turnMsg = `--- ${firstPlayer.name}의 턴 ---`;
   return {
     players: gamePlayers,
     currentTurnId: firstPlayer.id,
@@ -105,8 +125,82 @@ export function initGame(
       { type: 'turn_start', message: turnMsg, actorId: firstPlayer.id, timestamp: now + 1 },
     ],
     gameMode: mode,
-    ...(mode === 'reformation' && { treasury: 0, useInquisitor }),
   };
+}
+
+// ============================================================
+// 진영 선택 처리 (reformation 모드)
+// ============================================================
+
+export function processAllegiancePick(
+  state: GameState,
+  playerId: string,
+  allegiance: Allegiance
+): GameState {
+  if (state.phase !== 'allegiance_selection') throw new Error('진영 선택 단계가 아닙니다');
+  const idx = state.allegianceSelectionIndex ?? 0;
+  const currentPlayer = state.players[idx];
+  if (!currentPlayer || currentPlayer.id !== playerId) {
+    throw new Error('현재 선택 순서가 아닙니다');
+  }
+
+  let s: GameState = {
+    ...state,
+    players: state.players.map((p) =>
+      p.id === playerId ? { ...p, allegiance } : p
+    ),
+  };
+  s = addLog(s, `${currentPlayer.name}이(가) ${ALLEGIANCE_NAMES[allegiance]}을(를) 선택했습니다`, {
+    type: 'conversion',
+    actorId: playerId,
+  });
+
+  // 다음 미선택 플레이어 찾기
+  const nextIdx = idx + 1;
+  if (nextIdx >= s.players.length) {
+    // 모든 플레이어 선택 완료 → action 페이즈로 전환
+    const firstPlayer = s.players.find((p) => p.id === s.currentTurnId)!;
+    const turnMsg = `--- ${firstPlayer.name}의 턴 ---`;
+    s = addLog(s, turnMsg, { type: 'turn_start', actorId: firstPlayer.id });
+    return {
+      ...s,
+      phase: 'action',
+      allegianceSelectionIndex: undefined,
+      allegianceSelectionDeadline: undefined,
+      actionDeadline: Date.now() + 45000,
+    };
+  }
+
+  // 다음 플레이어로 이동
+  const nextPlayer = s.players[nextIdx];
+  s = addLog(s, `${nextPlayer.name}의 진영 선택 차례입니다`);
+  return {
+    ...s,
+    allegianceSelectionIndex: nextIdx,
+    allegianceSelectionDeadline: Date.now() + 30000,
+  };
+}
+
+export function resolveAllegianceSelectionTimeout(state: GameState): GameState {
+  if (
+    state.phase !== 'allegiance_selection' ||
+    !state.allegianceSelectionDeadline ||
+    Date.now() <= state.allegianceSelectionDeadline
+  ) {
+    return state;
+  }
+
+  const idx = state.allegianceSelectionIndex ?? 0;
+  const player = state.players[idx];
+  if (!player) return state;
+
+  // 적은 쪽 진영으로 자동 배정, 동률이면 loyalist
+  const loyalistCount = state.players.filter((p) => p.allegiance === 'loyalist').length;
+  const reformistCount = state.players.filter((p) => p.allegiance === 'reformist').length;
+  const autoAllegiance: Allegiance = loyalistCount <= reformistCount ? 'loyalist' : 'reformist';
+
+  const s = addLog(state, `${player.name}이(가) 시간 초과로 자동 배정됩니다`);
+  return processAllegiancePick(s, player.id, autoAllegiance);
 }
 
 // ============================================================

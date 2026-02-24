@@ -11,7 +11,7 @@ import {
     Coins,
     Search,
 } from 'lucide-react';
-import { FilteredPlayer, Character, CHARACTER_NAMES, ALLEGIANCE_NAMES } from '@/lib/game/types';
+import { FilteredPlayer, Character, CHARACTER_NAMES, ALLEGIANCE_NAMES, Allegiance } from '@/lib/game/types';
 import { PLAYER_AVATAR_COLORS, getPlayerColor } from '@/lib/game/player-colors';
 import { CARD_IMAGES } from '@/lib/game/constants';
 import CardInfoModal from './CardInfoModal';
@@ -54,9 +54,10 @@ interface PlayerBadgeProps {
     playerIndex: number;
     isCurrentTurn: boolean;
     online?: boolean;
+    allegiance?: Allegiance;
 }
 
-function PlayerBadge({ name, playerIndex, isCurrentTurn, online }: PlayerBadgeProps) {
+function PlayerBadge({ name, playerIndex, isCurrentTurn, online, allegiance }: PlayerBadgeProps) {
     const avatarColor = PLAYER_AVATAR_COLORS[playerIndex % PLAYER_AVATAR_COLORS.length];
     const initial = name.charAt(0).toUpperCase();
 
@@ -76,6 +77,11 @@ function PlayerBadge({ name, playerIndex, isCurrentTurn, online }: PlayerBadgePr
                 )}
                 {name}
             </span>
+            {allegiance && (
+                <span className={`text-[9px] px-1 py-0.5 rounded font-bold flex-shrink-0 ${allegiance === 'loyalist' ? 'bg-blue-500/20 text-blue-300' : 'bg-orange-500/20 text-orange-300'}`}>
+                    {ALLEGIANCE_NAMES[allegiance]}
+                </span>
+            )}
         </div>
     );
 }
@@ -232,6 +238,7 @@ function PlayerArea({ player, isCurrentTurn, online }: Props) {
                             playerIndex={playerIndex}
                             isCurrentTurn={isCurrentTurn}
                             online={online}
+                            allegiance={player.allegiance}
                         />
                         {player.isAlive ? (
                             <CoinBadge coins={player.coins} />

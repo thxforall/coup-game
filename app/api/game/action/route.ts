@@ -8,9 +8,10 @@ import {
   processExchangeSelect,
   processExamineSelect,
   processExamineCardSelect,
+  processAllegiancePick,
   resolveTimeouts,
 } from '@/lib/game/engine';
-import { ActionType, Character, ResponseType } from '@/lib/game/types';
+import { ActionType, Allegiance, Character, ResponseType } from '@/lib/game/types';
 import { filterStateForPlayer } from '@/lib/game/filter';
 
 function buildViews(state: import('@/lib/game/types').GameState) {
@@ -82,6 +83,11 @@ export async function POST(req: NextRequest) {
         if (state.phase !== 'examine_card_select') return NextResponse.json({ error: '잘못된 단계' }, { status: 400 });
         if (state.pendingAction?.examineSelectPlayerId !== playerId) return NextResponse.json({ error: '권한 없음' }, { status: 403 });
         state = processExamineCardSelect(state, playerId, action.cardIndex);
+        break;
+      }
+      case 'allegiance_pick': {
+        if (state.phase !== 'allegiance_selection') return NextResponse.json({ error: '잘못된 단계' }, { status: 400 });
+        state = processAllegiancePick(state, playerId, action.allegiance as Allegiance);
         break;
       }
       default:

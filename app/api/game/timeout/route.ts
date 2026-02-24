@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRoom, updateRoomWithViews } from '@/lib/firebase';
-import { resolveTimeouts, resolveActionTimeout, resolveExchangeTimeout, resolveExamineTimeout } from '@/lib/game/engine';
+import { resolveTimeouts, resolveAllegianceSelectionTimeout, resolveActionTimeout, resolveExchangeTimeout, resolveExamineTimeout } from '@/lib/game/engine';
 import { filterStateForPlayer } from '@/lib/game/filter';
 import type { GameState, FilteredGameState } from '@/lib/game/types';
 
@@ -25,8 +25,9 @@ export async function POST(req: NextRequest) {
   }
 
   const original = room.state;
-  const resolved = resolveTimeouts(original);
-  const resolved2 = resolveActionTimeout(resolved);
+  const resolved = resolveAllegianceSelectionTimeout(original);
+  const resolved1 = resolveTimeouts(resolved);
+  const resolved2 = resolveActionTimeout(resolved1);
   const resolved3 = resolveExchangeTimeout(resolved2);
   const resolved4 = resolveExamineTimeout(resolved3);
 
